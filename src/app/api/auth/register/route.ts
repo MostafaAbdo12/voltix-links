@@ -88,8 +88,8 @@ export async function POST(req: Request) {
         displayName,
         bio:
           locale === 'ar'
-            ? 'مرحبًا بك في مساحتي الرقمية الخاصة عبر AURA LINKS ✨'
-            : 'Welcome to my digital identity hub powered by AURA LINKS ✨',
+            ? 'مرحبًا بك في مساحتي الرقمية الخاصة عبر VoltiX LINKS ✨'
+            : 'Welcome to my digital identity hub powered by VoltiX LINKS ✨',
         locale,
         profileConfig: {
           create: {
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
             layout: 'centered',
             entranceAnimation: 'cinematic-fade',
             moodPreset: 'luxury',
-            seoTitle: `${displayName} (@${username}) | AURA LINKS`,
+            seoTitle: `${displayName} (@${username}) | VoltiX LINKS`,
             seoDescription: `Explore all official links, projects, and social channels of ${displayName}.`,
           },
         },
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
           create: [
             {
               title: locale === 'ar' ? 'موقعي الشخصي ومعرض أعمالي' : 'Official Portfolio & Website',
-              url: 'https://auralinks.io',
+              url: 'https://voltix-link.vercel.app',
               description:
                 locale === 'ar'
                   ? 'استكشف أحدث أعمالي ومشاريعي الرقمية'
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
             },
             {
               title: locale === 'ar' ? 'تواصل معي للأعمال والتعاون' : 'Book a Strategy Consultation',
-              url: 'https://auralinks.io/contact',
+              url: 'https://voltix-link.vercel.app',
               description:
                 locale === 'ar'
                   ? 'متاح للمشاريع الإبداعية والاستشارات'
