@@ -3650,7 +3650,7 @@ export default function DashboardPage() {
               {/* STEP 2: TITLE, URL, DESCRIPTION & GROUP */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-200 mb-2">
+                  <label className="block text-sm font-bold text-zinc-200 mb-2">
                     {isRtl ? 'عنوان الرابط أو القناة *' : 'Link / Channel Title *'}
                   </label>
                   <input
@@ -3659,13 +3659,45 @@ export default function DashboardPage() {
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
                     placeholder={
-                      isRtl ? 'مثال: قناتنا الرسمية على واتساب' : 'e.g. Official WhatsApp Channel'
+                      isRtl ? 'مثال: قناة واتساب الرسمية / يوتيوب' : 'e.g. Official WhatsApp Channel / YouTube'
                     }
-                    className="w-full rounded-2xl bg-black/65 border border-white/15 focus:border-amber-400 px-4 py-3 text-xs sm:text-sm text-white focus:outline-none transition-colors"
+                    className="w-full rounded-2xl bg-black/65 border border-white/15 focus:border-amber-400 px-4 py-3 text-base text-white focus:outline-none transition-colors"
                   />
+                  {/* Quick Channel Name Auto-fill Chips */}
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                    <span className="text-[11px] font-semibold text-zinc-400">
+                      {isRtl ? 'تسمية فورية للقناة:' : 'Quick Channel Names:'}
+                    </span>
+                    {SOCIAL_PLATFORMS.slice(0, 8).map((plat) => (
+                      <button
+                        key={plat.id}
+                        type="button"
+                        onClick={() => {
+                          setFormTitle(isRtl ? plat.nameAr : plat.name);
+                          setFormIcon(plat.id);
+                          if (!formUrl || formUrl === 'https://') {
+                            const preset = OFFICIAL_CHANNEL_PRESETS.find((p) => p.platformId === plat.id);
+                            if (preset) {
+                              setFormUrl(preset.urlPrefix);
+                              if (!formBadge) setFormBadge(isRtl ? preset.badgeAr : preset.badgeEn);
+                            } else {
+                              setFormUrl(plat.handlePrefix ? `https://${plat.domains[0]}/` : 'https://');
+                            }
+                          }
+                        }}
+                        className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all hover:scale-105 ${
+                          formIcon === plat.id
+                            ? 'bg-amber-500/25 border-amber-400 text-amber-300'
+                            : 'bg-white/5 hover:bg-white/15 border-white/10 text-zinc-300'
+                        }`}
+                      >
+                        {isRtl ? plat.nameAr.split(' ')[0] : plat.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-zinc-200 mb-2">
+                  <label className="block text-sm font-bold text-zinc-200 mb-2">
                     {isRtl
                       ? 'رابط القناة أو الموقع (URL) *'
                       : 'Channel / Destination URL *'}
@@ -3675,9 +3707,32 @@ export default function DashboardPage() {
                       type="text"
                       required
                       value={formUrl}
-                      onChange={(e) => setFormUrl(e.target.value)}
-                      placeholder="https://whatsapp.com/channel/... | https://t.me/..."
-                      className="w-full rounded-2xl bg-black/65 border border-white/15 focus:border-amber-400 px-4 py-3 text-xs sm:text-sm text-amber-200 font-mono flex-1 focus:outline-none transition-colors"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormUrl(val);
+                        const detected = detectSocialPlatformFromUrl(val);
+                        if (detected) {
+                          setFormIcon(detected.id);
+                          // Auto-fill channel title if empty or matches any platform name
+                          const isGenericTitle =
+                            !formTitle.trim() ||
+                            SOCIAL_PLATFORMS.some(
+                              (p) =>
+                                p.nameAr === formTitle ||
+                                p.name === formTitle ||
+                                formTitle.includes(p.nameAr.split(' ')[0])
+                            );
+                          if (isGenericTitle) {
+                            setFormTitle(isRtl ? detected.nameAr : detected.name);
+                          }
+                          const badge = detectChannelBadgeLabel(val, isRtl);
+                          if (badge && !formBadge) {
+                            setFormBadge(badge);
+                          }
+                        }
+                      }}
+                      placeholder="https://whatsapp.com/channel/... | https://t.me/... | https://youtube.com/..."
+                      className="w-full rounded-2xl bg-black/65 border border-white/15 focus:border-amber-400 px-4 py-3 text-base text-amber-200 font-mono flex-1 focus:outline-none transition-colors"
                       dir="ltr"
                     />
                   </div>
@@ -3828,7 +3883,19 @@ export default function DashboardPage() {
                         <button
                           key={plat.id}
                           type="button"
-                          onClick={() => setFormIcon(plat.id)}
+                          onClick={() => {
+                            setFormIcon(plat.id);
+                            // Auto-set the title to the official channel / platform name
+                            setFormTitle(isRtl ? plat.nameAr : plat.name);
+                            const preset = OFFICIAL_CHANNEL_PRESETS.find((p) => p.platformId === plat.id);
+                            if (preset) {
+                              if (!formUrl || formUrl === 'https://') setFormUrl(preset.urlPrefix);
+                              if (!formBadge) setFormBadge(isRtl ? preset.badgeAr : preset.badgeEn);
+                              if (!formDesc) setFormDesc(isRtl ? preset.defaultDescAr : preset.defaultDescEn);
+                            } else if (!formUrl || formUrl === 'https://') {
+                              setFormUrl(plat.handlePrefix ? `https://${plat.domains[0]}/` : 'https://');
+                            }
+                          }}
                           className={`p-2 rounded-2xl border flex flex-col items-center gap-1.5 transition-all ${
                             isSelected
                               ? 'bg-amber-500/20 border-amber-400 ring-2 ring-amber-400/40 scale-105'

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Share2,
@@ -28,7 +28,25 @@ import {
   Layers,
   Zap,
   Image as ImageIcon,
+  Tv,
 } from 'lucide-react';
+
+function extractYouTubeId(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|music\.youtube\.com\/watch\?v=))([\w-]{11})/i);
+  return match ? match[1] : null;
+}
+
+function extractSpotifyTrackId(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/track[\/:]([a-zA-Z0-9]+)/i);
+  return match ? match[1] : null;
+}
+
+function isDirectAudioFile(url?: string): boolean {
+  if (!url) return false;
+  return /\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i.test(url) || url.startsWith('blob:') || url.startsWith('data:audio');
+}
 import {
   ThemeConfig,
   EffectsConfig,
@@ -36,6 +54,7 @@ import {
   LinkCardType,
 } from '@/lib/themes';
 import {
+  SocialPlatformId,
   SOCIAL_PLATFORMS,
   getSocialPlatform,
   detectSocialPlatformFromUrl,
@@ -132,7 +151,47 @@ export function ProfileRenderer({
   const [copiedHandle, setCopiedHandle] = useState(false);
   const [mediaPlaying, setMediaPlaying] = useState(false);
   const [mediaFlipped, setMediaFlipped] = useState(false);
-  const [mediaProgress, setMediaProgress] = useState(42);
+  const [mediaProgress, setMediaProgress] = useState(0);
+  const [mediaCurrentTime, setMediaCurrentTime] = useState(0);
+  const [mediaDuration, setMediaDuration] = useState(225); // 3:45 default
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Active audio progress timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (mediaPlaying) {
+      interval = setInterval(() => {
+        setMediaCurrentTime((prev) => {
+          if (prev >= mediaDuration) {
+            setMediaPlaying(false);
+            return 0;
+          }
+          const next = prev + 1;
+          setMediaProgress(Math.round((next / mediaDuration) * 100));
+          return next;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [mediaPlaying, mediaDuration]);
+
+  // Sync direct HTML5 audio play/pause
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (mediaPlaying) {
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [mediaPlaying]);
+
+  const formatAudioTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   const [mediaMuted, setMediaMuted] = useState(false);
   const [hoveredLinkId, setHoveredLinkId] = useState<string | null>(null);
   const [hoveredSocialId, setHoveredSocialId] = useState<string | null>(null);
@@ -1086,6 +1145,32 @@ export function ProfileRenderer({
     const media = profile.mediaEmbed;
     if (!media || !media.enabled || !media.title) return null;
 
+    const isYouTube = media.type === 'youtube' || /youtube\.com|youtu\.be/i.test(media.url || '');
+    const isSpotify = media.type === 'spotify' || /spotify\.com/i.test(media.url || '');
+    const isSoundcloud = media.type === 'soundcloud' || /soundcloud\.com/i.test(media.url || '');
+    const isDirectAudio = isDirectAudioFile(media.url);
+
+    const ytVideoId = isYouTube ? extractYouTubeId(media.url) : null;
+    const spotifyTrackId = isSpotify ? extractSpotifyTrackId(media.url) : null;
+
+    const platformColor = isYouTube
+      ? '#EF4444'
+      : isSpotify
+      ? '#10B981'
+      : isSoundcloud
+      ? '#F97316'
+      : theme.accentColor;
+
+    const platformLabel = isYouTube
+      ? 'YOUTUBE MUSIC'
+      : isSpotify
+      ? 'SPOTIFY STUDIO'
+      : isSoundcloud
+      ? 'SOUNDCLOUD'
+      : 'AUDIO STREAM';
+
+    const platformBadgeId: SocialPlatformId = isYouTube ? 'youtube' : isSpotify ? 'spotify' : 'youtube';
+
     return (
       <div
         key="section-media"
@@ -1094,6 +1179,74 @@ export function ProfileRenderer({
         onClick={() => setMediaFlipped((f) => !f)}
         className="mb-6 perspective-1200 cursor-pointer select-none group/media-flip relative w-full h-[96px] sm:h-[102px]"
       >
+        {/* Real Audio Engine */}
+        {isDirectAudio && (
+          <audio
+            ref={audioRef}
+            src={media.url}
+            preload="metadata"
+            onLoadedMetadata={(e) => {
+              const dur = Math.round(e.currentTarget.duration);
+              if (dur && !isNaN(dur)) setMediaDuration(dur);
+            }}
+            onTimeUpdate={(e) => {
+              const cur = Math.round(e.currentTarget.currentTime);
+              setMediaCurrentTime(cur);
+              if (mediaDuration > 0) {
+                setMediaProgress(Math.round((cur / mediaDuration) * 100));
+              }
+            }}
+            onEnded={() => {
+              setMediaPlaying(false);
+              setMediaCurrentTime(0);
+              setMediaProgress(0);
+            }}
+          />
+        )}
+
+        {/* Real YouTube Audio Engine */}
+        {isYouTube && ytVideoId && mediaPlaying && (
+          <iframe
+            key={`yt-audio-${ytVideoId}`}
+            src={`https://www.youtube-nocookie.com/embed/${ytVideoId}?autoplay=1&playsinline=1&controls=0&modestbranding=1&rel=0`}
+            title={media.title}
+            allow="autoplay; encrypted-media"
+            className="w-1 h-1 opacity-0 fixed -bottom-10 -left-10 pointer-events-none"
+            tabIndex={-1}
+          />
+        )}
+
+        {/* YouTube HD Video Clip Pop-up Modal */}
+        {showVideoModal && ytVideoId && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fade-in"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowVideoModal(false);
+            }}
+          >
+            <div
+              className="relative w-full max-w-2xl aspect-video rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-black"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${ytVideoId}?autoplay=1&playsinline=1`}
+                title={media.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+              <button
+                type="button"
+                onClick={() => setShowVideoModal(false)}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/80 text-white flex items-center justify-center border border-white/20 hover:scale-110 transition-transform"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         <div
           className={`relative w-full h-full preserve-3d transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
             mediaFlipped ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'
@@ -1117,7 +1270,7 @@ export function ProfileRenderer({
                 <span
                   className="voltix-card-beam"
                   style={{
-                    '--beam-c1': media.type === 'spotify' ? '#10B981' : theme.accentColor,
+                    '--beam-c1': platformColor,
                     '--beam-c2': theme.glowColor,
                     '--beam-speed': '4.2s',
                   } as React.CSSProperties}
@@ -1125,7 +1278,7 @@ export function ProfileRenderer({
                 <span
                   className="voltix-card-beam-glow"
                   style={{
-                    '--beam-c1': media.type === 'spotify' ? '#10B981' : theme.accentColor,
+                    '--beam-c1': platformColor,
                     '--beam-c2': theme.glowColor,
                     '--beam-speed': '4.2s',
                   } as React.CSSProperties}
@@ -1135,7 +1288,7 @@ export function ProfileRenderer({
 
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
               <OfficialSocialBadge
-                platformId={media.type === 'youtube' ? 'youtube' : 'spotify'}
+                platformId={platformBadgeId}
                 size="md"
                 variant="gradient"
               />
@@ -1144,11 +1297,11 @@ export function ProfileRenderer({
                   <span
                     className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
                     style={{
-                      backgroundColor: `${theme.accentColor}22`,
-                      color: theme.accentColor,
+                      backgroundColor: `${platformColor}22`,
+                      color: platformColor,
                     }}
                   >
-                    {media.type.toUpperCase()} STREAM
+                    {platformLabel}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[10px] text-zinc-400 font-bold opacity-75 group-hover/media-flip:opacity-100 transition-opacity">
                     <RotateCw className="w-2.5 h-2.5" />
@@ -1158,11 +1311,9 @@ export function ProfileRenderer({
                 <h4 className="font-bold text-sm truncate mt-1" style={{ color: theme.textColor }}>
                   {media.title}
                 </h4>
-                {media.artist && (
-                  <p className="text-xs truncate" style={{ color: theme.secondaryTextColor }}>
-                    {media.artist}
-                  </p>
-                )}
+                <p className="text-xs truncate" style={{ color: theme.secondaryTextColor }}>
+                  {media.artist || (isRtl ? 'فنان رسمي' : 'Official Artist')}
+                </p>
               </div>
             </div>
 
@@ -1172,26 +1323,25 @@ export function ProfileRenderer({
                 e.stopPropagation();
                 setMediaPlaying((p) => !p);
               }}
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform hover:scale-110 shrink-0 shadow-lg"
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform hover:scale-110 shrink-0 shadow-lg text-white"
               style={{
-                backgroundColor: theme.accentColor,
-                color: theme.isLight ? '#FFFFFF' : '#050508',
+                backgroundColor: platformColor,
               }}
               aria-label={mediaPlaying ? 'Pause media preview' : 'Play media preview'}
             >
-              {mediaPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 fill-current" />}
+              {mediaPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
             </button>
           </div>
 
           {/* ==========================================================
-              BACK FACE: CLEAN LUXURY SPOTIFY STUDIO PLAYER (PRO AUDIOPHILE)
+              BACK FACE: CLEAN LUXURY STUDIO PLAYER (PRO AUDIOPHILE)
           ========================================================== */}
           <div
             className="absolute inset-0 w-full h-full p-3 sm:p-3.5 rounded-3xl border overflow-hidden backface-hidden [transform:rotateY(180deg)] shadow-2xl flex flex-col justify-between"
             style={{
-              background: `radial-gradient(ellipse at 80% 20%, rgba(16,185,129,0.18) 0%, transparent 60%),
+              background: `radial-gradient(ellipse at 80% 20%, ${platformColor}26 0%, transparent 60%),
                            linear-gradient(135deg, #090A10 0%, #06070B 60%, #0F121C 100%)`,
-              borderColor: 'rgba(16, 185, 129, 0.4)',
+              borderColor: `${platformColor}55`,
               backdropFilter: `blur(${theme.glassBlur + 8}px)`,
               boxShadow: `0 20px 50px -10px rgba(0,0,0,0.85), inset 0 1px 1.5px rgba(255,255,255,0.22)`,
             }}
@@ -1202,16 +1352,16 @@ export function ProfileRenderer({
                 <span
                   className="voltix-card-beam"
                   style={{
-                    '--beam-c1': '#10B981',
-                    '--beam-c2': '#34D399',
+                    '--beam-c1': platformColor,
+                    '--beam-c2': '#FFFFFF',
                     '--beam-speed': '3.5s',
                   } as React.CSSProperties}
                 />
                 <span
                   className="voltix-card-beam-glow"
                   style={{
-                    '--beam-c1': '#10B981',
-                    '--beam-c2': '#34D399',
+                    '--beam-c1': platformColor,
+                    '--beam-c2': '#FFFFFF',
                     '--beam-speed': '3.5s',
                   } as React.CSSProperties}
                 />
@@ -1220,38 +1370,64 @@ export function ProfileRenderer({
 
             {/* TOP ROW: Album Cover + Title + Transport Controls */}
             <div className="flex items-center justify-between gap-3">
-              {/* Left: Spotify Album Cover & Track Title */}
+              {/* Left: Platform Emblem & Track Title */}
               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-950 via-zinc-900 to-black border border-emerald-500/30 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-950/40">
-                  <OfficialSocialBadge platformId="spotify" size="sm" variant="gradient" interactive={false} />
+                <div
+                  className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-black via-zinc-900 to-black border flex items-center justify-center shrink-0 shadow-lg"
+                  style={{ borderColor: `${platformColor}40` }}
+                >
+                  <OfficialSocialBadge platformId={platformBadgeId} size="sm" variant="gradient" interactive={false} />
                   {mediaPlaying && (
-                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span
+                      className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-ping"
+                      style={{ backgroundColor: platformColor }}
+                    />
                   )}
                 </div>
 
                 <div className="min-w-0 text-start">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[9.5px] font-black uppercase tracking-wider text-emerald-400">
-                      SPOTIFY STUDIO
+                    <span
+                      className="w-1.5 h-1.5 rounded-full animate-pulse"
+                      style={{ backgroundColor: platformColor }}
+                    />
+                    <span
+                      className="text-[9.5px] font-black uppercase tracking-wider"
+                      style={{ color: platformColor }}
+                    >
+                      {platformLabel}
                     </span>
                   </div>
                   <h4 className="font-extrabold text-xs sm:text-sm truncate text-white leading-snug mt-0.5">
                     {media.title}
                   </h4>
                   <p className="text-[11px] text-zinc-400 truncate">
-                    {media.artist || 'AURA Sound Lab'}
+                    {media.artist || (isRtl ? 'فنان رسمي' : 'Official Artist')}
                   </p>
                 </div>
               </div>
 
               {/* Right: Master Playback Transport Deck */}
               <div dir="ltr" className="flex items-center gap-1.5 shrink-0">
+                {isYouTube && ytVideoId && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowVideoModal(true);
+                    }}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all active:scale-90"
+                    title={isRtl ? 'مشاهدة فيديو كليب' : 'Watch Video Clip'}
+                  >
+                    <Tv className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setMediaProgress((p) => Math.max(0, p - 10));
+                    setMediaCurrentTime((p) => Math.max(0, p - 10));
                   }}
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white flex items-center justify-center transition-all active:scale-90"
                   title="Skip -10s"
@@ -1265,13 +1441,17 @@ export function ProfileRenderer({
                     e.stopPropagation();
                     setMediaPlaying((p) => !p);
                   }}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-emerald-400 via-emerald-500 to-teal-400 text-black flex items-center justify-center shadow-lg shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
+                  style={{
+                    backgroundColor: platformColor,
+                    boxShadow: `0 8px 24px -4px ${platformColor}66`,
+                  }}
                   aria-label={mediaPlaying ? 'Pause' : 'Play'}
                 >
                   {mediaPlaying ? (
-                    <Pause className="w-4 h-4 fill-current text-black" />
+                    <Pause className="w-4 h-4 fill-current" />
                   ) : (
-                    <Play className="w-4 h-4 fill-current translate-x-0.5 text-black" />
+                    <Play className="w-4 h-4 fill-current translate-x-0.5" />
                   )}
                 </button>
 
@@ -1279,7 +1459,7 @@ export function ProfileRenderer({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setMediaProgress((p) => Math.min(100, p + 10));
+                    setMediaCurrentTime((p) => Math.min(mediaDuration, p + 10));
                   }}
                   className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white flex items-center justify-center transition-all active:scale-90"
                   title="Skip +10s"
@@ -1293,8 +1473,8 @@ export function ProfileRenderer({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black border border-emerald-500/30 flex items-center justify-center transition-all active:scale-90 ml-0.5"
-                    title="Open on Spotify"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/20 text-white border border-white/15 flex items-center justify-center transition-all active:scale-90 ml-0.5"
+                    title={`Open on ${platformLabel}`}
                   >
                     <ExternalLink className="w-3 h-3" />
                   </a>
@@ -1304,8 +1484,8 @@ export function ProfileRenderer({
 
             {/* BOTTOM ROW: Interactive Timeline Scrubber & Live Equalizer */}
             <div dir="ltr" className="flex items-center gap-2 pt-1 border-t border-white/5">
-              <span className="shrink-0 text-[10px] font-mono font-bold text-emerald-400">
-                01:24
+              <span className="shrink-0 text-[10px] font-mono font-bold" style={{ color: platformColor }}>
+                {formatAudioTime(mediaCurrentTime)}
               </span>
 
               <div
@@ -1315,20 +1495,24 @@ export function ProfileRenderer({
                   const rect = e.currentTarget.getBoundingClientRect();
                   const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
                   setMediaProgress(Math.round(pct));
+                  setMediaCurrentTime(Math.round((pct / 100) * mediaDuration));
+                  if (audioRef.current) {
+                    audioRef.current.currentTime = (pct / 100) * mediaDuration;
+                  }
                 }}
               >
                 <div
                   className="h-full rounded-full transition-all duration-150 relative"
                   style={{
                     width: `${mediaProgress}%`,
-                    background: 'linear-gradient(90deg, #10B981 0%, #34D399 70%, #FFFFFF 100%)',
-                    boxShadow: '0 0 10px rgba(16,185,129,0.8)',
+                    background: `linear-gradient(90deg, ${platformColor} 0%, #FFFFFF 100%)`,
+                    boxShadow: `0 0 10px ${platformColor}cc`,
                   }}
                 />
               </div>
 
               <span className="shrink-0 text-[10px] font-mono text-zinc-400">
-                03:45
+                {formatAudioTime(mediaDuration)}
               </span>
 
               {/* Dynamic 5-Bar Audio Equalizer */}
@@ -1336,8 +1520,9 @@ export function ProfileRenderer({
                 {[40, 85, 55, 100, 65].map((h, i) => (
                   <span
                     key={i}
-                    className="w-0.5 rounded-full bg-emerald-400"
+                    className="w-0.5 rounded-full"
                     style={{
+                      backgroundColor: platformColor,
                       height: mediaPlaying ? `${h}%` : '25%',
                       animation: mediaPlaying ? `eqBarWave 0.6s ease-in-out infinite alternate ${i * 0.12}s` : 'none',
                     }}
