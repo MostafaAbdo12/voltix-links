@@ -379,7 +379,7 @@
             <!-- 1. LEFT: 3D Turntable Vinyl Disc -->
             <div
               class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-2xl group/vinyl"
-              onclick="togglePlayState()"
+              onclick="event.stopPropagation(); togglePlayState();"
               style="box-shadow: 0 0 0 1.5px rgba(212, 175, 55, 0.85), 0 4px 18px rgba(0,0,0,0.95);"
               title="تشغيل / إيقاف الأسطوانة"
             >
@@ -430,20 +430,20 @@
               <!-- Scrubber with 3D Ruby-Red / Gold Jewel Knob -->
               <div class="flex items-center gap-2">
                 <span id="label-current-time" class="text-[9.5px] sm:text-[10px] font-mono font-bold text-amber-200/90 shrink-0">
-                  01:24
+                  00:00
                 </span>
 
                 <div
                   id="scrubber-track"
                   class="relative flex-1 h-3 flex items-center cursor-pointer group/scrub"
-                  onclick="onScrubberClick(event)"
+                  onclick="event.stopPropagation(); onScrubberClick(event);"
                   title="تقديم وتأخير المقطع"
                 >
                   <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
                     <div
                       id="scrubber-fill"
                       class="h-full rounded-full shadow-[0_0_8px_rgba(239,68,68,0.7)]"
-                      style="width: 37%; background: linear-gradient(90deg, #D4AF37 0%, #FF0000 100%);"
+                      style="width: 0%; background: linear-gradient(90deg, #D4AF37 0%, #FF0000 100%);"
                     ></div>
                   </div>
 
@@ -451,7 +451,7 @@
                     id="ruby-jewel-knob"
                     class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-amber-300/90 shadow-[0_0_12px_rgba(239,68,68,0.95)] animate-jewel-glow transition-all duration-75 pointer-events-none"
                     style="
-                      left: 37%;
+                      left: 0%;
                       background: radial-gradient(circle at 35% 30%, #FFA8A8 0%, #EF4444 40%, #7F1D1D 80%, #2A0404 100%);
                       box-shadow: 0 0 10px rgba(239, 68, 68, 0.95), 0 0 20px rgba(212, 175, 55, 0.5), inset 0 1px 1.5px rgba(255,255,255,0.7);
                     "
@@ -470,7 +470,7 @@
               <button
                 type="button"
                 id="back-tv-btn"
-                onclick="openVideoDemo()"
+                onclick="event.stopPropagation(); openVideoDemo();"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-red-400 hover:text-white bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 hover:border-red-500/70 transition-all hover:scale-110 active:scale-90 shadow-lg relative group/clip cursor-pointer shrink-0"
                 style="box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);"
                 title="مشغل الفيديو كليب الرسمي (شاشة التلفاز)"
@@ -485,7 +485,7 @@
               <!-- Skip Previous |< -->
               <button
                 type="button"
-                onclick="skipSeconds(-10)"
+                onclick="event.stopPropagation(); skipSeconds(-10);"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
                 title="تراجع 10 ثوانٍ"
               >
@@ -499,7 +499,7 @@
               <button
                 type="button"
                 id="master-gold-play-btn"
-                onclick="togglePlayState()"
+                onclick="event.stopPropagation(); togglePlayState();"
                 class="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer relative group/play shrink-0"
                 style="
                   background: radial-gradient(circle at 35% 35%, #FFF8D6 0%, #E6C265 35%, #B88A28 70%, #6E4F10 100%);
@@ -516,7 +516,7 @@
               <!-- Skip Next >| -->
               <button
                 type="button"
-                onclick="skipSeconds(10)"
+                onclick="event.stopPropagation(); skipSeconds(10);"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
                 title="تقديم 10 ثوانٍ"
               >
@@ -532,6 +532,7 @@
                 href="https://music.youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
+                onclick="event.stopPropagation();"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-110 active:scale-90 shrink-0"
                 title="فتح في المنصة الرسمية"
               >
@@ -546,7 +547,7 @@
               <button
                 type="button"
                 id="btn-favorite"
-                onclick="toggleFavorite()"
+                onclick="event.stopPropagation(); toggleFavorite();"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-200/70 hover:text-amber-200 bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-110 active:scale-90 shadow-md shrink-0"
                 title="إضافة للمفضلة"
               >
@@ -558,7 +559,7 @@
               <!-- Flip Back Button -->
               <button
                 type="button"
-                onclick="flipBackToCard()"
+                onclick="event.stopPropagation(); flipBackToCard();"
                 class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-110 active:scale-90 shadow-md shrink-0"
                 title="العودة للبطاقة الأصلية"
               >
@@ -908,17 +909,56 @@
       });
     }
 
+  <!-- Real HTML5 Luxury Audio Engine (SoundHelix CDN Lossless Test Audio) -->
+  <audio id="master-real-audio" preload="auto" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+
+  <script>
+    let isPlaying = false;
+    let isFlipped = false;
+    let isHovered = false;
+    let isAutoHover = false;
+    let isFavorite = false;
+    let currentTime = 0;
+    let totalDuration = 225; // 03:45
+    let currentPlatform = 'youtube-music';
+
     function updateFlipper() {
       const flipper = document.getElementById('card-flipper');
       const status = document.getElementById('transition-status');
+      const faceFront = document.getElementById('face-front');
+      const faceBack = document.getElementById('face-back');
       const shouldFlip = isFlipped || isHovered || isPlaying;
 
       if (shouldFlip) {
         flipper.style.transform = 'rotateY(180deg)';
-        status.innerHTML = 'حالة العرض: <strong>المشغل الملكي (Masterpiece Player)</strong> — مستوحى من صورتك بدقة فائقة';
+        status.innerHTML = 'حالة العرض: <strong>المشغل الملكي (Masterpiece Player)</strong> — نشط وتعمل جميع أزراره الفاخرة';
+        if (faceFront) {
+          faceFront.style.pointerEvents = 'none';
+          faceFront.style.opacity = '0';
+          faceFront.style.visibility = 'hidden';
+          faceFront.style.zIndex = '-1';
+        }
+        if (faceBack) {
+          faceBack.style.pointerEvents = 'auto';
+          faceBack.style.opacity = '1';
+          faceBack.style.visibility = 'visible';
+          faceBack.style.zIndex = '10';
+        }
       } else {
         flipper.style.transform = 'rotateY(0deg)';
         status.innerHTML = 'حالة العرض: <strong>البطاقة الافتراضية (وجه أمامي)</strong> — مرر الماوس فوقها أو انقر لرؤية الترانزيشن الملكي';
+        if (faceFront) {
+          faceFront.style.pointerEvents = 'auto';
+          faceFront.style.opacity = '1';
+          faceFront.style.visibility = 'visible';
+          faceFront.style.zIndex = '10';
+        }
+        if (faceBack) {
+          faceBack.style.pointerEvents = 'none';
+          faceBack.style.opacity = '0';
+          faceBack.style.visibility = 'hidden';
+          faceBack.style.zIndex = '-1';
+        }
       }
     }
 
@@ -951,7 +991,7 @@
     }
 
     function updateScrubber() {
-      const pct = (currentTime / totalDuration) * 100;
+      const pct = Math.max(0, Math.min(100, (currentTime / totalDuration) * 100));
       document.getElementById('scrubber-fill').style.width = `${pct}%`;
       document.getElementById('ruby-jewel-knob').style.left = `${pct}%`;
       document.getElementById('label-current-time').innerText = formatTime(currentTime);
@@ -959,20 +999,30 @@
     }
 
     function onScrubberClick(e) {
+      e.stopPropagation();
       const rect = e.currentTarget.getBoundingClientRect();
       const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       currentTime = Math.round(pct * totalDuration);
+      const realAudio = document.getElementById('master-real-audio');
+      if (realAudio && !isNaN(realAudio.duration) && realAudio.duration > 0) {
+        realAudio.currentTime = (pct * realAudio.duration);
+      }
       updateScrubber();
     }
 
     function skipSeconds(delta) {
       currentTime = Math.max(0, Math.min(totalDuration, currentTime + delta));
+      const realAudio = document.getElementById('master-real-audio');
+      if (realAudio && !isNaN(realAudio.duration) && realAudio.duration > 0) {
+        realAudio.currentTime = Math.max(0, Math.min(realAudio.duration, realAudio.currentTime + delta));
+      }
       updateScrubber();
     }
 
     function togglePlayState() {
       isPlaying = !isPlaying;
 
+      const realAudio = document.getElementById('master-real-audio');
       const backVinyl = document.getElementById('back-vinyl-disc');
       const playBtnText = document.getElementById('play-btn-text');
       const playBtnDot = document.getElementById('play-btn-dot');
@@ -986,40 +1036,43 @@
       const playSvg = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
 
       if (isPlaying) {
-        backVinyl.classList.remove('paused');
+        if (realAudio) {
+          realAudio.play().catch((err) => {
+            console.log('Audio autoplay prevented or error:', err);
+          });
+        }
+
+        if (backVinyl) backVinyl.classList.remove('paused');
         waveBars.forEach(b => b.classList.remove('paused'));
 
-        masterPlayIcon.innerHTML = pauseSvg;
-        frontActionIcon.innerHTML = pauseSvg;
-        badgeOverlay.classList.remove('opacity-0');
-        badgeOverlay.classList.add('opacity-90');
-        badgeOverlay.innerHTML = '<div class="flex items-end gap-0.5 h-3.5"><div class="w-1 h-full bg-white rounded-full eq-1"></div><div class="w-1 h-full bg-white rounded-full eq-2"></div><div class="w-1 h-full bg-white rounded-full eq-3"></div></div>';
+        if (masterPlayIcon) masterPlayIcon.innerHTML = pauseSvg;
+        if (frontActionIcon) frontActionIcon.innerHTML = pauseSvg;
+        if (badgeOverlay) {
+          badgeOverlay.classList.remove('opacity-0');
+          badgeOverlay.classList.add('opacity-90');
+          badgeOverlay.innerHTML = '<div class="flex items-end gap-0.5 h-3.5"><div class="w-1 h-full bg-white rounded-full eq-1"></div><div class="w-1 h-full bg-white rounded-full eq-2"></div><div class="w-1 h-full bg-white rounded-full eq-3"></div></div>';
+        }
 
-        playBtnText.innerText = 'إيقاف مؤقت';
-        playBtnDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
-
-        playInterval = setInterval(() => {
-          if (currentTime >= totalDuration) {
-            currentTime = 0;
-          } else {
-            currentTime += 1;
-          }
-          updateScrubber();
-        }, 1000);
+        if (playBtnText) playBtnText.innerText = 'إيقاف مؤقت';
+        if (playBtnDot) playBtnDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
       } else {
-        backVinyl.classList.add('paused');
+        if (realAudio) {
+          realAudio.pause();
+        }
+
+        if (backVinyl) backVinyl.classList.add('paused');
         waveBars.forEach(b => b.classList.add('paused'));
 
-        masterPlayIcon.innerHTML = playSvg;
-        frontActionIcon.innerHTML = playSvg;
-        badgeOverlay.classList.add('opacity-0');
-        badgeOverlay.classList.remove('opacity-90');
-        badgeOverlay.innerHTML = '<svg class="w-4 h-4 fill-white text-white ml-0.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+        if (masterPlayIcon) masterPlayIcon.innerHTML = playSvg;
+        if (frontActionIcon) frontActionIcon.innerHTML = playSvg;
+        if (badgeOverlay) {
+          badgeOverlay.classList.add('opacity-0');
+          badgeOverlay.classList.remove('opacity-90');
+          badgeOverlay.innerHTML = '<svg class="w-4 h-4 fill-white text-white ml-0.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+        }
 
-        playBtnText.innerText = 'تشغيل النغمات والموجات';
-        playBtnDot.className = 'w-2 h-2 rounded-full bg-red-400';
-
-        clearInterval(playInterval);
+        if (playBtnText) playBtnText.innerText = 'تشغيل النغمات والموجات';
+        if (playBtnDot) playBtnDot.className = 'w-2 h-2 rounded-full bg-red-400';
       }
 
       updateFlipper();
@@ -1051,11 +1104,38 @@
     }
 
     function openVideoDemo() {
+      const realAudio = document.getElementById('master-real-audio');
+      if (realAudio && isPlaying) {
+        togglePlayState();
+      }
       document.getElementById('video-modal').classList.remove('hidden');
     }
 
     function closeVideoDemo() {
       document.getElementById('video-modal').classList.add('hidden');
+    }
+
+    // Attach real audio listeners
+    const realAudio = document.getElementById('master-real-audio');
+    if (realAudio) {
+      realAudio.addEventListener('loadedmetadata', () => {
+        if (realAudio.duration && !isNaN(realAudio.duration)) {
+          totalDuration = Math.round(realAudio.duration);
+          updateScrubber();
+        }
+      });
+      realAudio.addEventListener('timeupdate', () => {
+        currentTime = Math.round(realAudio.currentTime);
+        if (realAudio.duration && !isNaN(realAudio.duration)) {
+          totalDuration = Math.round(realAudio.duration);
+        }
+        updateScrubber();
+      });
+      realAudio.addEventListener('ended', () => {
+        if (isPlaying) togglePlayState();
+        currentTime = 0;
+        updateScrubber();
+      });
     }
 
     // Initialize with default platform

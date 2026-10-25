@@ -1678,19 +1678,21 @@ export function ProfileRenderer({
 
         {/* Real YouTube Audio Engine */}
         {isYouTube && ytVideoId && mediaPlaying && (
-          <iframe
-            key={`yt-audio-${ytVideoId}`}
-            src={`https://www.youtube-nocookie.com/embed/${ytVideoId}?autoplay=1&playsinline=1&controls=0&modestbranding=1&rel=0`}
-            title={activeTrack.title}
-            allow="autoplay; encrypted-media"
-            className="w-1 h-1 opacity-0 fixed -bottom-10 -left-10 pointer-events-none"
-            tabIndex={-1}
-          />
+          <div className="absolute -top-[9999px] left-0 pointer-events-none opacity-0">
+            <iframe
+              key={`yt-audio-${ytVideoId}`}
+              src={`https://www.youtube-nocookie.com/embed/${ytVideoId}?autoplay=1&enablejsapi=1&playsinline=1&controls=0&rel=0`}
+              title={activeTrack.title}
+              allow="autoplay; encrypted-media"
+              className="w-[300px] h-[200px]"
+              tabIndex={-1}
+            />
+          </div>
         )}
 
         {/* 3D Interactive Morph / Flip Transition Container */}
         <div
-          className="relative w-full perspective-1200 cursor-pointer select-none min-h-[106px] sm:min-h-[114px]"
+          className="relative w-full perspective-1200 select-none min-h-[106px] sm:min-h-[114px]"
           onMouseEnter={() => setMediaHovered(true)}
           onMouseLeave={() => setMediaHovered(false)}
         >
@@ -1705,7 +1707,11 @@ export function ProfileRenderer({
                 FRONT FACE: SLEEK VOLTIX AUDIO IDENTITY CARD (DYNAMIC BRANDING)
                 ==================================================================== */}
             <div
-              className="w-full h-full min-h-[106px] sm:min-h-[114px] backface-hidden rounded-[26px] p-[2px] relative overflow-hidden shadow-2xl transition-all group/front-card"
+              className={`w-full h-full min-h-[106px] sm:min-h-[114px] backface-hidden rounded-[26px] p-[2px] relative overflow-hidden shadow-2xl transition-all group/front-card cursor-pointer ${
+                isMasterpieceVisible
+                  ? 'pointer-events-none opacity-0 invisible select-none -z-10'
+                  : 'pointer-events-auto opacity-100 visible z-10'
+              }`}
               style={{
                 boxShadow: `0 20px 50px -10px rgba(0,0,0,0.92), 0 0 38px ${platformMeta.accentGlow}`,
               }}
@@ -1903,7 +1909,11 @@ export function ProfileRenderer({
                 Inspired pixel-by-pixel by the uploaded image design
                 ==================================================================== */}
             <div
-              className="w-full h-full min-h-[106px] sm:min-h-[114px] absolute inset-0 backface-hidden [transform:rotateY(180deg)] rounded-[32px] sm:rounded-full p-[2.5px] shadow-2xl transition-all"
+              className={`w-full h-full min-h-[106px] sm:min-h-[114px] absolute inset-0 backface-hidden [transform:rotateY(180deg)] rounded-[32px] sm:rounded-full p-[2.5px] shadow-2xl transition-all ${
+                isMasterpieceVisible
+                  ? 'pointer-events-auto opacity-100 visible z-10'
+                  : 'pointer-events-none opacity-0 invisible select-none -z-10'
+              }`}
               style={{
                 background:
                   'linear-gradient(135deg, #FFF0B3 0%, #D4AF37 20%, #7A5711 45%, #FFDF73 72%, #A88121 100%)',
@@ -1928,7 +1938,10 @@ export function ProfileRenderer({
                 {/* 1. LEFT: 3D Turntable Vinyl Disc (Concentric Grooves + Album Art) */}
                 <div
                   className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-2xl group/vinyl"
-                  onClick={() => setMediaPlaying((p) => !p)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMediaPlaying((p) => !p);
+                  }}
                   style={{
                     boxShadow:
                       '0 0 0 1.5px rgba(212, 175, 55, 0.85), 0 4px 18px rgba(0,0,0,0.95)',
@@ -2087,7 +2100,10 @@ export function ProfileRenderer({
                   {isYouTube && ytVideoId && (
                     <button
                       type="button"
-                      onClick={() => setShowVideoModal(true)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowVideoModal(true);
+                      }}
                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-red-400 hover:text-white bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 hover:border-red-500/70 transition-all hover:scale-110 active:scale-90 shadow-lg relative group/clip cursor-pointer shrink-0"
                       style={{
                         boxShadow: '0 0 12px rgba(239, 68, 68, 0.45)',
@@ -2106,7 +2122,10 @@ export function ProfileRenderer({
                   {/* Skip Previous |< */}
                   <button
                     type="button"
-                    onClick={handlePrevTrack}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrevTrack();
+                    }}
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
                     title={
                       playlistTracks.length > 1
@@ -2122,7 +2141,10 @@ export function ProfileRenderer({
                   {/* MASTER BRUSHED GOLD CIRCULAR PLAY/PAUSE BUTTON */}
                   <button
                     type="button"
-                    onClick={() => setMediaPlaying((p) => !p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMediaPlaying((p) => !p);
+                    }}
                     className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer relative group/play shrink-0"
                     style={{
                       background:
@@ -2143,7 +2165,10 @@ export function ProfileRenderer({
                   {/* Skip Next >| */}
                   <button
                     type="button"
-                    onClick={handleNextTrack}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNextTrack();
+                    }}
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
                     title={
                       playlistTracks.length > 1
@@ -2162,6 +2187,7 @@ export function ProfileRenderer({
                       href={activeTrack.url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-110 active:scale-90 shrink-0"
                       title={
                         isRtl
@@ -2176,7 +2202,10 @@ export function ProfileRenderer({
                   {/* Favorite / Heart Button */}
                   <button
                     type="button"
-                    onClick={() => setMediaFavorite((f) => !f)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMediaFavorite((f) => !f);
+                    }}
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-90 shadow-md shrink-0 ${
                       mediaFavorite
                         ? 'text-red-400 bg-red-500/20 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
@@ -2195,7 +2224,10 @@ export function ProfileRenderer({
                   {playlistTracks.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => setPlaylistDrawerOpen((o) => !o)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPlaylistDrawerOpen((o) => !o);
+                      }}
                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-90 shadow-md shrink-0 ${
                         playlistDrawerOpen
                           ? 'text-amber-300 bg-amber-400/20 border border-amber-400/60 shadow-[0_0_10px_rgba(212,175,55,0.4)]'
@@ -2212,7 +2244,8 @@ export function ProfileRenderer({
                   {/* Manual Flip-Back Button */}
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setMediaFlipped(false);
                       setMediaHovered(false);
                     }}
