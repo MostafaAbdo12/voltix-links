@@ -3542,14 +3542,19 @@ export default function DashboardPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-zinc-200 mb-2">
-                      {isRtl ? 'عنوان الصفحة في محركات البحث (Meta Title)' : 'SEO Meta Title'}
+                    <label className="block text-sm font-bold text-zinc-200 mb-1">
+                      {isRtl ? 'عنوان الصفحة في المتصفح ومحركات البحث (Page Title)' : 'Page Title in Browser & SEO'}
                     </label>
+                    <p className="text-xs text-zinc-400 mb-2">
+                      {isRtl
+                        ? 'اتركه فارغاً للتوليد التلقائي الفاخر: الاسم المعروض (@اسم_المستخدم) | VoltiX'
+                        : 'Leave empty for automatic luxury format: Display Name (@username) | VoltiX'}
+                    </p>
                     <input
                       type="text"
                       value={seoTitle}
                       onChange={(e) => setSeoTitle(e.target.value)}
-                      placeholder={`${displayName} (@${username}) | VoltiX Official`}
+                      placeholder={`${displayName || username} (@${username}) | VoltiX`}
                       className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                     />
                   </div>

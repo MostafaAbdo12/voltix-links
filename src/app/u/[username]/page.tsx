@@ -44,7 +44,10 @@ export async function generateMetadata({
   }
 
   const pc = user.profileConfig;
-  const title = pc?.seoTitle || `${user.displayName} (@${user.username}) | VoltiX`;
+  const canonicalTitle = `${user.displayName || user.username} (@${user.username}) | VoltiX`;
+  const customSeo = pc?.seoTitle?.trim();
+  const isLegacyPlaceholder = customSeo && /VoltiX Official/i.test(customSeo);
+  const title = (customSeo && !isLegacyPlaceholder) ? customSeo : canonicalTitle;
   const description =
     pc?.seoDescription ||
     user.bio ||
