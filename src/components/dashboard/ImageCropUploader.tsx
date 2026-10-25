@@ -434,43 +434,43 @@ export function ImageCropUploader({
     if (!value) return null;
     if (ytId) {
       return (
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-red-600/20 text-red-400 border border-red-500/40 flex items-center gap-1">
-          <Play className="w-2.5 h-2.5 fill-current" />
+        <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-black tracking-wider bg-red-600/20 text-red-400 border border-red-500/40 flex items-center gap-1.5 whitespace-nowrap shadow-sm shrink-0">
+          <Play className="w-2.5 h-2.5 fill-current shrink-0" />
           <span>YOUTUBE VIDEO</span>
         </span>
       );
     }
     if (isVideo) {
       return (
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center gap-1">
-          <Film className="w-2.5 h-2.5" />
+        <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-black tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center gap-1.5 whitespace-nowrap shadow-sm shrink-0">
+          <Film className="w-2.5 h-2.5 shrink-0" />
           <span>CINEMATIC VIDEO</span>
         </span>
       );
     }
     return (
-      <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-amber-500/15 text-amber-300 border border-amber-400/30 flex items-center gap-1">
-        <ImageIcon className="w-2.5 h-2.5" />
+      <span className="px-2.5 py-1 rounded-full text-[10px] font-mono font-black tracking-wider bg-amber-500/15 text-amber-300 border border-amber-400/30 flex items-center gap-1.5 whitespace-nowrap shadow-sm shrink-0">
+        <ImageIcon className="w-2.5 h-2.5 shrink-0" />
         <span>HD IMAGE</span>
       </span>
     );
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-zinc-200">
+    <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3.5">
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 pb-1 border-b border-white/5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="text-xs font-bold text-zinc-200 whitespace-nowrap">
             {isCover
               ? isRtl
-                ? 'غلاف الملف الشخصي (صورة أو فيديو)'
-                : 'Profile Cover Banner (Image or Video)'
+                ? 'صورة الغلاف (Cover Image)'
+                : 'Profile Cover Banner'
               : label}
           </span>
-          {displayFormatBadge()}
+          <div className="shrink-0">{displayFormatBadge()}</div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <input
             ref={fileInputRef}
             type="file"
@@ -482,19 +482,19 @@ export function ImageCropUploader({
             type="button"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400/20 to-amber-500/10 hover:from-amber-400/30 hover:to-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold transition-all disabled:opacity-50 whitespace-nowrap shadow-sm hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
             {uploading ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
             ) : isCover ? (
               <>
-                <Upload className="w-3.5 h-3.5" />
-                <span>{isRtl ? 'رفع صورة أو فيديو' : 'Upload Image / Video'}</span>
+                <Upload className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{isRtl ? 'رفع صورة أو فيديو' : 'Upload Image / Video'}</span>
               </>
             ) : (
               <>
-                <Upload className="w-3.5 h-3.5" />
-                <span>{isRtl ? 'رفع صورة' : 'Upload Image'}</span>
+                <Upload className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{isRtl ? 'رفع صورة' : 'Upload Image'}</span>
               </>
             )}
           </button>
@@ -503,7 +503,7 @@ export function ImageCropUploader({
             <button
               type="button"
               onClick={() => onChange('', { zoom: 1, x: 0, y: 0 })}
-              className="p-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400"
+              className="w-8 h-8 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0"
               title={isRtl ? 'حذف الملف' : 'Remove media'}
             >
               <Trash2 className="w-3.5 h-3.5" />
