@@ -140,104 +140,82 @@ export function RoyalVerifiedEmblem({
 }) {
   const dimClass =
     size === 'lg'
-      ? 'w-11 h-11'
+      ? 'w-10 h-10'
       : size === 'sm'
-      ? 'w-8 h-8'
-      : 'w-9 h-9 sm:w-10 sm:h-10';
+      ? 'w-7 h-7'
+      : 'w-8 h-8 sm:w-9 sm:h-9';
 
   return (
     <div
       title={isRtl ? 'هوية ملكية معتمدة وموثقة رسميًا' : 'Official Royal Verified Identity'}
-      className={`relative ${dimClass} shrink-0 select-none group/badge transition-transform duration-300 hover:scale-115 cursor-pointer`}
+      className={`relative ${dimClass} shrink-0 select-none group/badge transition-transform duration-300 hover:scale-110 cursor-pointer`}
     >
-      {/* 1. Deep Multi-Layer Ambient Pulsing Aura Glow */}
+      {/* 1. Multi-Layer Golden Radiance Halo Glow */}
       <span
-        className="absolute -inset-1.5 rounded-full blur-md opacity-95 animate-royal-glow pointer-events-none"
+        className="absolute -inset-1 rounded-full blur-md opacity-90 animate-royal-glow pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle, rgba(255,215,0,0.95) 0%, rgba(212,175,55,0.7) 45%, rgba(243,229,171,0.2) 75%, transparent 100%)',
+            'radial-gradient(circle, rgba(250,204,21,0.95) 0%, rgba(212,175,55,0.7) 45%, rgba(212,175,55,0.15) 75%, transparent 100%)',
         }}
       />
 
-      {/* 2. Precision 12-Point Sovereign Imperial Starburst Medallion (Authentic Official Seal) */}
-      <div className="relative w-full h-full drop-shadow-[0_4px_14px_rgba(0,0,0,0.85)] flex items-center justify-center">
+      {/* 2. Precision Royal Minted Medallion with Crisp Obsidian Boundary */}
+      <div className="relative w-full h-full rounded-full flex items-center justify-center drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)]">
         <svg
-          viewBox="0 0 24 24"
-          className="w-full h-full drop-shadow-[0_2px_8px_rgba(212,175,55,0.8)]"
+          viewBox="0 0 32 32"
+          className="w-full h-full drop-shadow-[0_2px_6px_rgba(212,175,55,0.65)]"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="imperialGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFDF0" />
-              <stop offset="20%" stopColor="#FDE68A" />
-              <stop offset="45%" stopColor="#D4AF37" />
-              <stop offset="75%" stopColor="#AA771C" />
-              <stop offset="100%" stopColor="#78450A" />
+            {/* 3D Liquid Gold Metallic Gradient */}
+            <linearGradient id="royalCoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFEE8" />
+              <stop offset="25%" stopColor="#FDE047" />
+              <stop offset="55%" stopColor="#D4AF37" />
+              <stop offset="85%" stopColor="#A16207" />
+              <stop offset="100%" stopColor="#713F12" />
             </linearGradient>
-            <linearGradient id="innerCoreGold" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#0B0B14" />
-              <stop offset="100%" stopColor="#050508" />
-            </linearGradient>
-            <linearGradient id="crownGold" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFFFF" />
-              <stop offset="30%" stopColor="#FFF9D2" />
-              <stop offset="70%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D4AF37" />
-            </linearGradient>
+
+            {/* Inner Recessed Bevel Gradient */}
+            <radialGradient id="royalCoreGrad" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#FFF9D2" />
+              <stop offset="35%" stopColor="#FACC15" />
+              <stop offset="70%" stopColor="#CA8A04" />
+              <stop offset="100%" stopColor="#854D0E" />
+            </radialGradient>
           </defs>
 
-          {/* 12-Point Scalloped Starburst Geometry (Official Verification Seal) */}
+          {/* Outer Protective Obsidian Ring (Separates sharply from avatar background) */}
+          <circle cx="16" cy="16" r="15" fill="url(#royalCoinGrad)" stroke="#06070B" strokeWidth="2" />
+
+          {/* Inner Minted Bevel Ring */}
+          <circle cx="16" cy="16" r="12" stroke="rgba(255,255,255,0.45)" strokeWidth="0.8" />
+          <circle cx="16" cy="16" r="11" fill="url(#royalCoreGrad)" />
+
+          {/* Bold Imperial Crown in Obsidian & Pure Gold Highlight */}
           <path
-            d="M12 1.5l2.12 1.63 2.67-.32 1.48 2.24 2.64.67.66 2.64 2.24 1.48-.32 2.67 1.63 2.12-1.63 2.12.32 2.67-2.24 1.48-.66 2.64-2.64.67-1.48 2.24-2.67-.32L12 22.5l-2.12-1.63-2.67.32-1.48-2.24-2.64-.67-.66-2.64-2.24-1.48.32-2.67L1.5 12l1.63-2.12-.32-2.67 2.24-1.48.66-2.64 2.64-.67 1.48-2.24 2.67.32L12 1.5z"
-            fill="url(#imperialGoldGradient)"
-            stroke="#FFFFFF"
-            strokeWidth="0.65"
+            d="M9.5 20L8 12.5L12.5 15L16 9.5L19.5 15L24 12.5L22.5 20H9.5Z"
+            fill="#06070B"
+            stroke="#FFFEE8"
+            strokeWidth="0.5"
+            strokeLinejoin="round"
           />
+          {/* Crown Base Band with micro-gems */}
+          <rect x="9.5" y="20.3" width="13" height="1.6" rx="0.5" fill="#06070B" />
+          <circle cx="11.5" cy="21.1" r="0.45" fill="#FDE047" />
+          <circle cx="16" cy="21.1" r="0.55" fill="#38BDF8" />
+          <circle cx="20.5" cy="21.1" r="0.45" fill="#FDE047" />
 
-          {/* Inner Recessed Obsidian Gold Rim */}
-          <circle cx="12" cy="12" r="6.8" fill="url(#innerCoreGold)" stroke="#D4AF37" strokeWidth="0.8" />
-
-          {/* Inner Golden Ring Inlay */}
-          <circle cx="12" cy="12" r="5.6" stroke="rgba(255,249,210,0.4)" strokeWidth="0.5" strokeDasharray="1.5 1" />
+          {/* 3 Pinnacle Jewels */}
+          <circle cx="8" cy="12.5" r="0.9" fill="#FFFEE8" stroke="#06070B" strokeWidth="0.4" />
+          <circle cx="16" cy="9.5" r="1.1" fill="#FFFEE8" stroke="#06070B" strokeWidth="0.4" />
+          <circle cx="24" cy="12.5" r="0.9" fill="#FFFEE8" stroke="#06070B" strokeWidth="0.4" />
         </svg>
 
-        {/* 3. Engraved Royal Crown with Verified Tick / Jewels */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <svg
-            viewBox="0 0 24 24"
-            className="w-[52%] h-[52%] drop-shadow-[0_1px_3px_rgba(255,215,0,0.85)]"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Imperial Crown Silhouette */}
-            <path
-              d="M5 16L3.5 8L8.5 11.5L12 6L15.5 11.5L20.5 8L19 16H5Z"
-              fill="url(#crownGold)"
-              stroke="#FFFDF0"
-              strokeWidth="0.75"
-              strokeLinejoin="round"
-            />
-            {/* Crown Base Band with micro-gems */}
-            <rect x="5" y="16.5" width="14" height="2" rx="0.5" fill="#FFF9D2" />
-            <circle cx="7.5" cy="17.5" r="0.6" fill="#10B981" />
-            <circle cx="12" cy="17.5" r="0.7" fill="#3B82F6" />
-            <circle cx="16.5" cy="17.5" r="0.6" fill="#10B981" />
-            {/* Top Crown Pinnacle Jewels */}
-            <circle cx="3.5" cy="8" r="0.9" fill="#FFFFFF" />
-            <circle cx="12" cy="6" r="1.1" fill="#FFFFFF" />
-            <circle cx="20.5" cy="8" r="0.9" fill="#FFFFFF" />
-          </svg>
-        </div>
-
-        {/* 4. Active Continuous Light Sheen (Shimmer Beam Sweep) */}
+        {/* 3. Active Continuous Diagonal Light Shimmer Sweep */}
         <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
-          <div className="w-[45%] h-full bg-gradient-to-r from-transparent via-white/85 to-transparent animate-badge-shimmer" />
-        </div>
-
-        {/* 5. Micro-Diamond Star Glint (✨) at Top Corner */}
-        <div className="absolute -top-1 -right-0.5 sm:-top-1.5 sm:-right-1 pointer-events-none animate-star-twinkle">
-          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFFDF0] fill-[#FFFDF0] drop-shadow-[0_0_8px_rgba(255,255,255,1)]" />
+          <div className="w-[45%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent animate-badge-shimmer" />
         </div>
       </div>
     </div>
@@ -982,14 +960,17 @@ export function ProfileRenderer({
           />
         </div>
 
-        {/* Inner Card Container */}
+        {/* Inner Card Container: 100% Opaque Obsidian Luxury Backplate to completely block the rotating border beam from showing through inside */}
         <div
           className="relative rounded-[30px] overflow-hidden transition-all z-10"
           style={{
-            backgroundColor: theme.cardBg,
-            backdropFilter: `blur(${theme.glassBlur}px) saturate(180%)`,
-            WebkitBackdropFilter: `blur(${theme.glassBlur}px) saturate(180%)`,
-            boxShadow: `inset 0 1px 1.5px rgba(255,255,255,0.28)`,
+            backgroundColor: '#07080E',
+            backgroundImage: `
+              radial-gradient(circle at 50% 0%, ${theme.accentColor}18 0%, transparent 60%),
+              radial-gradient(circle at 10% 100%, ${theme.glowColor}10 0%, transparent 50%),
+              linear-gradient(180deg, #0D0E17 0%, #06070B 100%)
+            `,
+            boxShadow: `inset 0 1px 1.5px rgba(255,255,255,0.18), inset 0 0 40px rgba(0,0,0,0.9)`,
           }}
         >
           {/* Top Panoramic Royal Crown Banner (Always rendered for maximum luxury!) */}
@@ -1006,7 +987,7 @@ export function ProfileRenderer({
           }}
         >
           <div className="absolute inset-0 cyber-grid-floor opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07080E] via-black/30 to-transparent" />
 
           {/* Top Corner Royal Edition Badge */}
           <div
@@ -1018,14 +999,25 @@ export function ProfileRenderer({
           </div>
         </div>
 
-        {/* Profile Identity Content */}
+        {/* Profile Identity Content with dedicated luxury obsidian gradient background */}
         <div
-          className={`relative z-10 px-4 pb-5 ${
+          className={`relative z-10 px-4 pb-6 ${
             compactPhone ? '-mt-11' : '-mt-14 sm:-mt-16'
           } flex flex-col ${
             isMinimal || isBusiness ? 'items-start text-start' : 'items-center text-center'
           }`}
+          style={{
+            background: `radial-gradient(ellipse at 50% 0%, ${theme.accentColor}14 0%, transparent 75%), linear-gradient(180deg, rgba(13, 14, 23, 0.98) 0%, rgba(6, 7, 11, 1) 100%)`,
+          }}
         >
+          {/* Subtle Ambient Radial Glow centered behind the Avatar */}
+          <div
+            className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-80 h-36 rounded-full blur-3xl opacity-20"
+            style={{
+              background: `radial-gradient(circle, ${theme.accentColor} 0%, ${theme.glowColor} 50%, transparent 80%)`,
+            }}
+          />
+
           {/* 3D Orbital Royal Medallion Avatar */}
           <div className="relative group mb-3.5">
             {effects.profileRing && !reduceMotion && (
@@ -1082,9 +1074,9 @@ export function ProfileRenderer({
               )}
             </div>
 
-            {/* Ultra-Luxury Sovereign Royal Verified Emblem (Outside the frame with multi-layer radiance & glint) */}
+            {/* Ultra-Luxury Sovereign Royal Verified Emblem (Crisp, Perfectly Positioned on Medallion Edge) */}
             {profile.isVerified && (
-              <div className="absolute -bottom-2.5 -right-2.5 sm:-bottom-3 sm:-right-3 z-20">
+              <div className="absolute -bottom-1 -right-1 sm:-bottom-1.5 sm:-right-1.5 z-20">
                 <RoyalVerifiedEmblem size={compactPhone ? 'sm' : 'md'} isRtl={isRtl} />
               </div>
             )}
