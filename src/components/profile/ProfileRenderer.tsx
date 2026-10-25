@@ -43,6 +43,21 @@ function extractSpotifyTrackId(url?: string): string | null {
   return match ? match[1] : null;
 }
 
+function isCoverVideo(url?: string | null): boolean {
+  if (!url) return false;
+  const clean = url.trim().toLowerCase();
+  if (clean.startsWith('data:video/')) return true;
+  if (/\.(mp4|webm|mov|mkv|ogg|m4v|avi)(\?.*)?$/i.test(clean)) return true;
+  if (/youtube\.com\/watch|youtu\.be\/|youtube\.com\/embed/i.test(clean)) return true;
+  if (/vimeo\.com/i.test(clean)) return true;
+  return false;
+}
+
+function isYouTubeCover(url?: string | null): boolean {
+  if (!url) return false;
+  return /youtube\.com|youtu\.be/i.test(url);
+}
+
 function isDirectAudioFile(url?: string): boolean {
   if (!url) return false;
   return /\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i.test(url) || url.startsWith('blob:') || url.startsWith('data:audio');
@@ -973,26 +988,66 @@ export function ProfileRenderer({
             boxShadow: `inset 0 1px 1.5px rgba(255,255,255,0.18), inset 0 0 40px rgba(0,0,0,0.9)`,
           }}
         >
-          {/* Top Panoramic Royal Crown Banner (Always rendered for maximum luxury!) */}
+          {/* Top Panoramic Royal Crown Banner (Supports Images & Looping Cinematic Videos in all formats!) */}
         <div
           className={`relative w-full overflow-hidden border-b border-white/10 ${
             compactPhone ? 'h-24' : 'h-32 sm:h-40'
           }`}
-          style={{
-            background: profile.coverUrl
-              ? `url(${profile.coverUrl}) center/cover no-repeat`
-              : `radial-gradient(circle at 80% 20%, ${theme.accentColor}55 0%, transparent 55%),
-                 radial-gradient(circle at 20% 80%, ${theme.glowColor}45 0%, transparent 60%),
-                 linear-gradient(135deg, ${theme.gradientColors[0]} 0%, ${theme.gradientColors[1]} 50%, ${theme.gradientColors[2]} 100%)`,
-          }}
         >
-          <div className="absolute inset-0 cyber-grid-floor opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07080E] via-black/30 to-transparent" />
+          {profile.coverUrl ? (
+            isCoverVideo(profile.coverUrl) ? (
+              isYouTubeCover(profile.coverUrl) ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(profile.coverUrl)}?autoplay=1&mute=1&loop=1&playlist=${extractYouTubeId(profile.coverUrl)}&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1`}
+                  className="w-full h-full object-cover pointer-events-none scale-125"
+                  allow="autoplay; encrypted-media"
+                  title="Cover Video"
+                />
+              ) : (
+                <video
+                  src={profile.coverUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                  style={{
+                    transform: profile.coverPosition
+                      ? `scale(${profile.coverPosition.zoom || 1}) translate(${profile.coverPosition.x || 0}px, ${profile.coverPosition.y || 0}px)`
+                      : undefined,
+                  }}
+                />
+              )
+            ) : (
+              <img
+                src={profile.coverUrl}
+                alt={profile.displayName}
+                className="w-full h-full object-cover"
+                style={{
+                  transform: profile.coverPosition
+                    ? `scale(${profile.coverPosition.zoom || 1}) translate(${profile.coverPosition.x || 0}px, ${profile.coverPosition.y || 0}px)`
+                    : undefined,
+                }}
+              />
+            )
+          ) : (
+            <div
+              className="w-full h-full"
+              style={{
+                background: `radial-gradient(circle at 80% 20%, ${theme.accentColor}55 0%, transparent 55%),
+                   radial-gradient(circle at 20% 80%, ${theme.glowColor}45 0%, transparent 60%),
+                   linear-gradient(135deg, ${theme.gradientColors[0]} 0%, ${theme.gradientColors[1]} 50%, ${theme.gradientColors[2]} 100%)`,
+              }}
+            />
+          )}
+
+          <div className="absolute inset-0 cyber-grid-floor opacity-40 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07080E] via-black/30 to-transparent pointer-events-none" />
 
           {/* Top Corner Royal Edition Badge */}
           <div
             dir="ltr"
-            className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-md border border-amber-400/35 text-[9px] font-black tracking-[0.18em] uppercase text-amber-200 flex items-center gap-1.5 shadow-lg"
+            className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-md border border-amber-400/35 text-[9px] font-black tracking-[0.18em] uppercase text-amber-200 flex items-center gap-1.5 shadow-lg z-10"
           >
             <Crown className="w-3 h-3 text-amber-400" />
             <span style={{ fontFamily: `"${theme.fontFamilyEn || 'Cinzel'}", sans-serif` }}>VOLTIX VIP</span>

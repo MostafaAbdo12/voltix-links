@@ -10,11 +10,34 @@ import {
   Image as ImageIcon,
   RotateCcw,
   CheckCircle2,
+  Video,
+  Film,
+  Play,
+  Loader2,
 } from 'lucide-react';
 import { extractPaletteFromImage } from '@/lib/color-extractor';
 
 export const ALL_IMAGE_FORMATS_ACCEPT =
   'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg,.avif,.ico,.bmp,.tiff,.tif,.heic,.heif,.apng,.jfif';
+
+export const ALL_MEDIA_FORMATS_ACCEPT =
+  'image/*,video/*,.png,.jpg,.jpeg,.webp,.gif,.svg,.avif,.ico,.bmp,.tiff,.tif,.heic,.heif,.apng,.jfif,.mp4,.webm,.mov,.mkv,.ogg,.m4v,.avi';
+
+export function extractYouTubeId(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|music\.youtube\.com\/watch\?v=))([\w-]{11})/i);
+  return match ? match[1] : null;
+}
+
+export function isVideoMedia(url?: string): boolean {
+  if (!url) return false;
+  const clean = url.trim().toLowerCase();
+  if (clean.startsWith('data:video/')) return true;
+  if (/\.(mp4|webm|mov|mkv|ogg|m4v|avi)(\?.*)?$/i.test(clean)) return true;
+  if (/youtube\.com\/watch|youtu\.be\/|youtube\.com\/embed/i.test(clean)) return true;
+  if (/vimeo\.com/i.test(clean)) return true;
+  return false;
+}
 
 const IMAGE_EXTENSIONS_REGEX =
   /\.(png|jpe?g|webp|gif|svg|avif|ico|bmp|tiff?|heic|heif|apng|jfif)$/i;
@@ -323,56 +346,165 @@ export function ImageCropUploader({
 }: ImageCropUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [extracting, setExtracting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const isCover = aspect === 'cover';
+  const isVideo = isVideoMedia(value);
+  const ytId = extractYouTubeId(value);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    processUniversalImageFile(
-      file,
-      aspect === 'cover' ? 900 : 500,
-      (dataUrl) => {
-        onChange(dataUrl, { zoom: 1, x: 0, y: 0 });
-      },
-      (errMsg) => alert(errMsg)
-    );
+    const isVideoFile =
+      file.type.startsWith('video/') ||
+      /\.(mp4|webm|mov|mkv|ogg|m4v|avi)$/i.test(file.name);
+
+    if (isVideoFile && !isCover) {
+      alert(isRtl ? 'الفيديو متاح لغلاف الملف الشخصي فقط' : 'Videos are supported for cover banner only');
+      e.target.value = '';
+      return;
+    }
+
+    setUploading(true);
+
+    // Try server-side upload API first for fast, lightweight streaming files
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: fd,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          onChange(data.url, { zoom: 1, x: 0, y: 0 });
+          setUploading(false);
+          e.target.value = '';
+          return;
+        }
+      }
+    } catch {
+      // Fallback to in-browser FileReader if upload API is unreachable
+    }
+
+    if (isVideoFile) {
+      // Fallback: Read video file via browser FileReader
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = String(ev.target?.result || '');
+        if (dataUrl) {
+          onChange(dataUrl, { zoom: 1, x: 0, y: 0 });
+        }
+        setUploading(false);
+      };
+      reader.onerror = () => {
+        alert(isRtl ? 'تعذر قراءة ملف الفيديو' : 'Failed to read video file');
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Universal Image processor
+      processUniversalImageFile(
+        file,
+        isCover ? 1200 : 500,
+        (dataUrl) => {
+          onChange(dataUrl, { zoom: 1, x: 0, y: 0 });
+          setUploading(false);
+        },
+        (errMsg) => {
+          alert(errMsg);
+          setUploading(false);
+        }
+      );
+    }
+
     e.target.value = '';
   };
 
   const handleSmartExtract = async () => {
-    if (!value || !onExtractColors) return;
+    if (!value || !onExtractColors || isVideo) return;
     setExtracting(true);
     const palette = await extractPaletteFromImage(value);
     onExtractColors(palette);
     setExtracting(false);
   };
 
+  const displayFormatBadge = () => {
+    if (!value) return null;
+    if (ytId) {
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-red-600/20 text-red-400 border border-red-500/40 flex items-center gap-1">
+          <Play className="w-2.5 h-2.5 fill-current" />
+          <span>YOUTUBE VIDEO</span>
+        </span>
+      );
+    }
+    if (isVideo) {
+      return (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 flex items-center gap-1">
+          <Film className="w-2.5 h-2.5" />
+          <span>CINEMATIC VIDEO</span>
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-amber-500/15 text-amber-300 border border-amber-400/30 flex items-center gap-1">
+        <ImageIcon className="w-2.5 h-2.5" />
+        <span>HD IMAGE</span>
+      </span>
+    );
+  };
+
   return (
     <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-zinc-200">{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-zinc-200">
+            {isCover
+              ? isRtl
+                ? 'غلاف الملف الشخصي (صورة أو فيديو)'
+                : 'Profile Cover Banner (Image or Video)'
+              : label}
+          </span>
+          {displayFormatBadge()}
+        </div>
+
         <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
             type="file"
-            accept={ALL_IMAGE_FORMATS_ACCEPT}
+            accept={isCover ? ALL_MEDIA_FORMATS_ACCEPT : ALL_IMAGE_FORMATS_ACCEPT}
             onChange={handleFileSelect}
             className="hidden"
           />
           <button
             type="button"
+            disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold transition-all disabled:opacity-50"
           >
-            <Upload className="w-3.5 h-3.5" />
-            <span>{isRtl ? 'رفع صورة' : 'Upload Image'}</span>
+            {uploading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : isCover ? (
+              <>
+                <Upload className="w-3.5 h-3.5" />
+                <span>{isRtl ? 'رفع صورة أو فيديو' : 'Upload Image / Video'}</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3.5 h-3.5" />
+                <span>{isRtl ? 'رفع صورة' : 'Upload Image'}</span>
+              </>
+            )}
           </button>
+
           {value && (
             <button
               type="button"
               onClick={() => onChange('', { zoom: 1, x: 0, y: 0 })}
               className="p-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400"
-              title={isRtl ? 'حذف الصورة' : 'Remove image'}
+              title={isRtl ? 'حذف الملف' : 'Remove media'}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -380,33 +512,72 @@ export function ImageCropUploader({
         </div>
       </div>
 
-      {/* URL Input Alternative */}
+      {/* URL Input Alternative (Direct Image or Video / YouTube URL) */}
       <input
         type="text"
         value={value.startsWith('data:') ? '' : value}
         onChange={(e) => onChange(e.target.value, position)}
-        placeholder={isRtl ? 'أو الصق رابط صورة مباشر https://...' : 'Or paste direct image URL https://...'}
-        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-white placeholder:text-zinc-500"
+        placeholder={
+          isCover
+            ? isRtl
+              ? 'أو الصق رابط صورة أو فيديو مباشر (MP4, WebM, YouTube, GIF, Unsplash...)'
+              : 'Or paste direct Image / Video URL (MP4, WebM, YouTube, GIF...)'
+            : isRtl
+            ? 'أو الصق رابط صورة مباشر https://...'
+            : 'Or paste direct image URL https://...'
+        }
+        className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-xs text-white placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none"
         dir="ltr"
       />
 
-      {/* Interactive Crop / Zoom / Position Controls when image is present */}
+      {/* Interactive Crop / Zoom / Position Controls when media is present */}
       {value && (
         <div className="pt-2 space-y-3 border-t border-white/10">
           <div className="flex items-center gap-4">
             <div
-              className={`overflow-hidden border border-amber-500/40 bg-black shrink-0 ${
+              className={`overflow-hidden border border-amber-500/40 bg-black shrink-0 relative ${
                 aspect === 'circle' ? 'w-16 h-16 rounded-full' : 'w-28 h-16 rounded-xl'
               }`}
             >
-              <img
-                src={value}
-                alt="Preview"
-                className="w-full h-full object-cover"
-                style={{
-                  transform: `scale(${position.zoom || 1}) translate(${position.x || 0}px, ${position.y || 0}px)`,
-                }}
-              />
+              {ytId ? (
+                <div className="relative w-full h-full">
+                  <img
+                    src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+                    alt="YouTube Video Cover"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-red-500 fill-red-500" />
+                  </div>
+                </div>
+              ) : isVideo ? (
+                <div className="relative w-full h-full">
+                  <video
+                    src={value}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                    style={{
+                      transform: `scale(${position.zoom || 1}) translate(${position.x || 0}px, ${position.y || 0}px)`,
+                    }}
+                  />
+                  <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-black text-amber-300 flex items-center gap-1">
+                    <Film className="w-2.5 h-2.5 text-amber-400" />
+                    <span>VID</span>
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={value}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  style={{
+                    transform: `scale(${position.zoom || 1}) translate(${position.x || 0}px, ${position.y || 0}px)`,
+                  }}
+                />
+              )}
             </div>
 
             <div className="flex-1 space-y-2">
@@ -459,7 +630,7 @@ export function ImageCropUploader({
             </div>
           </div>
 
-          {onExtractColors && (
+          {onExtractColors && !isVideo && (
             <button
               type="button"
               onClick={handleSmartExtract}
