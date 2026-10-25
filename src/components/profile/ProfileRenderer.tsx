@@ -303,7 +303,7 @@ export function ProfileRenderer({
   const profileShareUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/@${profile.username}`
-      : `https://voltix.io/@${profile.username}`;
+      : `/@${profile.username}`;
 
   const handleCopyUrl = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {

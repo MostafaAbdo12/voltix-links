@@ -860,10 +860,29 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
+  const [mountedHost, setMountedHost] = useState('');
+  const [mountedOrigin, setMountedOrigin] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMountedHost(window.location.host);
+      setMountedOrigin(window.location.origin);
+    }
+  }, []);
+
   const publicUrl =
-    typeof window !== 'undefined'
+    mountedOrigin
+      ? `${mountedOrigin}/@${username}`
+      : typeof window !== 'undefined'
       ? `${window.location.origin}/@${username}`
-      : `https://auralinks.io/@${username}`;
+      : `/@${username}`;
+
+  const displayUrl =
+    mountedHost
+      ? `${mountedHost}/@${username}`
+      : typeof window !== 'undefined'
+      ? `${window.location.host}/@${username}`
+      : `/@${username}`;
 
   if (loading) {
     return (
@@ -1341,10 +1360,18 @@ export default function DashboardPage() {
         <div className="p-3 border-t border-white/10 space-y-2 bg-[#040408]/80">
           {/* Public Profile Copy URL Pill */}
           <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2">
-            <div dir="ltr" className="min-w-0 flex items-center gap-1.5 text-zinc-400 text-xs font-mono truncate">
-              <Globe className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="truncate">voltix.io/@{username}</span>
-            </div>
+            <a
+              href={publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              dir="ltr"
+              className="min-w-0 flex items-center gap-1.5 text-zinc-300 hover:text-amber-300 text-xs font-mono truncate transition-colors group"
+              title={isRtl ? 'فتح الرابط في نافذة جديدة' : 'Open in new tab'}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="truncate">{displayUrl}</span>
+              <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100 shrink-0" />
+            </a>
             <button
               type="button"
               onClick={() => {
@@ -1566,15 +1593,20 @@ export default function DashboardPage() {
 
                       {/* Public URL Pill with 1-Click Copy & Visit */}
                       <div className="flex items-center gap-2 flex-wrap pt-0.5">
-                        <div
+                        <a
+                          href={publicUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           dir="ltr"
-                          className="h-8 px-3 rounded-lg bg-black/60 border border-white/10 text-xs font-mono text-zinc-300 flex items-center gap-1.5"
+                          className="h-8 px-3 rounded-lg bg-black/60 hover:bg-black/90 border border-white/10 hover:border-amber-400/50 text-xs font-mono text-zinc-300 hover:text-amber-300 flex items-center gap-1.5 transition-all group"
+                          title={isRtl ? 'زيارة الرابط في نافذة جديدة' : 'Open in new tab'}
                         >
-                          <Globe className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <Globe className="w-3.5 h-3.5 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
                           <span className="truncate max-w-[200px] sm:max-w-none">
-                            voltix.io/@{username}
+                            {displayUrl}
                           </span>
-                        </div>
+                          <ExternalLink className="w-3 h-3 opacity-40 group-hover:opacity-100 shrink-0" />
+                        </a>
 
                         <button
                           type="button"

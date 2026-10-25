@@ -54,6 +54,13 @@ function RegisterFormContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mountedHost, setMountedHost] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMountedHost(window.location.host);
+    }
+  }, []);
 
   useEffect(() => {
     const claimed = searchParams.get('username');
@@ -285,7 +292,7 @@ function RegisterFormContent() {
                     <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
                   </div>
                   <div className="text-xs font-mono text-amber-300/90" dir="ltr">
-                    voltix.io/@{username || 'yourname'}
+                    {mountedHost ? `${mountedHost}/@${username || 'yourname'}` : `/@${username || 'yourname'}`}
                   </div>
                 </div>
               </div>

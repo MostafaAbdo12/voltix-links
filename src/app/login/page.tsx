@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -56,6 +56,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [oauthNotice, setOauthNotice] = useState('');
+  const [mountedHost, setMountedHost] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMountedHost(window.location.host);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,7 +322,7 @@ export default function LoginPage() {
                   CREATOR VAULT
                 </div>
                 <div className="text-sm font-black text-white font-mono" dir="ltr">
-                  voltix.io/@admin
+                  {mountedHost ? `${mountedHost}/@admin` : '/@admin'}
                 </div>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 border border-white/10 text-[10px] font-mono text-emerald-300">

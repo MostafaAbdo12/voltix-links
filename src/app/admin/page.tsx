@@ -269,6 +269,13 @@ export default function AdminSiteControlCenterPage() {
     }
   };
 
+  const [mountedOrigin, setMountedOrigin] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMountedOrigin(window.location.origin);
+    }
+  }, []);
+
   useEffect(() => {
     fetchAllControlData();
   }, []);
@@ -1932,7 +1939,7 @@ export default function AdminSiteControlCenterPage() {
                         </div>
                         <div className="px-3 py-0.5 rounded-full bg-white/[0.05] border border-white/10 text-[10px] font-mono text-amber-300 flex items-center gap-1.5">
                           <Lock className="w-2.5 h-2.5 text-emerald-400" />
-                          <span>https://voltix.io</span>
+                          <span>{mountedOrigin || 'https://voltix'}</span>
                         </div>
                         <span className="text-[9px] font-mono text-zinc-500">LIVE</span>
                       </div>
@@ -2060,7 +2067,7 @@ export default function AdminSiteControlCenterPage() {
                           />
                         </div>
                         <div className="text-[11px] text-zinc-300 font-mono">
-                          https://voltix.io
+                          {mountedOrigin || 'https://voltix'}
                         </div>
                       </div>
                       <div className="text-sm font-bold text-[#8AB4F8] hover:underline cursor-pointer">

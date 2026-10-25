@@ -57,6 +57,15 @@ export default function LandingPage() {
   const [inspectedThemeModal, setInspectedThemeModal] = useState<ThemeConfig | null>(null);
   const [claimUsername, setClaimUsername] = useState<string>('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [mountedHost, setMountedHost] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setMountedHost(window.location.host);
+    }
+  }, []);
+
+  const liveDomainPrefix = mountedHost ? `${mountedHost}/@` : (siteConfig.claimDomainPrefix || '/@');
 
   useEffect(() => {
     fetch('/api/site-config', { cache: 'no-store' })
@@ -364,7 +373,7 @@ export default function LandingPage() {
               >
                 <Sparkles className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
                 <span className="text-zinc-400 font-bold text-sm select-none">
-                  {siteConfig.claimDomainPrefix || 'voltix.io/@'}
+                  {liveDomainPrefix}
                 </span>
                 <input
                   type="text"
@@ -1038,7 +1047,7 @@ export default function LandingPage() {
 
               <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-extrabold">
                 <span dir="ltr" className="text-zinc-300 font-mono">
-                  {siteConfig.claimDomainPrefix || 'voltix.io/@'}voltix
+                  {liveDomainPrefix}voltix
                 </span>
                 <span className="text-amber-300">
                   {isRtl ? 'فتح الهوية الحية ←' : 'Open Live Hub →'}
@@ -1068,7 +1077,7 @@ export default function LandingPage() {
 
               <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-extrabold">
                 <span dir="ltr" className="text-zinc-300 font-mono">
-                  {siteConfig.claimDomainPrefix || 'voltix.io/@'}yourname
+                  {liveDomainPrefix}yourname
                 </span>
                 <span className="text-rose-300">
                   {isRtl ? 'تسجيل حساب جديد ←' : 'Claim Now →'}
