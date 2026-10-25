@@ -1,0 +1,383 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=Almarai:wght@300;400;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;500;600;700;800&family=Changa:wght@300;400;500;600;700;800&family=Cinzel:wght@400;500;600;700;800&family=El+Messiri:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Lalezar&family=Manrope:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap');
+
+:root {
+  --bg-obsidian: #040407;
+  --accent-gold: #D4AF37;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: #040407;
+  color: #f8fafc;
+  font-family: 'Alexandria', 'IBM Plex Sans Arabic', 'Sora', sans-serif;
+  scroll-behavior: smooth;
+  overflow-x: clip;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+}
+
+/* ============================================================================
+   PRECISION BILINGUAL TYPOGRAPHY & OPTICAL RHYTHM SYSTEM (ARABIC RTL & EN LTR)
+   ============================================================================ */
+
+/* Arabic RTL Optical Metrics:
+   - Never stretch connected Arabic script with letter-spacing
+   - Provide generous vertical line-height for Arabic ascenders, descenders & hamzas */
+[dir='rtl'] {
+  font-family: 'Alexandria', 'IBM Plex Sans Arabic', 'Tajawal', 'Cairo', sans-serif;
+  letter-spacing: 0em !important;
+  word-spacing: 0.025em;
+  line-height: 1.72;
+}
+
+[dir='rtl'] *:not([dir='ltr']) {
+  letter-spacing: 0em !important;
+}
+
+[dir='rtl'] h1 {
+  line-height: 1.38;
+  word-spacing: 0.02em;
+}
+
+[dir='rtl'] h2 {
+  line-height: 1.42;
+  word-spacing: 0.02em;
+}
+
+[dir='rtl'] h3,
+[dir='rtl'] h4 {
+  line-height: 1.48;
+}
+
+[dir='rtl'] p {
+  line-height: 1.82;
+}
+
+[dir='rtl'] label,
+[dir='rtl'] button,
+[dir='rtl'] input,
+[dir='rtl'] select,
+[dir='rtl'] textarea {
+  line-height: 1.55;
+}
+
+/* English LTR Optical Metrics */
+[dir='ltr'] {
+  font-family: 'Sora', 'Outfit', 'Manrope', 'Inter', sans-serif;
+  line-height: 1.65;
+}
+
+[dir='ltr'] h1 {
+  line-height: 1.16;
+  letter-spacing: -0.022em;
+}
+
+[dir='ltr'] h2 {
+  line-height: 1.22;
+  letter-spacing: -0.018em;
+}
+
+[dir='ltr'] h3,
+[dir='ltr'] h4 {
+  line-height: 1.34;
+  letter-spacing: -0.01em;
+}
+
+[dir='ltr'] p {
+  line-height: 1.72;
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050509;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d4af37 0%, #7928ca 100%);
+  border-radius: 9999px;
+}
+
+/* Hide scrollbar for phone screen viewports & horizontal pill bars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Spatial VisionOS Liquid Glass */
+.liquid-glass {
+  background: linear-gradient(
+    145deg,
+    rgba(24, 24, 36, 0.72) 0%,
+    rgba(10, 10, 18, 0.84) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 24px 60px -12px rgba(0, 0, 0, 0.75),
+    inset 0 1px 1px rgba(255, 255, 255, 0.24),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.spatial-dock {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(15, 15, 25, 0.65) 100%
+  );
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.65),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.32);
+}
+
+.vip-black-card {
+  background:
+    radial-gradient(circle at 85% 15%, rgba(212, 175, 55, 0.25) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(121, 40, 202, 0.22) 0%, transparent 50%),
+    linear-gradient(135deg, #14141d 0%, #07070c 55%, #12101b 100%);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  box-shadow:
+    0 30px 80px -15px rgba(0, 0, 0, 0.9),
+    0 0 40px rgba(212, 175, 55, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+}
+
+/* Prevent vertical clipping on Arabic ascenders/descenders in gradient text */
+.gold-gradient-text {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fef3c7 25%,
+    #d4af37 60%,
+    #f59e0b 85%,
+    #fffbeb 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  padding-block: 0.08em;
+  line-height: 1.35;
+}
+
+.aurora-gradient-text {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fde68a 28%,
+    #d4af37 55%,
+    #38bdf8 82%,
+    #c084fc 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  padding-block: 0.1em;
+  line-height: 1.38;
+}
+
+.cyber-grid-floor {
+  background-size: 48px 48px;
+  background-image:
+    linear-gradient(to right, rgba(212, 175, 55, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(212, 175, 55, 0.07) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 35%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 35%, #000 30%, transparent 100%);
+}
+
+/* Luxury 24K Gold Horizontal Scrollbar for Theme Showroom Deck */
+.custom-horizontal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.65) rgba(255, 255, 255, 0.05);
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar {
+  height: 7px;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #fde08d, #d4af37, #aa771c);
+  border-radius: 999px;
+}
+
+.custom-horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #fff3c4, #fbbf24, #d4af37);
+}
+
+/* ======================================================================
+   VOLTIX CARD MOVING LIGHT BORDER (BORDER BEAM)
+   Runs around the border perimeter only, leaving the card inside 100% untouched.
+====================================================================== */
+@keyframes voltixBeamOrbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.voltix-card-beam {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  overflow: hidden;
+  z-index: 25;
+}
+
+.voltix-card-beam::before {
+  content: '';
+  position: absolute;
+  inset: -200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 65deg,
+    var(--beam-c1, #F59E0B) 85deg,
+    var(--beam-c2, #FDE68A) 95deg,
+    #FFFFFF 100deg,
+    var(--beam-c2, #FDE68A) 105deg,
+    transparent 118deg,
+    transparent 360deg
+  );
+  animation: voltixBeamOrbit var(--beam-speed, 4s) linear infinite;
+  will-change: transform;
+}
+
+.voltix-card-beam-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 3px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  overflow: hidden;
+  filter: blur(5px);
+  opacity: 0.85;
+  z-index: 24;
+}
+
+.voltix-card-beam-glow::before {
+  content: '';
+  position: absolute;
+  inset: -200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 60deg,
+    var(--beam-c1, #F59E0B) 85deg,
+    var(--beam-c2, #FDE68A) 95deg,
+    #FFFFFF 100deg,
+    var(--beam-c2, #FDE68A) 105deg,
+    transparent 125deg,
+    transparent 360deg
+  );
+  animation: voltixBeamOrbit var(--beam-speed, 4s) linear infinite;
+  will-change: transform;
+}
+
+/* ======================================================================
+   3D CARD FLIP & STUDIO VINYL ENGINE
+====================================================================== */
+.preserve-3d {
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+  -webkit-perspective: 1200px;
+}
+
+@keyframes vinylSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-vinyl-spin {
+  animation: vinylSpin 4s linear infinite;
+}
+
+.vinyl-hologram {
+  background: conic-gradient(
+    from 0deg,
+    #111118 0deg,
+    rgba(255, 255, 255, 0.18) 45deg,
+    #0a0a0f 90deg,
+    rgba(16, 185, 129, 0.3) 135deg,
+    #111118 180deg,
+    rgba(255, 255, 255, 0.18) 225deg,
+    #0a0a0f 270deg,
+    rgba(245, 158, 11, 0.3) 315deg,
+    #111118 360deg
+  );
+}
+
+@keyframes eqBarWave {
+  0%, 100% {
+    height: 15%;
+    opacity: 0.45;
+  }
+  50% {
+    height: 100%;
+    opacity: 1;
+  }
+}
+
+.eq-wave-bar {
+  animation: eqBarWave 0.7s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,143 @@
+import React from 'react';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { prisma } from '@/lib/db';
+import { mergeThemeWithCustom, mergeEffectsConfig, ProfileLayoutType } from '@/lib/themes';
+import { PublicProfileClient } from '@/components/profile/PublicProfileClient';
+import { ProfileData } from '@/components/profile/ProfileRenderer';
+
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { username: string };
+}): Promise<Metadata> {
+  const cleanUsername = decodeURIComponent(params.username).replace(/^@/, '').toLowerCase();
+  const user = await prisma.user.findUnique({
+    where: { username: cleanUsername },
+    include: { profileConfig: true },
+  });
+
+  if (!user || user.isSuspended) {
+    return {
+      title: 'Profile Not Found | VoltiX',
+    };
+  }
+
+  const pc = user.profileConfig;
+  const title = pc?.seoTitle || `${user.displayName} (@${user.username}) | VoltiX`;
+  const description =
+    pc?.seoDescription ||
+    user.bio ||
+    `Explore official links and digital identity of ${user.displayName} on VoltiX.`;
+  const ogImage = pc?.ogImageUrl || user.avatarUrl || undefined;
+
+  return {
+    title,
+    description,
+    alternates: pc?.canonicalUrl ? { canonical: pc.canonicalUrl } : undefined,
+    robots: pc?.robotsIndex === false ? { index: false, follow: false } : { index: true, follow: true },
+    openGraph: {
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
+      type: 'profile',
+    },
+  };
+}
+
+export default async function PublicProfilePage({
+  params,
+}: {
+  params: { username: string };
+}) {
+  const cleanUsername = decodeURIComponent(params.username).replace(/^@/, '').toLowerCase();
+  const user = await prisma.user.findUnique({
+    where: { username: cleanUsername },
+    include: {
+      profileConfig: true,
+      links: { orderBy: { order: 'asc' } },
+      socialLinks: { orderBy: { order: 'asc' } },
+    },
+  });
+
+  if (!user || user.isSuspended) {
+    notFound();
+  }
+
+  const pc = user.profileConfig;
+  const mergedTheme = mergeThemeWithCustom(
+    pc?.themeId || 'obsidian-luxury',
+    pc?.customThemeJson
+  );
+  if (pc?.layout) {
+    mergedTheme.profileLayout = pc.layout as ProfileLayoutType;
+  }
+
+  const mergedEffects = mergeEffectsConfig(pc?.effectsConfigJson);
+
+  let avatarPos = { zoom: 1, x: 0, y: 0 };
+  let coverPos = { zoom: 1, x: 0, y: 0 };
+  let sectionsOrder = ['header', 'social', 'featured', 'media', 'links'];
+  let mediaEmbed = {
+    enabled: false,
+    type: 'spotify' as const,
+    title: '',
+    artist: '',
+    url: '',
+    embedUrl: '',
+  };
+  let qrConfig = {
+    fgColor: mergedTheme.accentColor,
+    bgColor: mergedTheme.bgColor,
+    includeLogo: true,
+  };
+
+  try {
+    if (user.avatarPosition) avatarPos = JSON.parse(user.avatarPosition);
+  } catch {}
+  try {
+    if (user.coverPosition) coverPos = JSON.parse(user.coverPosition);
+  } catch {}
+  try {
+    if (pc?.sectionsOrderJson) sectionsOrder = JSON.parse(pc.sectionsOrderJson);
+  } catch {}
+  try {
+    if (pc?.mediaEmbedJson) mediaEmbed = JSON.parse(pc.mediaEmbedJson);
+  } catch {}
+  try {
+    if (pc?.qrConfigJson) qrConfig = JSON.parse(pc.qrConfigJson);
+  } catch {}
+
+  const profileData: ProfileData = {
+    id: user.id,
+    username: user.username,
+    displayName: user.displayName,
+    bio: user.bio,
+    avatarUrl: user.avatarUrl,
+    avatarPosition: avatarPos,
+    coverUrl: user.coverUrl,
+    coverPosition: coverPos,
+    isVerified: user.isVerified,
+    locale: user.locale === 'en' ? 'en' : 'ar',
+    links: user.links.map((l) => ({
+      ...l,
+      scheduledStart: l.scheduledStart ? l.scheduledStart.toISOString() : null,
+      scheduledEnd: l.scheduledEnd ? l.scheduledEnd.toISOString() : null,
+    })),
+    socialLinks: user.socialLinks,
+    sectionsOrder,
+    mediaEmbed,
+    qrConfig,
+  };
+
+  return (
+    <PublicProfileClient
+      profile={profileData}
+      theme={mergedTheme}
+      effects={mergedEffects}
+    />
+  );
+}
+

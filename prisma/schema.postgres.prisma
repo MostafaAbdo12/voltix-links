@@ -1,0 +1,201 @@
+// Production PostgreSQL Schema for AURA LINKS
+// Usage in production: npx prisma db push --schema=prisma/schema.postgres.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  username       String         @unique
+  passwordHash   String
+  displayName    String
+  bio            String         @default("")
+  avatarUrl      String         @default("")
+  avatarPosition String         @default("{\"zoom\":1,\"x\":0,\"y\":0}")
+  coverUrl       String         @default("")
+  coverPosition  String         @default("{\"zoom\":1,\"x\":0,\"y\":0}")
+  role           String         @default("USER")
+  isVerified     Boolean        @default(false)
+  isSuspended    Boolean        @default(false)
+  emailVerified  DateTime?
+  locale         String         @default("ar")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  profileConfig  ProfileConfig?
+  links          Link[]
+  socialLinks    SocialLink[]
+  customThemes   CustomTheme[]
+  pageViews      PageView[]
+  linkClicks     LinkClick[]
+  reports        Report[]       @relation("ReportedUser")
+}
+
+model ProfileConfig {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  themeId             String   @default("obsidian-luxury")
+  layout              String   @default("centered")
+  entranceAnimation   String   @default("cinematic-fade")
+  moodPreset          String   @default("luxury")
+  customThemeJson     String   @default("{}")
+  effectsConfigJson   String   @default("{}")
+  sectionsOrderJson   String   @default("[\"header\",\"social\",\"featured\",\"media\",\"links\"]")
+  mediaEmbedJson      String   @default("{\"enabled\":false,\"type\":\"spotify\",\"title\":\"\",\"artist\":\"\",\"url\":\"\",\"embedUrl\":\"\"}")
+  qrConfigJson        String   @default("{\"fgColor\":\"#D4AF37\",\"bgColor\":\"#050508\",\"includeLogo\":true}")
+
+  seoTitle            String   @default("")
+  seoDescription      String   @default("")
+  ogImageUrl          String   @default("")
+  canonicalUrl        String   @default("")
+  robotsIndex         Boolean  @default(true)
+
+  updatedAt           DateTime @updatedAt
+}
+
+model CustomTheme {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  baseThemeId String   @default("obsidian-luxury")
+  configJson  String
+  createdAt   DateTime @default(now())
+}
+
+model Link {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  url             String
+  description     String      @default("")
+  icon            String      @default("Globe")
+  thumbnailUrl    String      @default("")
+  groupName       String      @default("")
+  cardType        String      @default("glass")
+  isFeatured      Boolean     @default(false)
+  isActive        Boolean     @default(true)
+  order           Int         @default(0)
+  badgeText       String      @default("")
+  customStyleJson String      @default("{}")
+  scheduledStart  DateTime?
+  scheduledEnd    DateTime?
+  clicksCount     Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  clicks          LinkClick[]
+
+  @@index([userId, order])
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform  String
+  url       String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([userId, order])
+}
+
+model PageView {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visitorHash String
+  country     String   @default("SA")
+  deviceType  String   @default("mobile")
+  referrer    String   @default("")
+  source      String   @default("Direct")
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model LinkClick {
+  id          String   @id @default(cuid())
+  linkId      String
+  link        Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visitorHash String
+  country     String   @default("SA")
+  deviceType  String   @default("mobile")
+  referrer    String   @default("")
+  source      String   @default("Direct")
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([linkId])
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  reportedUserId String
+  reportedUser   User     @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reason         String
+  reporterNote   String   @default("")
+  targetUrl      String   @default("")
+  status         String   @default("PENDING")
+  resolvedBy     String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SiteSettings {
+  id                   String   @id @default("default")
+  siteName             String   @default("AURA LINKS")
+  siteTaglineAr        String   @default("هويتك الرقمية الفاخرة في رابط واحد")
+  siteTaglineEn        String   @default("Your Ultra-Luxury Digital Identity in One Link")
+  logoText             String   @default("AURA")
+  defaultThemeId       String   @default("obsidian-luxury")
+  allowRegistrations   Boolean  @default(true)
+  maintenanceMode      Boolean  @default(false)
+  globalSeoTitle       String   @default("AURA LINKS — Ultra-Premium Animated Link-in-Bio Platform")
+  globalSeoDescription String   @default("Create an unforgettable luxury link-in-bio page with 20+ cinematic themes, liquid glass UI, interactive 3D effects, and real-time analytics.")
+  disabledThemesJson   String   @default("[]")
+  updatedAt            DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  adminEmail String
+  action     String
+  targetType String
+  targetId   String   @default("")
+  details    String   @default("")
+  createdAt  DateTime @default(now())
+}
+
