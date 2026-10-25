@@ -1649,6 +1649,26 @@ export function ProfileRenderer({
                     </span>
                   </div>
 
+                  {/* Dedicated TV Screen Video Clip Button (Front Face) */}
+                  {isYouTube && ytVideoId && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowVideoModal(true);
+                      }}
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-red-400 hover:text-white bg-red-500/15 hover:bg-red-500/30 border border-red-500/40 hover:border-red-500/60 shadow-lg transition-all hover:scale-105 active:scale-95 shrink-0"
+                      title={
+                        isRtl
+                          ? 'مشغل الفيديو كليب الرسمي (شاشة التلفاز)'
+                          : 'Watch Official Video Clip (TV Screen)'
+                      }
+                      aria-label="Watch Video Clip TV"
+                    >
+                      <Tv className="w-5 h-5 drop-shadow" />
+                    </button>
+                  )}
+
                   {/* Direct Play/Pause Button */}
                   <button
                     type="button"
@@ -1858,6 +1878,26 @@ export function ProfileRenderer({
 
                 {/* 4. RIGHT: Master Brushed Gold Controls Suite */}
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  {/* YouTube Video Clip TV Screen Button (Iconic TV with Antennas) */}
+                  {isYouTube && ytVideoId && (
+                    <button
+                      type="button"
+                      onClick={() => setShowVideoModal(true)}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-red-400 hover:text-white bg-red-500/20 hover:bg-red-600/40 border border-red-500/40 hover:border-red-500/70 transition-all hover:scale-110 active:scale-90 shadow-lg relative group/clip cursor-pointer shrink-0"
+                      style={{
+                        boxShadow: '0 0 12px rgba(239, 68, 68, 0.45)',
+                      }}
+                      title={
+                        isRtl
+                          ? 'مشغل الفيديو كليب الرسمي (شاشة التلفاز)'
+                          : 'Watch Official Music Video (TV Screen)'
+                      }
+                      aria-label="Watch Video Clip TV Screen"
+                    >
+                      <Tv className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400 group-hover/clip:text-white drop-shadow" />
+                    </button>
+                  )}
+
                   {/* Skip Previous |< */}
                   <button
                     type="button"
@@ -1911,27 +1951,21 @@ export function ProfileRenderer({
                     <SkipForward className="w-3.5 h-3.5 fill-current" />
                   </button>
 
-                  {/* YouTube Video Clip Lacquer Button (Top-Right Action) */}
-                  {isYouTube && ytVideoId && (
-                    <button
-                      type="button"
-                      onClick={() => setShowVideoModal(true)}
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 active:scale-90 shadow-lg relative group/clip cursor-pointer shrink-0"
-                      style={{
-                        background:
-                          'radial-gradient(circle at 35% 30%, #FF6B6B 0%, #DC2626 50%, #7F1D1D 90%, #350505 100%)',
-                        boxShadow:
-                          '0 0 12px rgba(239, 68, 68, 0.75), inset 0 1px 1px rgba(255,255,255,0.6)',
-                        border: '1px solid rgba(254, 202, 202, 0.4)',
-                      }}
+                  {/* External Platform Link */}
+                  {activeTrack.url && (
+                    <a
+                      href={activeTrack.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-110 active:scale-90 shrink-0"
                       title={
                         isRtl
-                          ? 'مشاهدة الفيديو كليب بدقة عالية'
-                          : 'Watch HD Video Clip'
+                          ? 'فتح في المنصة الرسمية'
+                          : 'Open in Official App'
                       }
                     >
-                      <Film className="w-3.5 h-3.5 text-white" />
-                    </button>
+                      <ExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    </a>
                   )}
 
                   {/* Favorite / Heart Button */}
