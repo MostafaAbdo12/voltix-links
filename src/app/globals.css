@@ -40,6 +40,26 @@ body {
   line-height: 1.72;
 }
 
+/* Form Controls Precision Readability System */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+textarea,
+select {
+  font-family: 'Alexandria', 'IBM Plex Sans Arabic', 'Cairo', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0 !important;
+  color: #ffffff !important;
+}
+
+textarea {
+  min-height: 85px;
+}
+
+label {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
 [dir='rtl'] *:not([dir='ltr']) {
   letter-spacing: 0em !important;
 }

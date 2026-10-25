@@ -3032,22 +3032,22 @@ export default function DashboardPage() {
                   {isRtl ? 'مدير محركات البحث والمشاركة (SEO & Open Graph)' : 'SEO & Open Graph Manager'}
                 </h2>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs text-zinc-400 mb-1">
+                    <label className="block text-sm font-bold text-zinc-200 mb-2">
                       {isRtl ? 'عنوان الصفحة في محركات البحث (Meta Title)' : 'SEO Meta Title'}
                     </label>
                     <input
                       type="text"
                       value={seoTitle}
                       onChange={(e) => setSeoTitle(e.target.value)}
-                      placeholder={`${displayName} (@${username}) | AURA LINKS`}
-                      className="w-full rounded-xl bg-black/50 border border-white/15 px-4 py-2.5 text-xs text-white"
+                      placeholder={`${displayName} (@${username}) | VoltiX Official`}
+                      className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs text-zinc-400 mb-1">
+                    <label className="block text-sm font-bold text-zinc-200 mb-2">
                       {isRtl ? 'وصف الصفحة (Meta Description)' : 'SEO Meta Description'}
                     </label>
                     <textarea
@@ -3055,13 +3055,13 @@ export default function DashboardPage() {
                       value={seoDescription}
                       onChange={(e) => setSeoDescription(e.target.value)}
                       placeholder={bio}
-                      className="w-full rounded-xl bg-black/50 border border-white/15 px-4 py-2.5 text-xs text-white"
+                      className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 leading-relaxed shadow-inner"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">
+                      <label className="block text-sm font-bold text-zinc-200 mb-2">
                         {isRtl ? 'رابط صورة المشاركة (Open Graph Image)' : 'Open Graph Image URL'}
                       </label>
                       <input
@@ -3069,12 +3069,12 @@ export default function DashboardPage() {
                         value={ogImageUrl}
                         onChange={(e) => setOgImageUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2.5 text-xs text-white"
+                        className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                         dir="ltr"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">
+                      <label className="block text-sm font-bold text-zinc-200 mb-2">
                         {isRtl ? 'الرابط الأساسي (Canonical URL)' : 'Canonical URL'}
                       </label>
                       <input
@@ -3082,18 +3082,18 @@ export default function DashboardPage() {
                         value={canonicalUrl}
                         onChange={(e) => setCanonicalUrl(e.target.value)}
                         placeholder={publicUrl}
-                        className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2.5 text-xs text-white"
+                        className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                         dir="ltr"
                       />
                     </div>
                   </div>
 
-                  <label className="flex items-center gap-2.5 text-xs font-semibold cursor-pointer pt-2">
+                  <label className="flex items-center gap-3 text-sm font-semibold text-zinc-200 cursor-pointer pt-2">
                     <input
                       type="checkbox"
                       checked={robotsIndex}
                       onChange={(e) => setRobotsIndex(e.target.checked)}
-                      className="w-4 h-4 accent-amber-400"
+                      className="w-5 h-5 rounded-lg accent-amber-400"
                     />
                     <span>
                       {isRtl
@@ -3162,7 +3162,7 @@ export default function DashboardPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div>
-                    <label className="block text-xs text-zinc-400 mb-1">
+                    <label className="block text-sm font-bold text-zinc-200 mb-2">
                       {isRtl ? 'اسم المستخدم الفريد (@username)' : 'Username (@handle)'}
                     </label>
                     <input
@@ -3171,32 +3171,32 @@ export default function DashboardPage() {
                       onChange={(e) =>
                         setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''))
                       }
-                      className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2.5 text-xs text-white font-bold"
+                      className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-bold focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                       dir="ltr"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-400 mb-1">
+                    <label className="block text-sm font-bold text-zinc-200 mb-2">
                       {isRtl ? 'الاسم المعروض' : 'Display Name'}
                     </label>
                     <input
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2.5 text-xs text-white"
+                      className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 shadow-inner"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">
+                  <label className="block text-sm font-bold text-zinc-200 mb-2">
                     {isRtl ? 'النبذة التعريفية (Bio)' : 'Bio'}
                   </label>
                   <textarea
                     rows={3}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2.5 text-xs text-white"
+                    className="w-full rounded-2xl bg-black/60 border border-white/20 px-4 py-3 text-base text-white font-medium focus:border-amber-400 focus:outline-none transition-all placeholder:text-zinc-500 leading-relaxed shadow-inner"
                   />
                 </div>
 
