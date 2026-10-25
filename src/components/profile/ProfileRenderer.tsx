@@ -1087,8 +1087,8 @@ export function ProfileRenderer({
         >
           {/* Top Panoramic Royal Crown Banner (Supports Images & Looping Cinematic Videos in all formats!) */}
         <div
-          className={`relative w-full overflow-hidden border-b border-white/10 ${
-            compactPhone ? 'h-24' : 'h-32 sm:h-40'
+          className={`relative w-full overflow-hidden ${
+            compactPhone ? 'h-28' : 'h-36 sm:h-44'
           }`}
         >
           {profile.coverUrl ? (
@@ -1138,33 +1138,34 @@ export function ProfileRenderer({
             />
           )}
 
-          <div className="absolute inset-0 cyber-grid-floor opacity-40 pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07080E] via-black/30 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 cyber-grid-floor opacity-35 pointer-events-none" />
+          
+          {/* Soft vignette along bottom edge of banner meeting the 50% avatar equator */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#07080E]/90 to-transparent pointer-events-none" />
+          {/* Precision Equator Hairline */}
+          <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/35 to-transparent pointer-events-none" />
 
           {/* Top Corner Royal Edition Badge */}
           <div
             dir="ltr"
-            className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-md border border-amber-400/35 text-[9px] font-black tracking-[0.18em] uppercase text-amber-200 flex items-center gap-1.5 shadow-lg z-10"
+            className="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/40 text-[9px] font-black tracking-[0.18em] uppercase text-amber-200 flex items-center gap-1.5 shadow-xl z-10"
           >
             <Crown className="w-3 h-3 text-amber-400" />
             <span style={{ fontFamily: `"${theme.fontFamilyEn || 'Cinzel'}", sans-serif` }}>VOLTIX VIP</span>
           </div>
         </div>
 
-        {/* Profile Identity Content with dedicated luxury obsidian gradient background */}
+        {/* Profile Identity Content: Avatar seated 50/50 exactly over the equator */}
         <div
           className={`relative z-10 px-4 pb-6 ${
-            compactPhone ? '-mt-11' : '-mt-14 sm:-mt-16'
+            compactPhone ? '-mt-10' : '-mt-12 sm:-mt-14'
           } flex flex-col ${
             isMinimal || isBusiness ? 'items-start text-start' : 'items-center text-center'
           }`}
-          style={{
-            background: `radial-gradient(ellipse at 50% 0%, ${theme.accentColor}14 0%, transparent 75%), linear-gradient(180deg, rgba(13, 14, 23, 0.98) 0%, rgba(6, 7, 11, 1) 100%)`,
-          }}
         >
           {/* Subtle Ambient Radial Glow centered behind the Avatar */}
           <div
-            className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-80 h-36 rounded-full blur-3xl opacity-20"
+            className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-80 h-32 rounded-full blur-3xl opacity-25"
             style={{
               background: `radial-gradient(circle, ${theme.accentColor} 0%, ${theme.glowColor} 50%, transparent 80%)`,
             }}
