@@ -93,110 +93,223 @@ export async function POST(req: Request) {
       type: 'youtube' | 'youtube-music' | 'spotify' | 'soundcloud';
     }> = [];
 
-    // 1. YouTube & YouTube Music Playlist
+    // 1. YouTube & YouTube Music Playlist or Mix
     if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
       const isYtMusic = lower.includes('music.youtube.com');
       platform = isYtMusic ? 'youtube-music' : 'youtube';
 
-      // Extract playlist ID
+      // Extract playlist ID and video ID
       const listMatch = targetUrl.match(/[?&]list=([a-zA-Z0-9_-]+)/);
-      if (!listMatch) {
+      const playlistId = listMatch ? listMatch[1] : '';
+
+      let videoId = '';
+      const watchMatch = targetUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      const shortMatch = targetUrl.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+      const embedMatch = targetUrl.match(/youtube\.com\/(?:embed|shorts|live)\/([a-zA-Z0-9_-]{11})/);
+      if (watchMatch) videoId = watchMatch[1];
+      else if (shortMatch) videoId = shortMatch[1];
+      else if (embedMatch) videoId = embedMatch[1];
+
+      if (!playlistId && !videoId) {
         return NextResponse.json(
-          { error: 'لم يتم العثور على معرّف قائمة التشغيل في الرابط (list=...) / No playlist ID found' },
+          { error: 'لم يتم العثور على معرّف قائمة تشغيل أو فيديو في الرابط (list=...) / No playlist or video ID found' },
           { status: 400 }
         );
       }
-      const playlistId = listMatch[1];
 
-      const plRes = await fetch(`https://www.youtube.com/playlist?list=${playlistId}`, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
-        },
-        signal: AbortSignal.timeout(8000),
-      });
+      const isMix = playlistId ? playlistId.startsWith('RD') : Boolean(videoId);
 
-      if (!plRes.ok) {
-        return NextResponse.json(
-          { error: 'تعذر الوصول لقائمة التشغيل، تأكد أنها عامة وغير محذوفة / Playlist not found or private' },
-          { status: 404 }
-        );
-      }
+      // Helper to parse watch page mix / queue
+      const tryFetchWatchMix = async (vId: string, pId?: string) => {
+        const candidateUrls = [
+          pId ? `https://www.youtube.com/watch?v=${vId}&list=${pId}` : null,
+          `https://www.youtube.com/watch?v=${vId}&list=RD${vId}`,
+        ].filter(Boolean) as string[];
 
-      const plHtml = await plRes.text();
-      const plMatch = plHtml.match(/var ytInitialData = ({[\s\S]*?});<\/script>/);
-      if (!plMatch) {
-        return NextResponse.json(
-          { error: 'تعذر قراءة بيانات يوتيوب لقائمة التشغيل / Failed to parse YouTube data' },
-          { status: 500 }
-        );
-      }
-
-      const plData = JSON.parse(plMatch[1]);
-
-      if (plData.alerts && Array.isArray(plData.alerts)) {
-        for (const alert of plData.alerts) {
-          const alertText = alert.alertRenderer?.text?.runs?.[0]?.text;
-          if (alertText) {
-            return NextResponse.json({ error: alertText }, { status: 400 });
-          }
-        }
-      }
-
-      playlistTitle =
-        plData.metadata?.playlistMetadataRenderer?.title ||
-        plData.header?.playlistHeaderRenderer?.title?.simpleText ||
-        plData.header?.playlistHeaderRenderer?.title?.runs?.[0]?.text ||
-        'قائمة تشغيل YouTube';
-
-      const sec =
-        plData.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content
-          ?.sectionListRenderer;
-      const itemSecContents = sec?.contents?.[0]?.itemSectionRenderer?.contents || [];
-
-      for (const item of itemSecContents) {
-        // Modern YouTube layout (lockupViewModel)
-        if (item.lockupViewModel) {
-          const v = item.lockupViewModel;
-          const videoId = v.contentId;
-          const rawTitle = v.metadata?.lockupMetadataViewModel?.title?.content || '';
-          if (videoId && rawTitle) {
-            const { title, artist } = cleanTitleAndArtist(rawTitle, '', platform);
-            const cover = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-            if (!playlistCover) playlistCover = cover;
-            tracks.push({
-              id: `yt-${videoId}-${tracks.length}`,
-              title: title || rawTitle,
-              artist: artist || '',
-              url: `https://www.youtube.com/watch?v=${videoId}`,
-              coverUrl: cover,
-              type: platform,
+        for (const candidate of candidateUrls) {
+          try {
+            const res = await fetch(candidate, {
+              headers: {
+                'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
+              },
+              signal: AbortSignal.timeout(8000),
             });
+            if (!res.ok) continue;
+            const html = await res.text();
+            const match = html.match(/var ytInitialData = ({[\s\S]*?});<\/script>/);
+            if (!match) continue;
+            const data = JSON.parse(match[1]);
+            const plData = data.contents?.twoColumnWatchNextResults?.playlist?.playlist;
+            if (plData && Array.isArray(plData.contents) && plData.contents.length > 0) {
+              const mixTitle = plData.title || 'ميكس YouTube Mix';
+              let mixCover = '';
+              const mixTracks: typeof tracks = [];
+
+              for (const it of plData.contents) {
+                const r = it?.playlistPanelVideoRenderer;
+                if (r && r.videoId) {
+                  const rawTitle = r.title?.simpleText || r.title?.runs?.[0]?.text || '';
+                  const rawAuthor =
+                    r.shortBylineText?.runs?.[0]?.text ||
+                    r.longBylineText?.runs?.[0]?.text ||
+                    '';
+                  const { title, artist } = cleanTitleAndArtist(rawTitle, rawAuthor, platform);
+                  const cover = `https://i.ytimg.com/vi/${r.videoId}/hqdefault.jpg`;
+                  if (!mixCover) mixCover = cover;
+
+                  mixTracks.push({
+                    id: `yt-${r.videoId}-${mixTracks.length}`,
+                    title: title || rawTitle,
+                    artist: artist || rawAuthor,
+                    url: `https://www.youtube.com/watch?v=${r.videoId}`,
+                    coverUrl: cover,
+                    type: platform,
+                  });
+                }
+              }
+
+              if (mixTracks.length > 0) {
+                return { playlistTitle: mixTitle, playlistCover: mixCover, tracks: mixTracks };
+              }
+            }
+          } catch (e) {
+            console.warn('Watch mix candidate warning:', e);
           }
         }
-        // Classic YouTube layout (playlistVideoListRenderer)
-        if (item.playlistVideoListRenderer) {
-          const subContents = item.playlistVideoListRenderer.contents || [];
-          for (const sub of subContents) {
-            const v = sub.playlistVideoRenderer;
-            if (v && v.videoId) {
-              const rawTitle = v.title?.runs?.[0]?.text || v.title?.simpleText || '';
-              const rawAuthor = v.shortBylineText?.runs?.[0]?.text || '';
-              const { title, artist } = cleanTitleAndArtist(rawTitle, rawAuthor, platform);
-              const cover = `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`;
-              if (!playlistCover) playlistCover = cover;
-              tracks.push({
-                id: `yt-${v.videoId}-${tracks.length}`,
-                title: title || rawTitle,
-                artist: artist || rawAuthor,
-                url: `https://www.youtube.com/watch?v=${v.videoId}`,
-                coverUrl: cover,
-                type: platform,
-              });
+        return null;
+      };
+
+      // Helper to parse standard playlist page
+      const tryFetchStandardPlaylist = async (pId: string) => {
+        try {
+          const plRes = await fetch(`https://www.youtube.com/playlist?list=${pId}`, {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              'Accept-Language': 'ar,en-US;q=0.9,en;q=0.8',
+            },
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!plRes.ok) return null;
+          const plHtml = await plRes.text();
+          const plMatch = plHtml.match(/var ytInitialData = ({[\s\S]*?});<\/script>/);
+          if (!plMatch) return null;
+          const plData = JSON.parse(plMatch[1]);
+
+          // Check if YouTube returned alerts (e.g. invalid type or private)
+          if (plData.alerts && Array.isArray(plData.alerts)) {
+            for (const alert of plData.alerts) {
+              const alertText = alert.alertRenderer?.text?.runs?.[0]?.text;
+              if (alertText) {
+                console.warn('Standard playlist alert:', alertText);
+                return { alertError: alertText };
+              }
             }
           }
+
+          const pTitle =
+            plData.metadata?.playlistMetadataRenderer?.title ||
+            plData.header?.playlistHeaderRenderer?.title?.simpleText ||
+            plData.header?.playlistHeaderRenderer?.title?.runs?.[0]?.text ||
+            'قائمة تشغيل YouTube';
+          let pCover = '';
+          const pTracks: typeof tracks = [];
+
+          const sec =
+            plData.contents?.twoColumnBrowseResultsRenderer?.tabs?.[0]?.tabRenderer?.content
+              ?.sectionListRenderer;
+          const itemSecContents = sec?.contents?.[0]?.itemSectionRenderer?.contents || [];
+
+          for (const item of itemSecContents) {
+            if (item.lockupViewModel) {
+              const v = item.lockupViewModel;
+              const vId = v.contentId;
+              const rawTitle = v.metadata?.lockupMetadataViewModel?.title?.content || '';
+              if (vId && rawTitle) {
+                const { title, artist } = cleanTitleAndArtist(rawTitle, '', platform);
+                const cover = `https://i.ytimg.com/vi/${vId}/hqdefault.jpg`;
+                if (!pCover) pCover = cover;
+                pTracks.push({
+                  id: `yt-${vId}-${pTracks.length}`,
+                  title: title || rawTitle,
+                  artist: artist || '',
+                  url: `https://www.youtube.com/watch?v=${vId}`,
+                  coverUrl: cover,
+                  type: platform,
+                });
+              }
+            }
+            if (item.playlistVideoListRenderer) {
+              const subContents = item.playlistVideoListRenderer.contents || [];
+              for (const sub of subContents) {
+                const v = sub.playlistVideoRenderer;
+                if (v && v.videoId) {
+                  const rawTitle = v.title?.runs?.[0]?.text || v.title?.simpleText || '';
+                  const rawAuthor = v.shortBylineText?.runs?.[0]?.text || '';
+                  const { title, artist } = cleanTitleAndArtist(rawTitle, rawAuthor, platform);
+                  const cover = `https://i.ytimg.com/vi/${v.videoId}/hqdefault.jpg`;
+                  if (!pCover) pCover = cover;
+                  pTracks.push({
+                    id: `yt-${v.videoId}-${pTracks.length}`,
+                    title: title || rawTitle,
+                    artist: artist || rawAuthor,
+                    url: `https://www.youtube.com/watch?v=${v.videoId}`,
+                    coverUrl: cover,
+                    type: platform,
+                  });
+                }
+              }
+            }
+          }
+
+          if (pTracks.length > 0) {
+            return { playlistTitle: pTitle, playlistCover: pCover, tracks: pTracks };
+          }
+        } catch (e) {
+          console.warn('Standard playlist error:', e);
         }
+        return null;
+      };
+
+      // Execution Strategy:
+      // A) If Mix (RD...), immediately fetch via watch mix endpoint!
+      if (isMix && videoId) {
+        const mixResult = await tryFetchWatchMix(videoId, playlistId);
+        if (mixResult && mixResult.tracks.length > 0) {
+          playlistTitle = mixResult.playlistTitle;
+          playlistCover = mixResult.playlistCover;
+          tracks = mixResult.tracks;
+        }
+      }
+
+      // B) If not a mix (or mix returned no tracks and has a playlistId), try standard playlist endpoint
+      if (tracks.length === 0 && playlistId && !playlistId.startsWith('RD')) {
+        const stdResult = await tryFetchStandardPlaylist(playlistId);
+        if (stdResult && 'tracks' in stdResult && Array.isArray(stdResult.tracks) && stdResult.tracks.length > 0) {
+          playlistTitle = stdResult.playlistTitle || 'قائمة تشغيل YouTube';
+          playlistCover = stdResult.playlistCover || '';
+          tracks = stdResult.tracks;
+        }
+      }
+
+      // C) Fallback: If still no tracks, but videoId exists, try watch mix
+      if (tracks.length === 0 && videoId) {
+        const mixFallback = await tryFetchWatchMix(videoId, playlistId || `RD${videoId}`);
+        if (mixFallback && mixFallback.tracks.length > 0) {
+          playlistTitle = mixFallback.playlistTitle;
+          playlistCover = mixFallback.playlistCover;
+          tracks = mixFallback.tracks;
+        }
+      }
+
+      // If still nothing, give friendly explanation
+      if (tracks.length === 0) {
+        return NextResponse.json(
+          { error: 'تعذر استخراج المقاطع من هذا الرابط، تأكد من صحة الرابط أو جرب رابط قائمة آخر' },
+          { status: 400 }
+        );
       }
     }
 
