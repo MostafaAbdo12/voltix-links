@@ -78,6 +78,9 @@ import {
   detectChannelBadgeLabel,
   formatSocialInputToUrl,
   SocialPlatformId,
+  getSocialPlatformDomainPrefix,
+  extractUsernameFromSocialUrl,
+  getSocialUsernamePlaceholder,
 } from '@/lib/social-platforms';
 import { AVAILABLE_LINK_ICONS, DynamicIcon } from '@/components/ui/DynamicIcon';
 import {
@@ -2177,87 +2180,116 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {SOCIAL_PLATFORMS.map((plat) => {
                     const existing = socialLinks.find((s) => s.platform === plat.id);
-                    const hasValue = Boolean(existing?.url?.trim());
+                    const rawVal = existing?.url || '';
+                    const hasValue = Boolean(rawVal.trim());
+                    // Clean display handle for user
+                    const displayHandle = extractUsernameFromSocialUrl(plat.id, rawVal);
+                    const generatedUrl = formatSocialInputToUrl(plat.id, rawVal);
+                    const prefix = getSocialPlatformDomainPrefix(plat.id);
+                    const placeholder = getSocialUsernamePlaceholder(plat.id, isRtl);
+
                     return (
                       <div
                         key={plat.id}
-                        className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                        className={`p-3.5 rounded-2xl border transition-all ${
                           hasValue
-                            ? 'vip-black-card border-amber-400/35'
-                            : 'bg-black/40 border-white/10 hover:border-white/25'
+                            ? 'vip-black-card border-amber-400/40 shadow-[0_6px_24px_rgba(212,175,55,0.08)]'
+                            : 'bg-black/40 border-white/10 hover:border-white/20'
                         }`}
                       >
-                        <OfficialSocialBadge
-                          platformId={plat.id}
-                          size="sm"
-                          variant="gradient"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-zinc-200">
-                              {isRtl ? plat.nameAr : plat.name}
-                            </span>
-                            {hasValue && (
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{
-                                  backgroundColor: plat.color,
-                                  boxShadow: `0 0 8px ${plat.color}`,
-                                }}
-                              />
-                            )}
+                        {/* Header: Platform Badge + Title + Active Status Pill */}
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2.5">
+                            <OfficialSocialBadge
+                              platformId={plat.id}
+                              size="sm"
+                              variant="gradient"
+                            />
+                            <div>
+                              <span className="text-xs font-black text-white">
+                                {isRtl ? plat.nameAr : plat.name}
+                              </span>
+                            </div>
                           </div>
+                          {hasValue && (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>{isRtl ? 'مُفعّل' : 'Active'}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Input Field with Fixed Visual Prefix */}
+                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-black/70 border border-white/15 focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/30 transition-all">
+                          <span
+                            className="text-xs font-mono font-bold text-amber-400/90 select-none shrink-0"
+                            dir="ltr"
+                          >
+                            {prefix}
+                          </span>
                           <input
                             type="text"
-                            value={existing?.url || ''}
+                            value={displayHandle}
                             onChange={(e) => {
-                              const val = e.target.value;
+                              const val = e.target.value.trim();
+                              // Extract clean username even if user pasted full URL
+                              const cleanHandle = extractUsernameFromSocialUrl(plat.id, val);
+                              const fullUrl = cleanHandle
+                                ? formatSocialInputToUrl(plat.id, cleanHandle)
+                                : '';
+
                               setSocialLinks((prev) => {
                                 const filtered = prev.filter((item) => item.platform !== plat.id);
-                                if (!val.trim()) return filtered;
+                                if (!cleanHandle) return filtered;
                                 return [
                                   ...filtered,
                                   {
                                     id: existing?.id || `temp_${plat.id}`,
                                     platform: plat.id,
-                                    url: val,
+                                    url: fullUrl,
                                     isActive: true,
                                   },
                                 ];
                               });
                             }}
-                            onBlur={(e) => {
-                              const val = e.target.value.trim();
-                              if (val) {
-                                const formatted = formatSocialInputToUrl(plat.id, val);
-                                setSocialLinks((prev) => {
-                                  const filtered = prev.filter((item) => item.platform !== plat.id);
-                                  return [
-                                    ...filtered,
-                                    {
-                                      id: existing?.id || `temp_${plat.id}`,
-                                      platform: plat.id,
-                                      url: formatted,
-                                      isActive: true,
-                                    },
-                                  ];
-                                });
-                              }
-                            }}
-                            placeholder={isRtl ? `اكتب اليوزر أو الرابط الكامل` : plat.placeholder}
-                            className="w-full bg-transparent text-sm text-white font-medium focus:outline-none placeholder:text-zinc-500 mt-1"
+                            placeholder={placeholder}
+                            className="w-full bg-transparent text-sm text-white font-medium focus:outline-none placeholder:text-zinc-500"
                             dir="ltr"
                           />
-                          {hasValue && !existing?.url.startsWith('http') && (
-                            <div className="text-[11px] text-amber-400 font-mono truncate mt-1 flex items-center gap-1" dir="ltr">
-                              <span className="opacity-70">🔗 يتم التوليد:</span>
-                              <span className="font-semibold text-amber-300">{formatSocialInputToUrl(plat.id, existing?.url || '')}</span>
-                            </div>
+                          {hasValue && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSocialLinks((prev) =>
+                                  prev.filter((item) => item.platform !== plat.id)
+                                );
+                              }}
+                              className="text-zinc-500 hover:text-rose-400 p-1 text-xs shrink-0 transition-colors"
+                              title={isRtl ? 'حذف الرابط' : 'Clear'}
+                            >
+                              ✕
+                            </button>
                           )}
                         </div>
+
+                        {/* Live Auto-Generated Full URL Preview Badge */}
+                        {hasValue && (
+                          <div
+                            className="mt-2 px-2.5 py-1 rounded-lg bg-amber-400/10 border border-amber-400/20 text-[11px] text-amber-300 font-mono flex items-center justify-between gap-1 overflow-hidden"
+                            dir="ltr"
+                          >
+                            <span className="truncate flex items-center gap-1">
+                              <span className="text-amber-400">🔗</span>
+                              <span className="truncate">{generatedUrl}</span>
+                            </span>
+                            <span className="text-[10px] text-emerald-400 font-sans font-bold shrink-0">
+                              ✓ {isRtl ? 'تم التوليد تلقائيًا' : 'Auto-generated'}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

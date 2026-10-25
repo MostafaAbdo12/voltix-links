@@ -489,6 +489,130 @@ export function formatSocialInputToUrl(platformId: SocialPlatformId, rawInput: s
 }
 
 /**
+ * Returns the short domain prefix shown directly in front of the username input
+ * (e.g., "instagram.com/", "tiktok.com/@", "t.me/", "wa.me/")
+ */
+export function getSocialPlatformDomainPrefix(platformId: SocialPlatformId): string {
+  switch (platformId) {
+    case 'instagram':
+      return 'instagram.com/';
+    case 'tiktok':
+      return 'tiktok.com/@';
+    case 'x':
+      return 'x.com/';
+    case 'youtube':
+      return 'youtube.com/@';
+    case 'telegram':
+      return 't.me/';
+    case 'whatsapp':
+      return 'wa.me/';
+    case 'snapchat':
+      return 'snapchat.com/add/';
+    case 'discord':
+      return 'discord.gg/';
+    case 'facebook':
+      return 'facebook.com/';
+    case 'twitch':
+      return 'twitch.tv/';
+    case 'kick':
+      return 'kick.com/';
+    case 'github':
+      return 'github.com/';
+    case 'linkedin':
+      return 'linkedin.com/in/';
+    case 'spotify':
+      return 'spotify.com/';
+    default:
+      return '@';
+  }
+}
+
+/**
+ * Extracts a clean username / handle from an existing full URL or handle string
+ * so the user can easily see and edit just their username in the input box.
+ */
+export function extractUsernameFromSocialUrl(platformId: SocialPlatformId, url: string): string {
+  const trimmed = (url || '').trim();
+  if (!trimmed) return '';
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return trimmed.replace(/^@+/, '');
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    let path = parsed.pathname.replace(/^\/+|\/+$/g, '');
+    switch (platformId) {
+      case 'tiktok':
+      case 'youtube':
+        return path.replace(/^@/, '');
+      case 'snapchat':
+        return path.replace(/^add\//, '');
+      case 'discord':
+        return path.replace(/^invite\//, '');
+      case 'linkedin':
+        return path.replace(/^in\//, '').replace(/^company\//, '');
+      case 'spotify':
+        return path.replace(/^artist\//, '').replace(/^user\//, '').replace(/^playlist\//, '');
+      case 'whatsapp': {
+        if (parsed.hostname.includes('wa.me')) {
+          return path;
+        }
+        return path.replace(/^channel\//, '');
+      }
+      default:
+        return path;
+    }
+  } catch {
+    return trimmed;
+  }
+}
+
+/**
+ * Returns tailored, crystal-clear placeholders indicating that only a username is required
+ */
+export function getSocialUsernamePlaceholder(platformId: SocialPlatformId, isRtl = true): string {
+  if (!isRtl) {
+    switch (platformId) {
+      case 'whatsapp':
+        return 'Phone (+2010...) or channel';
+      case 'youtube':
+        return 'Channel handle or name';
+      case 'discord':
+        return 'Invite code or server ID';
+      default:
+        return 'Type username only (e.g. username)';
+    }
+  }
+
+  switch (platformId) {
+    case 'instagram':
+    case 'tiktok':
+    case 'x':
+    case 'snapchat':
+    case 'github':
+    case 'kick':
+    case 'twitch':
+      return 'اكتب اليوزر فقط (مثال: username)';
+    case 'whatsapp':
+      return 'رقم الهاتف الدولي (مثال: 201012345678+) أو القناة';
+    case 'youtube':
+      return 'اسم القناة أو المعرّف (مثال: channel_name)';
+    case 'telegram':
+      return 'اليوزر أو اسم القناة (مثال: channel_name)';
+    case 'discord':
+      return 'كود الدعوة أو اسم السيرفر (مثال: invite_code)';
+    case 'facebook':
+      return 'اليوزر أو اسم الصفحة (مثال: pagename)';
+    case 'linkedin':
+      return 'اليوزر أو اسم الحساب (مثال: username)';
+    case 'spotify':
+      return 'اسم الفنان أو معرّف الرابط';
+    default:
+      return 'اكتب اليوزر فقط';
+  }
+}
+
+/**
  * Detects whether a URL points to a specific Official Channel, Group, Community, or Server
  * (e.g., WhatsApp Channel, Telegram Channel, Discord Server, Facebook Group/Channel)
  */
