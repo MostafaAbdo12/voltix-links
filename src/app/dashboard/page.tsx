@@ -229,6 +229,21 @@ export default function DashboardPage() {
   const [fetchingMetadataIdx, setFetchingMetadataIdx] = useState<number | null>(null);
   const autoFetchDebounceRef = useRef<Record<number, NodeJS.Timeout>>({});
 
+  // Playlist Importer State
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [playlistImportUrl, setPlaylistImportUrl] = useState('');
+  const [isExtractingPlaylist, setIsExtractingPlaylist] = useState(false);
+  const [playlistModalError, setPlaylistModalError] = useState('');
+  const [extractedPlaylist, setExtractedPlaylist] = useState<{
+    platform: 'youtube' | 'youtube-music' | 'spotify' | 'soundcloud';
+    playlistTitle: string;
+    playlistCover?: string;
+    totalTracks: number;
+    tracks: MediaEmbedTrack[];
+  } | null>(null);
+  const [playlistImportMode, setPlaylistImportMode] = useState<'replace' | 'append'>('replace');
+  const [selectedPlaylistTrackIds, setSelectedPlaylistTrackIds] = useState<string[]>([]);
+
   const [qrConfig, setQrConfig] = useState({
     fgColor: '#D4AF37',
     bgColor: '#050508',
@@ -755,6 +770,90 @@ export default function DashboardPage() {
       type: nextTracks[0]?.type || 'youtube',
     }));
   };
+
+  const isPlaylistUrl = (url?: string): boolean => {
+    if (!url) return false;
+    const lower = url.trim().toLowerCase();
+    return (
+      lower.includes('list=') ||
+      lower.includes('spotify.com/playlist/') ||
+      (lower.includes('soundcloud.com') && lower.includes('/sets/'))
+    );
+  };
+
+  const handleExtractPlaylist = async (urlOverride?: string) => {
+    const targetUrl = (urlOverride !== undefined ? urlOverride : playlistImportUrl).trim();
+    if (!targetUrl || !targetUrl.startsWith('http')) {
+      setPlaylistModalError(isRtl ? 'يرجى إدخال رابط قائمة تشغيل صالح' : 'Please enter a valid playlist URL');
+      return;
+    }
+
+    setIsExtractingPlaylist(true);
+    setPlaylistModalError('');
+    setExtractedPlaylist(null);
+
+    try {
+      const res = await fetch('/api/media-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setPlaylistModalError(data.error || (isRtl ? 'تعذر استخراج المقاطع من هذه القائمة' : 'Failed to extract playlist tracks'));
+      } else {
+        setExtractedPlaylist(data);
+        setSelectedPlaylistTrackIds(data.tracks.map((t: MediaEmbedTrack) => t.id));
+      }
+    } catch (err: any) {
+      setPlaylistModalError(err?.message || (isRtl ? 'حدث خطأ أثناء الاتصال بالسيرفر' : 'Network error'));
+    } finally {
+      setIsExtractingPlaylist(false);
+    }
+  };
+
+  const handleApplyImportedPlaylist = () => {
+    if (!extractedPlaylist || extractedPlaylist.tracks.length === 0) return;
+
+    const chosenTracks = extractedPlaylist.tracks.filter((t) =>
+      selectedPlaylistTrackIds.includes(t.id)
+    );
+
+    if (chosenTracks.length === 0) {
+      setPlaylistModalError(isRtl ? 'يرجى اختيار مقطع واحد على الأقل للاستيراد' : 'Please select at least one track to import');
+      return;
+    }
+
+    let finalTracks: MediaEmbedTrack[] = [];
+    if (playlistImportMode === 'append') {
+      const currentValid = playlistTracks.filter((t) => Boolean(t.url?.trim()));
+      finalTracks = [...currentValid, ...chosenTracks];
+    } else {
+      finalTracks = chosenTracks;
+    }
+
+    setMediaEmbed((prev) => ({
+      ...prev,
+      enabled: true,
+      tracks: finalTracks,
+      title: finalTracks[0]?.title || prev.title,
+      artist: finalTracks[0]?.artist || prev.artist,
+      url: finalTracks[0]?.url || prev.url,
+      type: finalTracks[0]?.type || prev.type,
+      coverUrl: extractedPlaylist.playlistCover || prev.coverUrl,
+    }));
+
+    setIsPlaylistModalOpen(false);
+    setExtractedPlaylist(null);
+    setPlaylistImportUrl('');
+
+    showNotification(
+      isRtl
+        ? `✨ تم استيراد ${chosenTracks.length} مقطعاً بنجاح إلى مشغلك الملكي!`
+        : `✨ Successfully imported ${chosenTracks.length} tracks to your player!`
+    );
+  };
+
   const openAddLinkModal = () => {
     setEditingLink(null);
     setFormTitle('');
@@ -2583,14 +2682,28 @@ export default function DashboardPage() {
                             : 'Playlist Tracks (Supports YouTube, Spotify, SoundCloud, MP3):'}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleAddPlaylistTrack}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                        <span>{isRtl ? 'إضافة مقطع جديد للقائمة' : 'Add New Track'}</span>
-                      </button>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsPlaylistModalOpen(true);
+                            setPlaylistModalError('');
+                            setExtractedPlaylist(null);
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold flex items-center justify-center gap-2 shadow-sm hover:border-amber-400/60 active:scale-95 transition-all cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{isRtl ? 'استيراد قائمة تشغيل كاملة (YouTube / Spotify)' : 'Import Full Playlist'}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAddPlaylistTrack}
+                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                          <span>{isRtl ? 'إضافة مقطع جديد' : 'Add Track'}</span>
+                        </button>
+                      </div>
                     </div>
 
                     {/* Track Cards List */}
@@ -2749,6 +2862,31 @@ export default function DashboardPage() {
                                     </div>
                                   )}
                                 </div>
+
+                                {isPlaylistUrl(tr.url) && (
+                                  <div className="p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/35 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-sm">
+                                    <div className="flex items-center gap-2 text-xs text-amber-300">
+                                      <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                      <span>
+                                        {isRtl
+                                          ? 'تم اكتشاف رابط قائمة تشغيل كاملة!'
+                                          : 'Full playlist link detected!'}
+                                      </span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setIsPlaylistModalOpen(true);
+                                        setPlaylistImportUrl(tr.url || '');
+                                        handleExtractPlaylist(tr.url);
+                                      }}
+                                      className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-[11px] shadow-sm hover:from-amber-300 hover:to-amber-400 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                                    >
+                                      <ListMusic className="w-3 h-3" />
+                                      <span>{isRtl ? 'استيراد جميع مقاطع القائمة الآن ✨' : 'Import All Playlist Tracks ✨'}</span>
+                                    </button>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Platform Selector */}
@@ -4658,6 +4796,258 @@ export default function DashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Smart Playlist Importer Modal */}
+      {isPlaylistModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/85 backdrop-blur-md transition-opacity"
+            onClick={() => {
+              if (!isExtractingPlaylist) setIsPlaylistModalOpen(false);
+            }}
+          />
+
+          <div
+            dir={isRtl ? 'rtl' : 'ltr'}
+            className="relative w-full max-w-2xl bg-gradient-to-b from-zinc-900 to-black border border-amber-400/30 rounded-3xl p-5 sm:p-7 shadow-[0_25px_60px_-15px_rgba(245,158,11,0.25)] space-y-5 my-8 max-h-[90vh] flex flex-col z-10"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-inner">
+                  <ListMusic className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                    <span>{isRtl ? 'استيراد قائمة تشغيل كاملة' : 'Import Full Playlist'}</span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono border border-amber-400/30">
+                      SMART AUTO-IMPORT
+                    </span>
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    {isRtl
+                      ? 'يدعم استخراج جميع الأغاني من قوائم YouTube و YouTube Music و Spotify و SoundCloud'
+                      : 'Extract all tracks from YouTube, YouTube Music, Spotify & SoundCloud playlists'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPlaylistModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* URL Input & Extract Action */}
+            <div className="space-y-2 shrink-0">
+              <label className="block text-xs font-bold text-zinc-300">
+                {isRtl ? 'رابط قائمة التشغيل:' : 'Playlist URL:'}
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={playlistImportUrl}
+                  onChange={(e) => setPlaylistImportUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleExtractPlaylist();
+                    }
+                  }}
+                  placeholder="https://www.youtube.com/playlist?list=... أو https://open.spotify.com/playlist/..."
+                  className="flex-1 rounded-2xl bg-black/60 border border-white/15 focus:border-amber-400/70 px-4 py-3 text-xs text-white placeholder-zinc-600 focus:outline-none transition-colors"
+                  dir="ltr"
+                />
+                <button
+                  type="button"
+                  disabled={isExtractingPlaylist || !playlistImportUrl.trim().startsWith('http')}
+                  onClick={() => handleExtractPlaylist()}
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-extrabold text-xs flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                >
+                  {isExtractingPlaylist ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>{isRtl ? 'جارٍ الاستخراج الذكي...' : 'Extracting Tracks...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>{isRtl ? 'فحص واستخراج المقاطع' : 'Extract Playlist'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {playlistModalError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+                  <span>{playlistModalError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Extracted Tracks Results Area */}
+            {extractedPlaylist && (
+              <div className="space-y-4 flex-1 overflow-hidden flex flex-col pt-2 border-t border-white/10">
+                {/* Playlist Info Banner */}
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {extractedPlaylist.playlistCover && (
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/20 shrink-0 bg-black shadow-md">
+                        <img
+                          src={extractedPlaylist.playlistCover}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-black text-white truncate">
+                        {extractedPlaylist.playlistTitle}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-mono uppercase font-black px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                          {extractedPlaylist.platform}
+                        </span>
+                        <span className="text-xs text-zinc-400">
+                          {isRtl
+                            ? `${extractedPlaylist.tracks.length} مقطعاً جاهزاً`
+                            : `${extractedPlaylist.tracks.length} tracks detected`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedPlaylistTrackIds.length === extractedPlaylist.tracks.length) {
+                        setSelectedPlaylistTrackIds([]);
+                      } else {
+                        setSelectedPlaylistTrackIds(extractedPlaylist.tracks.map((t) => t.id));
+                      }
+                    }}
+                    className="text-xs text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer shrink-0"
+                  >
+                    {selectedPlaylistTrackIds.length === extractedPlaylist.tracks.length
+                      ? (isRtl ? 'إلغاء تحديد الكل' : 'Deselect All')
+                      : (isRtl ? 'تحديد الكل' : 'Select All')}
+                  </button>
+                </div>
+
+                {/* Tracks Scrollable List */}
+                <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-[140px] max-h-[220px]">
+                  {extractedPlaylist.tracks.map((track, tIdx) => {
+                    const isSelected = selectedPlaylistTrackIds.includes(track.id);
+                    return (
+                      <div
+                        key={track.id}
+                        onClick={() => {
+                          setSelectedPlaylistTrackIds((prev) =>
+                            prev.includes(track.id)
+                              ? prev.filter((id) => id !== track.id)
+                              : [...prev, track.id]
+                          );
+                        }}
+                        className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
+                          isSelected
+                            ? 'bg-amber-400/10 border-amber-400/40 text-white'
+                            : 'bg-black/40 border-white/5 text-zinc-400 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            className="w-4 h-4 rounded text-amber-400 focus:ring-0 cursor-pointer accent-amber-400"
+                          />
+                          <span className="text-[11px] font-mono text-zinc-500 w-5 shrink-0">
+                            {tIdx + 1}
+                          </span>
+                          {track.coverUrl && (
+                            <img
+                              src={track.coverUrl}
+                              alt=""
+                              className="w-7 h-7 rounded-lg object-cover shrink-0 border border-white/10"
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold truncate text-zinc-200">
+                              {track.title}
+                            </p>
+                            {track.artist && (
+                              <p className="text-[11px] text-zinc-400 truncate">
+                                {track.artist}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Import Mode: Replace vs Append */}
+                <div className="p-3 rounded-2xl bg-black/60 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                  <span className="text-xs font-bold text-zinc-300">
+                    {isRtl ? 'طريقة إضافة المقاطع للقائمة:' : 'Import Strategy:'}
+                  </span>
+                  <div className="flex items-center gap-4 text-xs">
+                    <label className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white">
+                      <input
+                        type="radio"
+                        name="importMode"
+                        checked={playlistImportMode === 'replace'}
+                        onChange={() => setPlaylistImportMode('replace')}
+                        className="text-amber-400 accent-amber-400 cursor-pointer"
+                      />
+                      <span>{isRtl ? 'استبدال المقاطع الحالية' : 'Replace existing'}</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-zinc-300 hover:text-white">
+                      <input
+                        type="radio"
+                        name="importMode"
+                        checked={playlistImportMode === 'append'}
+                        onChange={() => setPlaylistImportMode('append')}
+                        className="text-amber-400 accent-amber-400 cursor-pointer"
+                      />
+                      <span>{isRtl ? 'إضافة إلى القائمة الحالية' : 'Append to current'}</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Modal Footer Actions */}
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsPlaylistModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-zinc-400 hover:text-white transition-all cursor-pointer"
+                  >
+                    {isRtl ? 'إلغاء' : 'Cancel'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={selectedPlaylistTrackIds.length === 0}
+                    onClick={handleApplyImportedPlaylist}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/25 active:scale-95 transition-all cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>
+                      {isRtl
+                        ? `استيراد المقاطع المحددة إلى المشغل الملكي ✨ (${selectedPlaylistTrackIds.length} مقطع)`
+                        : `Import Selected Tracks ✨ (${selectedPlaylistTrackIds.length})`}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
