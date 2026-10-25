@@ -3991,24 +3991,6 @@ export default function DashboardPage() {
                   </span>
                 </div>
 
-                {/* Live Interactive Full-Scale Preview Right Inside Section 2 */}
-                <InteractiveLiveCardStage
-                  cardType={formCardType}
-                  title={formTitle}
-                  description={formDesc}
-                  url={formUrl}
-                  icon={formIcon}
-                  thumbnailUrl={formThumb}
-                  badgeText={formBadge}
-                  isFeatured={formFeatured}
-                  groupName={formGroup}
-                  theme={effectiveTheme}
-                  isRtl={isRtl}
-                  renderDynamicIcon={(name, cls) => (
-                    <DynamicIcon name={name} className={cls || 'w-5 h-5'} />
-                  )}
-                />
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                   {LINK_CARD_TYPES.map((ct) => {
                     const active = formCardType === ct.id;
