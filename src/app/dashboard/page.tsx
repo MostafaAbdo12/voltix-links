@@ -191,6 +191,12 @@ export default function DashboardPage() {
   const [coverPos, setCoverPos] = useState({ zoom: 1, x: 0, y: 0 });
   const [profileLocale, setProfileLocale] = useState<'ar' | 'en'>('ar');
 
+  // Performance Optimization: Track initial media to prevent re-uploading megabytes on every save
+  const initialAvatarRef = useRef('');
+  const initialCoverRef = useRef('');
+  const initialAvatarPosRef = useRef({ zoom: 1, x: 0, y: 0 });
+  const initialCoverPosRef = useRef({ zoom: 1, x: 0, y: 0 });
+
   // Theme & Effects State
   const [themeId, setThemeId] = useState('obsidian-luxury');
   const [layout, setLayout] = useState<ProfileLayoutType>('centered');
@@ -366,12 +372,22 @@ export default function DashboardPage() {
         setBio(u.bio || '');
         setAvatarUrl(u.avatarUrl || '');
         setCoverUrl(u.coverUrl || '');
+        initialAvatarRef.current = u.avatarUrl || '';
+        initialCoverRef.current = u.coverUrl || '';
         setProfileLocale(u.locale === 'en' ? 'en' : 'ar');
         try {
-          if (u.avatarPosition) setAvatarPos(JSON.parse(u.avatarPosition));
+          if (u.avatarPosition) {
+            const parsed = JSON.parse(u.avatarPosition);
+            setAvatarPos(parsed);
+            initialAvatarPosRef.current = parsed;
+          }
         } catch {}
         try {
-          if (u.coverPosition) setCoverPos(JSON.parse(u.coverPosition));
+          if (u.coverPosition) {
+            const parsed = JSON.parse(u.coverPosition);
+            setCoverPos(parsed);
+            initialCoverPosRef.current = parsed;
+          }
         } catch {}
 
         const pc = u.profileConfig;
@@ -441,45 +457,62 @@ export default function DashboardPage() {
     profileLayout: layout,
   };
 
-  // Save All Profile, Theme, Effects, SEO & Social Changes to Database
+  // Save All Profile, Theme, Effects, SEO & Social Changes to Database (Optimized zero-latency save)
   const handleSaveAll = async () => {
     setSaving(true);
     try {
+      const payload: Record<string, unknown> = {
+        username,
+        displayName,
+        bio,
+        locale: profileLocale,
+        socialLinks,
+        profileConfig: {
+          themeId,
+          layout,
+          entranceAnimation,
+          moodPreset,
+          customThemeJson: customTheme,
+          effectsConfigJson: effects,
+          sectionsOrderJson: sectionsOrder,
+          mediaEmbedJson: mediaEmbed,
+          qrConfigJson: qrConfig,
+          seoTitle,
+          seoDescription,
+          ogImageUrl,
+          canonicalUrl,
+          robotsIndex,
+        },
+      };
+
+      // Only send heavy media strings across the wire if they were actually modified
+      if (avatarUrl !== initialAvatarRef.current) {
+        payload.avatarUrl = avatarUrl;
+      }
+      if (coverUrl !== initialCoverRef.current) {
+        payload.coverUrl = coverUrl;
+      }
+      if (JSON.stringify(avatarPos) !== JSON.stringify(initialAvatarPosRef.current)) {
+        payload.avatarPosition = avatarPos;
+      }
+      if (JSON.stringify(coverPos) !== JSON.stringify(initialCoverPosRef.current)) {
+        payload.coverPosition = coverPos;
+      }
+
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          displayName,
-          bio,
-          avatarUrl,
-          avatarPosition: avatarPos,
-          coverUrl,
-          coverPosition: coverPos,
-          locale: profileLocale,
-          socialLinks,
-          profileConfig: {
-            themeId,
-            layout,
-            entranceAnimation,
-            moodPreset,
-            customThemeJson: customTheme,
-            effectsConfigJson: effects,
-            sectionsOrderJson: sectionsOrder,
-            mediaEmbedJson: mediaEmbed,
-            qrConfigJson: qrConfig,
-            seoTitle,
-            seoDescription,
-            ogImageUrl,
-            canonicalUrl,
-            robotsIndex,
-          },
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
         showNotification(`⚠️ ${data.error || 'Failed to save'}`);
       } else {
+        // Sync local reference markers so subsequent saves remain instant
+        initialAvatarRef.current = avatarUrl;
+        initialCoverRef.current = coverUrl;
+        initialAvatarPosRef.current = avatarPos;
+        initialCoverPosRef.current = coverPos;
         showNotification(t.savedSuccess);
       }
     } catch {
@@ -653,14 +686,26 @@ export default function DashboardPage() {
   };
 
   const handleToggleLinkActive = async (link: ProfileLinkItem) => {
-    const res = await fetch(`/api/links/${link.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: !link.isActive }),
-    });
-    const data = await res.json();
-    if (res.ok && data.link) {
-      setLinks((prev) => prev.map((l) => (l.id === link.id ? data.link : l)));
+    // 1. Optimistic instant UI update (zero perceptible latency)
+    const nextState = !link.isActive;
+    setLinks((prev) => prev.map((l) => (l.id === link.id ? { ...l, isActive: nextState } : l)));
+
+    // 2. Background sync
+    try {
+      const res = await fetch(`/api/links/${link.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextState }),
+      });
+      const data = await res.json();
+      if (res.ok && data.link) {
+        setLinks((prev) => prev.map((l) => (l.id === link.id ? data.link : l)));
+      } else {
+        // Rollback on failure
+        setLinks((prev) => prev.map((l) => (l.id === link.id ? { ...l, isActive: !nextState } : l)));
+      }
+    } catch {
+      setLinks((prev) => prev.map((l) => (l.id === link.id ? { ...l, isActive: !nextState } : l)));
     }
   };
 

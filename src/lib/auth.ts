@@ -97,6 +97,27 @@ export async function getSessionFromRequest(req?: Request): Promise<SessionPaylo
   }
 }
 
+export async function getAuthUser(req?: Request) {
+  const session = await getSessionFromRequest(req);
+  if (!session) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      displayName: true,
+      role: true,
+      isSuspended: true,
+      passwordHash: true,
+    },
+  });
+
+  if (!user || user.isSuspended) return null;
+  return user;
+}
+
 export async function getCurrentUser(req?: Request) {
   const session = await getSessionFromRequest(req);
   if (!session) return null;

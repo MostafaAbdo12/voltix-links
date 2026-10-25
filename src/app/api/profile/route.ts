@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 import {
   getCurrentUser,
+  getAuthUser,
   sanitizeText,
   hashPassword,
   verifyPassword,
@@ -22,7 +23,7 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const user = await getCurrentUser(req);
+    const user = await getAuthUser(req);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -82,10 +83,11 @@ export async function PUT(req: Request) {
       }
     }
 
-    // Update User base fields
-    const userUpdateData: Record<string, unknown> = {
-      username: nextUsername,
-    };
+    // Update User base fields only if provided
+    const userUpdateData: Record<string, unknown> = {};
+    if (nextUsername !== user.username) {
+      userUpdateData.username = nextUsername;
+    }
     if (typeof body.displayName === 'string') {
       userUpdateData.displayName = sanitizeText(body.displayName, 80);
     }
@@ -114,10 +116,18 @@ export async function PUT(req: Request) {
       userUpdateData.locale = body.locale;
     }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: userUpdateData,
-    });
+    // Prepare batched operations for ultra-fast single transaction execution
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const txOps: any[] = [];
+
+    if (Object.keys(userUpdateData).length > 0) {
+      txOps.push(
+        prisma.user.update({
+          where: { id: user.id },
+          data: userUpdateData,
+        })
+      );
+    }
 
     // Update ProfileConfig if provided
     if (body.profileConfig && typeof body.profileConfig === 'object') {
@@ -164,19 +174,21 @@ export async function PUT(req: Request) {
       if (typeof pc.canonicalUrl === 'string') configUpdate.canonicalUrl = pc.canonicalUrl;
       if (typeof pc.robotsIndex === 'boolean') configUpdate.robotsIndex = pc.robotsIndex;
 
-      await prisma.profileConfig.upsert({
-        where: { userId: user.id },
-        create: {
-          userId: user.id,
-          ...configUpdate,
-        },
-        update: configUpdate,
-      });
+      txOps.push(
+        prisma.profileConfig.upsert({
+          where: { userId: user.id },
+          create: {
+            userId: user.id,
+            ...configUpdate,
+          },
+          update: configUpdate,
+        })
+      );
     }
 
     // Update SocialLinks if provided
     if (Array.isArray(body.socialLinks)) {
-      await prisma.socialLink.deleteMany({ where: { userId: user.id } });
+      txOps.push(prisma.socialLink.deleteMany({ where: { userId: user.id } }));
       const validSocials = body.socialLinks
         .filter((s: { platform?: string; url?: string }) => s.platform && s.url && s.url.trim() !== '')
         .map((s: { platform: string; url: string; isActive?: boolean }, idx: number) => {
@@ -191,8 +203,13 @@ export async function PUT(req: Request) {
         });
 
       if (validSocials.length > 0) {
-        await prisma.socialLink.createMany({ data: validSocials });
+        txOps.push(prisma.socialLink.createMany({ data: validSocials }));
       }
+    }
+
+    // Execute all updates in a single round trip
+    if (txOps.length > 0) {
+      await prisma.$transaction(txOps);
     }
 
     if (nextUsername !== user.username) {
@@ -204,18 +221,7 @@ export async function PUT(req: Request) {
       });
     }
 
-    const updatedUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      include: {
-        profileConfig: true,
-        links: { orderBy: { order: 'asc' } },
-        socialLinks: { orderBy: { order: 'asc' } },
-        customThemes: { orderBy: { createdAt: 'desc' } },
-      },
-    });
-
-    const { passwordHash: _ph, ...safeUpdated } = updatedUser!;
-    return NextResponse.json({ user: safeUpdated });
+    return NextResponse.json({ success: true, message: 'Profile saved successfully' });
   } catch (err) {
     console.error('Update profile error:', err);
     return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });

@@ -51,13 +51,13 @@ export function processUniversalImageFile(
     const rawDataUrl = String(ev.target?.result || '');
     if (!rawDataUrl) return;
 
-    // Preserve SVG, GIF, ICO, APNG, or already lightweight files (< 500KB) untouched
-    if (isVectorOrAnimatedOrIcon || file.size <= 500 * 1024) {
+    // Preserve vector and animated formats untouched
+    if (isVectorOrAnimatedOrIcon) {
       onSuccess(rawDataUrl, ext);
       return;
     }
 
-    // For larger raster images, scale smoothly while preserving alpha transparency
+    // For raster images, scale smoothly and encode efficiently (WebP / compressed JPEG)
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -78,10 +78,18 @@ export function processUniversalImageFile(
       if (ctx) {
         ctx.clearRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
-        const isOpaqueJpeg =
-          file.type === 'image/jpeg' || /\.(jpe?g|jfif)$/i.test(file.name);
-        const outputMime = isOpaqueJpeg ? 'image/jpeg' : 'image/png';
-        const optimizedDataUrl = canvas.toDataURL(outputMime, 0.9);
+        
+        let optimizedDataUrl = '';
+        try {
+          optimizedDataUrl = canvas.toDataURL('image/webp', 0.82);
+        } catch {}
+
+        if (!optimizedDataUrl || !optimizedDataUrl.startsWith('data:image/webp')) {
+          const isOpaqueJpeg = file.type === 'image/jpeg' || /\.(jpe?g|jfif)$/i.test(file.name);
+          const outputMime = isOpaqueJpeg ? 'image/jpeg' : 'image/png';
+          optimizedDataUrl = canvas.toDataURL(outputMime, 0.85);
+        }
+
         onSuccess(optimizedDataUrl, ext);
       } else {
         onSuccess(rawDataUrl, ext);
