@@ -3,6 +3,7 @@ import './globals.css';
 import { LanguageProvider } from '@/lib/i18n';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://voltix.vercel.app'),
   title: 'VoltiX — Ultra-Premium Animated Link-in-Bio Platform',
   description:
     'منصة VoltiX للهويات الرقمية الفاخرة في رابط واحد. صمّم صفحتك الشخصية بـ 20 ثيمًا سينمائيًا، تقنيات الزجاج السائل Liquid Glass UI، وتأثيرات ثلاثية الأبعاد.',

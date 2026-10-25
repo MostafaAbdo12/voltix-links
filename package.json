@@ -4,9 +4,9 @@
   "private": true,
   "description": "VoltiX — Ultra-Premium Spatial Luxury Link-in-Bio Platform",
   "scripts": {
-    "dev": "node --max-semi-space-size=8 ./node_modules/next/dist/bin/next dev",
-    "build": "node --max-semi-space-size=8 ./node_modules/next/dist/bin/next build",
-    "start": "node --max-semi-space-size=8 ./node_modules/next/dist/bin/next start",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "postinstall": "prisma generate",
     "set-admin": "node scripts/set-admin.js",
     "lint": "next lint",
