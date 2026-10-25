@@ -1215,7 +1215,14 @@ export default function DashboardPage() {
                   {username ? username.charAt(0) : 'V'}
                 </span>
               )}
-              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-amber-400 text-black flex items-center justify-center text-[9px] font-black">
+              <span
+                className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full flex items-center justify-center text-black z-10 shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #FFF7C2, #F59E0B)',
+                  border: '1.5px solid #000',
+                  boxShadow: '0 0 10px rgba(251, 191, 36, 0.95)',
+                }}
+              >
                 <Crown className="w-2.5 h-2.5 fill-black stroke-black" />
               </span>
             </div>
@@ -1525,8 +1532,19 @@ export default function DashboardPage() {
                           </span>
                         )}
                       </div>
-                      <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 text-black flex items-center justify-center text-[11px] shadow-md">
-                        <Crown className="w-3.5 h-3.5 fill-black stroke-black" />
+                      {/* Luminous Royal Verification Badge (Positioned Proudly Outside the Frame) */}
+                      <span
+                        className="absolute -bottom-2 -right-2 sm:-bottom-2.5 sm:-right-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center z-20 transition-transform group-hover:scale-110 shadow-2xl"
+                        style={{
+                          background: 'linear-gradient(135deg, #FFF9D2 0%, #F59E0B 45%, #D97706 80%, #78350F 100%)',
+                          border: '2.5px solid #040407',
+                          boxShadow: '0 0 16px rgba(251, 191, 36, 1), 0 0 32px rgba(217, 119, 6, 0.75), inset 0 1.5px 2px rgba(255, 255, 255, 0.85)',
+                        }}
+                        title={isRtl ? 'هوية ملكية موثقة رسميًا' : 'Royal Verified Identity'}
+                      >
+                        {/* Ambient Pulsing Glow Halo */}
+                        <span className="absolute -inset-1 rounded-full bg-amber-400/80 blur-sm animate-pulse pointer-events-none" />
+                        <Crown className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-black fill-black relative z-10 drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]" />
                       </span>
                     </div>
 

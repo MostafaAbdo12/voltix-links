@@ -945,17 +945,24 @@ export function ProfileRenderer({
               )}
             </div>
 
-            {/* Verified Royal Crown / Status Emblem */}
+            {/* Verified Royal Crown / Status Emblem (Proudly Outside the Frame & Glowing) */}
             {profile.isVerified && (
               <div
-                title={isRtl ? 'هوية موثقة رسميًا' : 'Verified Official Identity'}
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center border-2 border-black shadow-lg"
+                title={isRtl ? 'هوية ملكية موثقة رسميًا' : 'Verified Official Identity'}
+                className="absolute -bottom-2 -right-2 sm:-bottom-2.5 sm:-right-2.5 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center z-20 transition-transform group-hover:scale-110 shadow-2xl"
                 style={{
-                  background: `linear-gradient(135deg, ${theme.accentColor}, ${theme.glowColor})`,
-                  color: theme.isLight ? '#FFFFFF' : '#050508',
+                  background: `linear-gradient(135deg, #FFF9D2 0%, ${theme.accentColor} 50%, ${theme.glowColor} 100%)`,
+                  border: '2.5px solid #040407',
+                  boxShadow: `0 0 16px ${theme.accentColor}, 0 0 32px ${theme.glowColor}80, inset 0 1.5px 2px rgba(255,255,255,0.85)`,
+                  color: '#050508',
                 }}
               >
-                <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                {/* Luminous Pulsing Glow Halo */}
+                <span
+                  className="absolute -inset-1 rounded-full blur-sm opacity-85 animate-pulse pointer-events-none"
+                  style={{ backgroundColor: theme.accentColor }}
+                />
+                <Crown className="w-4 h-4 sm:w-4.5 sm:h-4.5 fill-black stroke-black relative z-10 drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]" />
               </div>
             )}
           </div>
