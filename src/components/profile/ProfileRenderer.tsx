@@ -131,6 +131,119 @@ interface ProfileRendererProps {
   onLinkClick?: (link: ProfileLinkItem) => void;
 }
 
+export function RoyalVerifiedEmblem({
+  size = 'md',
+  isRtl = true,
+}: {
+  size?: 'sm' | 'md' | 'lg';
+  isRtl?: boolean;
+}) {
+  const dimClass =
+    size === 'lg'
+      ? 'w-11 h-11'
+      : size === 'sm'
+      ? 'w-8 h-8'
+      : 'w-9 h-9 sm:w-10 sm:h-10';
+
+  return (
+    <div
+      title={isRtl ? 'هوية ملكية معتمدة وموثقة رسميًا' : 'Official Royal Verified Identity'}
+      className={`relative ${dimClass} shrink-0 select-none group/badge transition-transform duration-300 hover:scale-115 cursor-pointer`}
+    >
+      {/* 1. Deep Multi-Layer Ambient Pulsing Aura Glow */}
+      <span
+        className="absolute -inset-1.5 rounded-full blur-md opacity-95 animate-royal-glow pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(255,215,0,0.95) 0%, rgba(212,175,55,0.7) 45%, rgba(243,229,171,0.2) 75%, transparent 100%)',
+        }}
+      />
+
+      {/* 2. Precision 12-Point Sovereign Imperial Starburst Medallion (Authentic Official Seal) */}
+      <div className="relative w-full h-full drop-shadow-[0_4px_14px_rgba(0,0,0,0.85)] flex items-center justify-center">
+        <svg
+          viewBox="0 0 24 24"
+          className="w-full h-full drop-shadow-[0_2px_8px_rgba(212,175,55,0.8)]"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient id="imperialGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFDF0" />
+              <stop offset="20%" stopColor="#FDE68A" />
+              <stop offset="45%" stopColor="#D4AF37" />
+              <stop offset="75%" stopColor="#AA771C" />
+              <stop offset="100%" stopColor="#78450A" />
+            </linearGradient>
+            <linearGradient id="innerCoreGold" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#0B0B14" />
+              <stop offset="100%" stopColor="#050508" />
+            </linearGradient>
+            <linearGradient id="crownGold" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="30%" stopColor="#FFF9D2" />
+              <stop offset="70%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#D4AF37" />
+            </linearGradient>
+          </defs>
+
+          {/* 12-Point Scalloped Starburst Geometry (Official Verification Seal) */}
+          <path
+            d="M12 1.5l2.12 1.63 2.67-.32 1.48 2.24 2.64.67.66 2.64 2.24 1.48-.32 2.67 1.63 2.12-1.63 2.12.32 2.67-2.24 1.48-.66 2.64-2.64.67-1.48 2.24-2.67-.32L12 22.5l-2.12-1.63-2.67.32-1.48-2.24-2.64-.67-.66-2.64-2.24-1.48.32-2.67L1.5 12l1.63-2.12-.32-2.67 2.24-1.48.66-2.64 2.64-.67 1.48-2.24 2.67.32L12 1.5z"
+            fill="url(#imperialGoldGradient)"
+            stroke="#FFFFFF"
+            strokeWidth="0.65"
+          />
+
+          {/* Inner Recessed Obsidian Gold Rim */}
+          <circle cx="12" cy="12" r="6.8" fill="url(#innerCoreGold)" stroke="#D4AF37" strokeWidth="0.8" />
+
+          {/* Inner Golden Ring Inlay */}
+          <circle cx="12" cy="12" r="5.6" stroke="rgba(255,249,210,0.4)" strokeWidth="0.5" strokeDasharray="1.5 1" />
+        </svg>
+
+        {/* 3. Engraved Royal Crown with Verified Tick / Jewels */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <svg
+            viewBox="0 0 24 24"
+            className="w-[52%] h-[52%] drop-shadow-[0_1px_3px_rgba(255,215,0,0.85)]"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Imperial Crown Silhouette */}
+            <path
+              d="M5 16L3.5 8L8.5 11.5L12 6L15.5 11.5L20.5 8L19 16H5Z"
+              fill="url(#crownGold)"
+              stroke="#FFFDF0"
+              strokeWidth="0.75"
+              strokeLinejoin="round"
+            />
+            {/* Crown Base Band with micro-gems */}
+            <rect x="5" y="16.5" width="14" height="2" rx="0.5" fill="#FFF9D2" />
+            <circle cx="7.5" cy="17.5" r="0.6" fill="#10B981" />
+            <circle cx="12" cy="17.5" r="0.7" fill="#3B82F6" />
+            <circle cx="16.5" cy="17.5" r="0.6" fill="#10B981" />
+            {/* Top Crown Pinnacle Jewels */}
+            <circle cx="3.5" cy="8" r="0.9" fill="#FFFFFF" />
+            <circle cx="12" cy="6" r="1.1" fill="#FFFFFF" />
+            <circle cx="20.5" cy="8" r="0.9" fill="#FFFFFF" />
+          </svg>
+        </div>
+
+        {/* 4. Active Continuous Light Sheen (Shimmer Beam Sweep) */}
+        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+          <div className="w-[45%] h-full bg-gradient-to-r from-transparent via-white/85 to-transparent animate-badge-shimmer" />
+        </div>
+
+        {/* 5. Micro-Diamond Star Glint (✨) at Top Corner */}
+        <div className="absolute -top-1 -right-0.5 sm:-top-1.5 sm:-right-1 pointer-events-none animate-star-twinkle">
+          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFFDF0] fill-[#FFFDF0] drop-shadow-[0_0_8px_rgba(255,255,255,1)]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ProfileRenderer({
   profile,
   theme,
@@ -846,16 +959,40 @@ export function ProfileRenderer({
     return (
       <div
         key="section-header"
-        className="relative mb-6 rounded-[30px] overflow-hidden border shadow-2xl transition-all"
+        className="relative mb-6 rounded-[32px] p-[2px] transition-all group/header-card"
         style={{
-          backgroundColor: theme.cardBg,
-          borderColor: `${theme.accentColor}40`,
-          backdropFilter: `blur(${theme.glassBlur}px) saturate(180%)`,
-          WebkitBackdropFilter: `blur(${theme.glassBlur}px) saturate(180%)`,
-          boxShadow: `0 24px 60px -15px rgba(0,0,0,0.85), 0 0 35px ${theme.glowColor}22, inset 0 1px 1.5px rgba(255,255,255,0.28)`,
+          boxShadow: `0 26px 70px -15px rgba(0,0,0,0.92), 0 0 45px ${theme.glowColor}25`,
         }}
       >
-        {/* Top Panoramic Royal Crown Banner (Always rendered for maximum luxury!) */}
+        {/* Animated Moving Light Beam Sweeping Around Card Perimeter */}
+        <div className="absolute inset-0 rounded-[32px] overflow-hidden pointer-events-none">
+          {/* Moving Conic Light Beam */}
+          <div
+            className="absolute -inset-[150%] animate-card-beam"
+            style={{
+              background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 65deg, ${theme.accentColor} 80deg, #FFFFFF 90deg, ${theme.glowColor} 100deg, transparent 115deg, transparent 245deg, ${theme.accentColor} 260deg, #FFFFFF 270deg, ${theme.glowColor} 280deg, transparent 295deg, transparent 360deg)`,
+            }}
+          />
+          {/* Luminous Ambient Bloom Halo around corners */}
+          <div
+            className="absolute -inset-[150%] animate-card-beam opacity-80 blur-md"
+            style={{
+              background: `conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 60deg, ${theme.accentColor} 82deg, #FFF9D2 90deg, ${theme.glowColor} 98deg, transparent 120deg, transparent 240deg, ${theme.accentColor} 262deg, #FFF9D2 270deg, ${theme.glowColor} 278deg, transparent 300deg, transparent 360deg)`,
+            }}
+          />
+        </div>
+
+        {/* Inner Card Container */}
+        <div
+          className="relative rounded-[30px] overflow-hidden transition-all z-10"
+          style={{
+            backgroundColor: theme.cardBg,
+            backdropFilter: `blur(${theme.glassBlur}px) saturate(180%)`,
+            WebkitBackdropFilter: `blur(${theme.glassBlur}px) saturate(180%)`,
+            boxShadow: `inset 0 1px 1.5px rgba(255,255,255,0.28)`,
+          }}
+        >
+          {/* Top Panoramic Royal Crown Banner (Always rendered for maximum luxury!) */}
         <div
           className={`relative w-full overflow-hidden border-b border-white/10 ${
             compactPhone ? 'h-24' : 'h-32 sm:h-40'
@@ -945,24 +1082,10 @@ export function ProfileRenderer({
               )}
             </div>
 
-            {/* Verified Royal Crown / Status Emblem (Proudly Outside the Frame & Glowing) */}
+            {/* Ultra-Luxury Sovereign Royal Verified Emblem (Outside the frame with multi-layer radiance & glint) */}
             {profile.isVerified && (
-              <div
-                title={isRtl ? 'هوية ملكية موثقة رسميًا' : 'Verified Official Identity'}
-                className="absolute -bottom-2 -right-2 sm:-bottom-2.5 sm:-right-2.5 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center z-20 transition-transform group-hover:scale-110 shadow-2xl"
-                style={{
-                  background: `linear-gradient(135deg, #FFF9D2 0%, ${theme.accentColor} 50%, ${theme.glowColor} 100%)`,
-                  border: '2.5px solid #040407',
-                  boxShadow: `0 0 16px ${theme.accentColor}, 0 0 32px ${theme.glowColor}80, inset 0 1.5px 2px rgba(255,255,255,0.85)`,
-                  color: '#050508',
-                }}
-              >
-                {/* Luminous Pulsing Glow Halo */}
-                <span
-                  className="absolute -inset-1 rounded-full blur-sm opacity-85 animate-pulse pointer-events-none"
-                  style={{ backgroundColor: theme.accentColor }}
-                />
-                <Crown className="w-4 h-4 sm:w-4.5 sm:h-4.5 fill-black stroke-black relative z-10 drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]" />
+              <div className="absolute -bottom-2.5 -right-2.5 sm:-bottom-3 sm:-right-3 z-20">
+                <RoyalVerifiedEmblem size={compactPhone ? 'sm' : 'md'} isRtl={isRtl} />
               </div>
             )}
           </div>
@@ -1015,15 +1138,18 @@ export function ProfileRenderer({
 
             {profile.isVerified && (
               <span
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider leading-none border"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider leading-none border relative overflow-hidden group/pill"
                 style={{
-                  background: `linear-gradient(135deg, ${theme.accentColor}25, ${theme.glowColor}15)`,
-                  borderColor: `${theme.accentColor}55`,
-                  color: theme.accentColor,
+                  background: `linear-gradient(135deg, ${theme.accentColor}28, ${theme.glowColor}18)`,
+                  borderColor: `${theme.accentColor}75`,
+                  color: '#FFFDF0',
+                  boxShadow: `0 0 16px ${theme.accentColor}35`,
                 }}
               >
-                <Crown className="w-3 h-3" />
-                <span>{isRtl ? 'عضوية ملكية موثقة' : 'ROYAL VERIFIED'}</span>
+                {/* Micro shimmer line inside pill */}
+                <span className="w-3 h-full absolute inset-0 bg-white/40 animate-badge-shimmer pointer-events-none" />
+                <Crown className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_0_6px_rgba(255,215,0,0.8)] relative z-10" />
+                <span className="relative z-10 text-amber-200">{isRtl ? 'عضوية ملكية موثقة' : 'ROYAL VERIFIED'}</span>
               </span>
             )}
           </div>
@@ -1044,7 +1170,8 @@ export function ProfileRenderer({
           )}
         </div>
       </div>
-    );
+    </div>
+  );
   };
 
   // ==========================================================================

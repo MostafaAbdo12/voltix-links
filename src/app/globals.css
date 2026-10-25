@@ -401,6 +401,72 @@ label {
   transform-origin: bottom;
 }
 
+/* ============================================================================
+   SOVEREIGN LIGHTING & PROFESSIONAL VERIFICATION BADGE ANIMATIONS
+   ============================================================================ */
+
+/* Continuous Moving Light Beam sweeping around card perimeter */
+@keyframes rotateBorderLight {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-card-beam {
+  animation: rotateBorderLight 7s linear infinite;
+}
+
+/* Continuous Jewelry Light Shimmer Sheen across verification badge */
+@keyframes badgeShimmer {
+  0% {
+    transform: translateX(-160%) rotate(25deg);
+  }
+  40%, 100% {
+    transform: translateX(260%) rotate(25deg);
+  }
+}
+
+.animate-badge-shimmer {
+  animation: badgeShimmer 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Multi-layer Pulsing Royal Luminescence */
+@keyframes royalPulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.88;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.95)) drop-shadow(0 0 24px rgba(243, 229, 171, 0.7));
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+    filter: drop-shadow(0 0 18px rgba(255, 215, 0, 1)) drop-shadow(0 0 42px rgba(212, 175, 55, 1));
+  }
+}
+
+.animate-royal-glow {
+  animation: royalPulseGlow 2.4s ease-in-out infinite;
+}
+
+/* Diamond Glint Twinkle */
+@keyframes starTwinkle {
+  0%, 100% {
+    transform: scale(0.75) rotate(0deg);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.25) rotate(90deg);
+    opacity: 1;
+  }
+}
+
+.animate-star-twinkle {
+  animation: starTwinkle 2.2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
