@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   cleanDistDir: false,
   experimental: {
-    workerThreads: true,
+    workerThreads: false,
     cpus: 1,
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },

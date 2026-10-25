@@ -76,6 +76,8 @@ import {
   OfficialSocialBadge,
   detectSocialPlatformFromUrl,
   detectChannelBadgeLabel,
+  formatSocialInputToUrl,
+  SocialPlatformId,
 } from '@/lib/social-platforms';
 import { AVAILABLE_LINK_ICONS, DynamicIcon } from '@/components/ui/DynamicIcon';
 import {
@@ -461,12 +463,18 @@ export default function DashboardPage() {
   const handleSaveAll = async () => {
     setSaving(true);
     try {
+      const sanitizedSocialLinks = socialLinks.map((item) => ({
+        ...item,
+        url: formatSocialInputToUrl(item.platform as SocialPlatformId, item.url),
+      }));
+      setSocialLinks(sanitizedSocialLinks);
+
       const payload: Record<string, unknown> = {
         username,
         displayName,
         bio,
         locale: profileLocale,
-        socialLinks,
+        socialLinks: sanitizedSocialLinks,
         profileConfig: {
           themeId,
           layout,
@@ -2221,10 +2229,34 @@ export default function DashboardPage() {
                                 ];
                               });
                             }}
-                            placeholder={plat.placeholder}
-                            className="w-full bg-transparent text-xs text-white focus:outline-none placeholder:text-zinc-600 mt-0.5"
+                            onBlur={(e) => {
+                              const val = e.target.value.trim();
+                              if (val) {
+                                const formatted = formatSocialInputToUrl(plat.id, val);
+                                setSocialLinks((prev) => {
+                                  const filtered = prev.filter((item) => item.platform !== plat.id);
+                                  return [
+                                    ...filtered,
+                                    {
+                                      id: existing?.id || `temp_${plat.id}`,
+                                      platform: plat.id,
+                                      url: formatted,
+                                      isActive: true,
+                                    },
+                                  ];
+                                });
+                              }
+                            }}
+                            placeholder={isRtl ? `اكتب اليوزر أو الرابط الكامل` : plat.placeholder}
+                            className="w-full bg-transparent text-sm text-white font-medium focus:outline-none placeholder:text-zinc-500 mt-1"
                             dir="ltr"
                           />
+                          {hasValue && !existing?.url.startsWith('http') && (
+                            <div className="text-[11px] text-amber-400 font-mono truncate mt-1 flex items-center gap-1" dir="ltr">
+                              <span className="opacity-70">🔗 يتم التوليد:</span>
+                              <span className="font-semibold text-amber-300">{formatSocialInputToUrl(plat.id, existing?.url || '')}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

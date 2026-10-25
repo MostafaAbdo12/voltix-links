@@ -417,6 +417,78 @@ export function detectSocialPlatformFromUrl(url?: string): SocialPlatformMeta | 
 }
 
 /**
+ * Automatically generates a full, valid destination URL from a simple username, handle or phone number
+ */
+export function formatSocialInputToUrl(platformId: SocialPlatformId, rawInput: string): string {
+  const trimmed = (rawInput || '').trim();
+  if (!trimmed) return '';
+
+  // If already a complete URL, preserve it
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Strip leading '@' symbols
+  const clean = trimmed.replace(/^@+/, '');
+
+  switch (platformId) {
+    case 'instagram':
+      return `https://instagram.com/${clean}`;
+    case 'tiktok':
+      return `https://tiktok.com/@${clean}`;
+    case 'x':
+      return `https://x.com/${clean}`;
+    case 'youtube':
+      if (clean.startsWith('channel/') || clean.startsWith('c/')) {
+        return `https://youtube.com/${clean}`;
+      }
+      return `https://youtube.com/@${clean}`;
+    case 'telegram':
+      return `https://t.me/${clean}`;
+    case 'snapchat':
+      return `https://www.snapchat.com/add/${clean}`;
+    case 'facebook':
+      if (clean.startsWith('groups/')) {
+        return `https://facebook.com/${clean}`;
+      }
+      return `https://facebook.com/${clean}`;
+    case 'whatsapp': {
+      const digitsOnly = clean.replace(/[^0-9]/g, '');
+      if (digitsOnly.length >= 8) {
+        return `https://wa.me/${digitsOnly}`;
+      }
+      if (clean.startsWith('channel/')) {
+        return `https://whatsapp.com/${clean}`;
+      }
+      return `https://whatsapp.com/channel/${clean}`;
+    }
+    case 'discord':
+      if (clean.startsWith('invite/')) {
+        return `https://discord.gg/${clean.replace('invite/', '')}`;
+      }
+      return `https://discord.gg/${clean}`;
+    case 'twitch':
+      return `https://twitch.tv/${clean}`;
+    case 'kick':
+      return `https://kick.com/${clean}`;
+    case 'github':
+      return `https://github.com/${clean}`;
+    case 'linkedin':
+      if (clean.startsWith('in/') || clean.startsWith('company/')) {
+        return `https://linkedin.com/${clean}`;
+      }
+      return `https://linkedin.com/in/${clean}`;
+    case 'spotify':
+      if (clean.startsWith('artist/') || clean.startsWith('user/') || clean.startsWith('playlist/')) {
+        return `https://open.spotify.com/${clean}`;
+      }
+      return `https://open.spotify.com/artist/${clean}`;
+    default:
+      return `https://${clean}`;
+  }
+}
+
+/**
  * Detects whether a URL points to a specific Official Channel, Group, Community, or Server
  * (e.g., WhatsApp Channel, Telegram Channel, Discord Server, Facebook Group/Channel)
  */
