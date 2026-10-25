@@ -48,12 +48,22 @@ function extractSpotifyTrackId(url?: string): string | null {
   return match ? match[1] : null;
 }
 
-export function detectPlatformFromMediaUrl(url: string): 'spotify' | 'youtube' | 'soundcloud' | 'custom' {
+export type MediaPlatformType =
+  | 'youtube'
+  | 'youtube-music'
+  | 'spotify'
+  | 'soundcloud'
+  | 'anghami'
+  | 'custom';
+
+export function detectPlatformFromMediaUrl(url: string): MediaPlatformType {
   if (!url) return 'youtube';
   const clean = url.trim().toLowerCase();
+  if (/music\.youtube\.com/i.test(clean)) return 'youtube-music';
   if (/youtube\.com|youtu\.be/i.test(clean)) return 'youtube';
   if (/spotify\.com/i.test(clean)) return 'spotify';
   if (/soundcloud\.com/i.test(clean)) return 'soundcloud';
+  if (/anghami\.com/i.test(clean)) return 'anghami';
   if (/\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i.test(clean) || clean.startsWith('blob:') || clean.startsWith('data:audio')) return 'custom';
   return 'youtube';
 }
@@ -76,6 +86,174 @@ function isYouTubeCover(url?: string | null): boolean {
 function isDirectAudioFile(url?: string): boolean {
   if (!url) return false;
   return /\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i.test(url) || url.startsWith('blob:') || url.startsWith('data:audio');
+}
+
+export function getPlatformMeta(type?: string, accentFallback: string = '#D4AF37') {
+  switch (type) {
+    case 'youtube':
+      return {
+        id: 'youtube',
+        name: 'YouTube',
+        label: 'YOUTUBE VIDEO',
+        labelAr: 'يوتيوب',
+        color: '#EF4444',
+        accentGlow: 'rgba(239, 68, 68, 0.45)',
+        bgGradient: 'radial-gradient(ellipse at 85% 50%, rgba(239, 68, 68, 0.24) 0%, transparent 65%)',
+        badgeBg: 'rgba(239, 68, 68, 0.16)',
+        badgeBorder: 'rgba(239, 68, 68, 0.45)',
+        btnGradient: 'linear-gradient(135deg, #EF4444, #991B1B)',
+        iconBg: 'linear-gradient(135deg, #FF0000 0%, #CC0000 50%, #880000 100%)',
+        hasVideoClip: true,
+      };
+    case 'youtube-music':
+      return {
+        id: 'youtube-music',
+        name: 'YouTube Music',
+        label: 'YOUTUBE MUSIC',
+        labelAr: 'يوتيوب ميوزيك',
+        color: '#FF0000',
+        accentGlow: 'rgba(255, 0, 0, 0.45)',
+        bgGradient: 'radial-gradient(ellipse at 85% 50%, rgba(255, 0, 0, 0.26) 0%, transparent 65%)',
+        badgeBg: 'rgba(255, 0, 0, 0.16)',
+        badgeBorder: 'rgba(255, 0, 0, 0.45)',
+        btnGradient: 'linear-gradient(135deg, #FF0000, #7F1D1D)',
+        iconBg: 'radial-gradient(circle at 35% 35%, #FF3333 0%, #CC0000 60%, #660000 100%)',
+        hasVideoClip: true,
+      };
+    case 'spotify':
+      return {
+        id: 'spotify',
+        name: 'Spotify',
+        label: 'SPOTIFY STUDIO',
+        labelAr: 'سبوتيفاي',
+        color: '#1DB954',
+        accentGlow: 'rgba(29, 185, 84, 0.45)',
+        bgGradient: 'radial-gradient(ellipse at 85% 50%, rgba(29, 185, 84, 0.24) 0%, transparent 65%)',
+        badgeBg: 'rgba(29, 185, 84, 0.16)',
+        badgeBorder: 'rgba(29, 185, 84, 0.45)',
+        btnGradient: 'linear-gradient(135deg, #1DB954, #065F46)',
+        iconBg: 'radial-gradient(circle at 35% 35%, #22C55E 0%, #15803D 60%, #052E16 100%)',
+        hasVideoClip: false,
+      };
+    case 'soundcloud':
+      return {
+        id: 'soundcloud',
+        name: 'SoundCloud',
+        label: 'SOUNDCLOUD',
+        labelAr: 'ساوند كلاود',
+        color: '#FF5500',
+        accentGlow: 'rgba(255, 85, 0, 0.45)',
+        bgGradient: 'radial-gradient(ellipse at 85% 50%, rgba(255, 85, 0, 0.24) 0%, transparent 65%)',
+        badgeBg: 'rgba(255, 85, 0, 0.16)',
+        badgeBorder: 'rgba(255, 85, 0, 0.45)',
+        btnGradient: 'linear-gradient(135deg, #FF5500, #9A3412)',
+        iconBg: 'linear-gradient(135deg, #FF6A00 0%, #EA580C 50%, #7C2D12 100%)',
+        hasVideoClip: false,
+      };
+    case 'anghami':
+      return {
+        id: 'anghami',
+        name: 'Anghami',
+        label: 'ANGHAMI PLUS',
+        labelAr: 'أنغامي',
+        color: '#A855F7',
+        accentGlow: 'rgba(168, 85, 247, 0.45)',
+        bgGradient: 'radial-gradient(ellipse at 85% 50%, rgba(168, 85, 247, 0.24) 0%, transparent 65%)',
+        badgeBg: 'rgba(168, 85, 247, 0.16)',
+        badgeBorder: 'rgba(168, 85, 247, 0.45)',
+        btnGradient: 'linear-gradient(135deg, #A855F7, #581C87)',
+        iconBg: 'radial-gradient(circle at 35% 35%, #C084FC 0%, #9333EA 50%, #3B0764 100%)',
+        hasVideoClip: false,
+      };
+    case 'custom':
+    default:
+      return {
+        id: 'custom',
+        name: 'Lossless Audio',
+        label: 'LOSSLESS MASTER',
+        labelAr: 'صوت عالي الدقة',
+        color: accentFallback || '#D4AF37',
+        accentGlow: 'rgba(212, 175, 55, 0.45)',
+        bgGradient: 'radial-gradient(ellipse at 85% 50%, rgba(212, 175, 55, 0.2) 0%, transparent 65%)',
+        badgeBg: 'rgba(212, 175, 55, 0.16)',
+        badgeBorder: 'rgba(212, 175, 55, 0.45)',
+        btnGradient: 'linear-gradient(135deg, #D4AF37, #78350F)',
+        iconBg: 'linear-gradient(135deg, #FDE68A 0%, #D4AF37 50%, #78350F 100%)',
+        hasVideoClip: false,
+      };
+  }
+}
+
+export function PlatformBrandIcon({
+  type,
+  className = "w-7 h-7 sm:w-8 sm:h-8",
+}: {
+  type: string;
+  className?: string;
+}) {
+  switch (type) {
+    case 'youtube':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none">
+          <rect width="22" height="16" x="1" y="4" rx="4.5" fill="#FF0000" />
+          <polygon points="10 8.5 15.5 12 10.5 15.5" fill="#FFFFFF" />
+        </svg>
+      );
+    case 'youtube-music':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none">
+          <circle cx="12" cy="12" r="11" fill="#FF0000" />
+          <circle cx="12" cy="12" r="8" stroke="#FFFFFF" strokeWidth="1.6" fill="none" />
+          <circle cx="12" cy="12" r="5" stroke="#FFFFFF" strokeWidth="1.2" fill="none" />
+          <polygon points="10.5 9.2 15 12 10.5 14.8" fill="#FFFFFF" />
+        </svg>
+      );
+    case 'spotify':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none">
+          <circle cx="12" cy="12" r="11" fill="#1DB954" />
+          <path
+            d="M6.5 9.3C10 7.8 14.2 8 17.5 9.8M7.2 12.2C10.2 10.8 13.8 11 16.5 12.4M7.8 14.9C10.3 13.8 13.3 14 15.3 15.2"
+            stroke="#000000"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    case 'soundcloud':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none">
+          <rect width="22" height="22" x="1" y="1" rx="6" fill="#FF5500" />
+          <path
+            d="M5 14v-2M7 15v-4M9 16v-6M11 15.5v-7M13 16a3.5 3.5 0 0 0 3.5-3.5 3.5 3.5 0 0 0-3-3.45A4.5 4.5 0 0 0 6 11v5h7Z"
+            stroke="#FFFFFF"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+    case 'anghami':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none">
+          <rect width="22" height="22" x="1" y="1" rx="6" fill="#A855F7" />
+          <path
+            d="M5.5 13v-2M8 15.5v-7M10.5 17v-10M13 18.5v-13M15.5 17v-10M18 14.5v-5"
+            stroke="#FFFFFF"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      );
+    case 'custom':
+    default:
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none">
+          <circle cx="12" cy="12" r="11" fill="#D4AF37" />
+          <polygon points="6 12 10 7 14 17 18 12" stroke="#000000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+  }
 }
 import {
   ThemeConfig,
@@ -126,13 +304,13 @@ export interface MediaEmbedTrack {
   title: string;
   artist?: string;
   url: string;
-  type?: 'spotify' | 'youtube' | 'soundcloud' | 'custom';
+  type?: MediaPlatformType;
   coverUrl?: string;
 }
 
 export interface MediaEmbedConfig {
   enabled: boolean;
-  type: 'spotify' | 'youtube' | 'soundcloud' | 'custom';
+  type: MediaPlatformType;
   title: string;
   artist?: string;
   url?: string;
@@ -1445,32 +1623,24 @@ export function ProfileRenderer({
     const trackType =
       activeTrack.type ||
       (activeTrack.url ? detectPlatformFromMediaUrl(activeTrack.url) : 'youtube');
+    const platformMeta = getPlatformMeta(trackType, theme.accentColor);
+    const platformColor = platformMeta.color;
+    const platformLabel = platformMeta.label;
+
     const isYouTube =
-      trackType === 'youtube' || /youtube\.com|youtu\.be/i.test(activeTrack.url || '');
+      trackType === 'youtube' ||
+      trackType === 'youtube-music' ||
+      /youtube\.com|youtu\.be/i.test(activeTrack.url || '');
     const isSpotify =
       trackType === 'spotify' || /spotify\.com/i.test(activeTrack.url || '');
     const isSoundcloud =
       trackType === 'soundcloud' || /soundcloud\.com/i.test(activeTrack.url || '');
+    const isAnghami =
+      trackType === 'anghami' || /anghami\.com/i.test(activeTrack.url || '');
     const isDirectAudio = isDirectAudioFile(activeTrack.url);
 
     const ytVideoId = isYouTube ? extractYouTubeId(activeTrack.url) : null;
     const spotifyTrackId = isSpotify ? extractSpotifyTrackId(activeTrack.url) : null;
-
-    const platformColor = isYouTube
-      ? '#EF4444'
-      : isSpotify
-      ? '#10B981'
-      : isSoundcloud
-      ? '#F97316'
-      : theme.accentColor;
-
-    const platformLabel = isYouTube
-      ? 'YOUTUBE MUSIC'
-      : isSpotify
-      ? 'SPOTIFY STUDIO'
-      : isSoundcloud
-      ? 'SOUNDCLOUD'
-      : 'AUDIO STREAM';
 
     const isMasterpieceVisible = mediaFlipped || mediaHovered || mediaPlaying;
 
@@ -1532,32 +1702,43 @@ export function ProfileRenderer({
             }`}
           >
             {/* ====================================================================
-                FRONT FACE: SLEEK VOLTIX AUDIO IDENTITY CARD (DEFAULT STATE)
+                FRONT FACE: SLEEK VOLTIX AUDIO IDENTITY CARD (DYNAMIC BRANDING)
                 ==================================================================== */}
             <div
               className="w-full h-full min-h-[106px] sm:min-h-[114px] backface-hidden rounded-[26px] p-[2px] relative overflow-hidden shadow-2xl transition-all group/front-card"
               style={{
-                boxShadow: `0 20px 50px -10px rgba(0,0,0,0.85), 0 0 32px ${platformColor}25`,
+                boxShadow: `0 20px 50px -10px rgba(0,0,0,0.92), 0 0 38px ${platformMeta.accentGlow}`,
               }}
               onClick={() => setMediaFlipped(true)}
               title={isRtl ? 'انقر أو مرر لعرض المشغل الملكي' : 'Click or hover for Royal Player'}
             >
-              {/* Dynamic Laser Border Beam */}
+              {/* Dynamic Laser Border Beam adapting to Platform Brand Colors */}
               {!reduceMotion && (
                 <div
-                  className="absolute -inset-[150%] animate-border-beam opacity-85 pointer-events-none"
+                  className="absolute -inset-[150%] animate-border-beam opacity-90 pointer-events-none"
                   style={{
-                    background: `conic-gradient(from 0deg, transparent 0deg, ${platformColor} 65deg, #FFFFFF 80deg, ${platformColor} 95deg, transparent 135deg, transparent 360deg)`,
+                    background: `conic-gradient(from 0deg, transparent 0deg, ${platformMeta.color} 65deg, #FFFFFF 80deg, ${platformMeta.color} 95deg, transparent 135deg, transparent 360deg)`,
                   }}
                 />
               )}
 
-              {/* Spatial Glass Face */}
-              <div className="relative h-full min-h-[102px] sm:min-h-[110px] rounded-[24px] bg-[#07080E]/95 backdrop-blur-2xl p-3 sm:p-4 flex items-center justify-between border border-white/10 z-10 gap-3">
-                {/* Turntable Core + Track Metadata */}
+              {/* Spatial Glass Face Interior with Platform Ambient Radiance */}
+              <div
+                className="relative h-full min-h-[102px] sm:min-h-[110px] rounded-[24px] bg-[#07080E]/95 backdrop-blur-2xl p-3 sm:p-4 flex items-center justify-between border z-10 gap-3"
+                style={{
+                  backgroundImage: platformMeta.bgGradient,
+                  borderColor: `${platformMeta.color}35`,
+                }}
+              >
+                {/* Official Platform Brand App Badge + Metadata */}
                 <div className="flex items-center gap-3.5 min-w-0">
+                  {/* 3D Glossy Official Platform Badge */}
                   <div
-                    className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-xl group/vinyl"
+                    className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 cursor-pointer shadow-2xl transition-transform hover:scale-105 active:scale-95 group/app-badge overflow-hidden border border-white/20"
+                    style={{
+                      background: platformMeta.iconBg,
+                      boxShadow: `0 8px 25px -4px ${platformMeta.color}80, 0 0 15px ${platformMeta.color}50, inset 0 1px 2px rgba(255,255,255,0.6)`,
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setMediaPlaying((p) => !p);
@@ -1568,80 +1749,98 @@ export function ProfileRenderer({
                           ? 'إيقاف مؤقت'
                           : 'Pause'
                         : isRtl
-                        ? 'تشغيل'
-                        : 'Play'
+                        ? `تشغيل عبر ${platformMeta.name}`
+                        : `Play via ${platformMeta.name}`
                     }
                   >
-                    <div
-                      className={`absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel ${
-                        mediaPlaying ? '' : 'paused'
-                      }`}
-                      style={{
-                        background:
-                          'radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%)',
-                      }}
-                    >
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/10 flex items-center justify-center overflow-hidden">
-                        {activeTrack.coverUrl ? (
-                          <img
-                            src={activeTrack.coverUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div
-                            className="w-4 h-4 rounded-full shadow-md"
-                            style={{ backgroundColor: platformColor }}
-                          />
-                        )}
-                      </div>
-                    </div>
+                    {/* Top Specular Shine */}
+                    <div className="absolute top-0 inset-x-0 h-[45%] bg-gradient-to-b from-white/35 to-transparent pointer-events-none z-10" />
 
-                    <div className="relative z-10 w-6 h-6 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
+                    {/* Official Platform Vector Logo */}
+                    <PlatformBrandIcon
+                      type={platformMeta.id}
+                      className="w-7 h-7 sm:w-8 sm:h-8 drop-shadow-md z-10"
+                    />
+
+                    {/* Hover / Playing Overlay with animated equalizer */}
+                    <div
+                      className={`absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center transition-opacity z-20 ${
+                        mediaPlaying ? 'opacity-90' : 'opacity-0 group-hover/app-badge:opacity-100'
+                      }`}
+                    >
                       {mediaPlaying ? (
-                        <Pause className="w-3 h-3 fill-current" />
+                        <div className="flex items-end gap-0.5 h-3.5">
+                          <div className="w-1 h-full bg-white rounded-full eq-1" />
+                          <div className="w-1 h-full bg-white rounded-full eq-2" />
+                          <div className="w-1 h-full bg-white rounded-full eq-3" />
+                        </div>
                       ) : (
-                        <Play className="w-3 h-3 fill-current ml-0.5" />
+                        <Play className="w-4 h-4 fill-white text-white ml-0.5" />
                       )}
                     </div>
                   </div>
 
+                  {/* Track Metadata Info */}
                   <div className="min-w-0 text-start space-y-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
-                        className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-sm"
+                        className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-sm flex items-center gap-1.5"
                         style={{
-                          backgroundColor: `${platformColor}18`,
-                          color: platformColor,
-                          borderColor: `${platformColor}40`,
+                          backgroundColor: platformMeta.badgeBg,
+                          color: platformMeta.color,
+                          borderColor: platformMeta.badgeBorder,
                         }}
                       >
-                        {platformLabel}
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${mediaPlaying ? 'animate-ping' : ''}`}
+                          style={{ backgroundColor: platformMeta.color }}
+                        />
+                        <span>{platformMeta.label}</span>
                       </span>
+
                       <span className="text-[10px] font-mono text-zinc-400 font-bold">
                         LOSSLESS MASTER
                       </span>
+
                       {playlistTracks.length > 1 && (
-                        <span className="text-[10px] font-mono text-amber-300 font-bold px-1.5 py-0.2 bg-amber-400/10 rounded-full border border-amber-400/25">
+                        <span
+                          className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full border"
+                          style={{
+                            color: platformMeta.color,
+                            backgroundColor: platformMeta.badgeBg,
+                            borderColor: platformMeta.badgeBorder,
+                          }}
+                        >
                           {safeTrackIndex + 1}/{playlistTracks.length}
                         </span>
                       )}
                     </div>
+
                     <h3 className="text-sm sm:text-base font-black text-white truncate leading-snug">
                       {activeTrack.title}
                     </h3>
-                    <p className="text-xs text-zinc-400 truncate">
+                    <p
+                      className="text-xs truncate font-medium"
+                      style={{ color: `${platformMeta.color}EE` }}
+                    >
                       {activeTrack.artist ||
                         (isRtl ? 'فنان رسمي' : 'Official Creator')}
                     </p>
                   </div>
                 </div>
 
-                {/* Right / End: Visualizer Hint & Master Actions */}
-                <div className="flex items-center gap-2.5 shrink-0">
+                {/* Right / End: Visualizer Hint & Platform Actions */}
+                <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
                   {/* Interactive Flip Invitation Pill */}
-                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 border border-amber-400/35 text-[11px] font-bold text-amber-300 shadow-sm animate-pulse">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <div
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-bold shadow-sm animate-pulse"
+                    style={{
+                      backgroundColor: platformMeta.badgeBg,
+                      borderColor: platformMeta.badgeBorder,
+                      color: platformMeta.color,
+                    }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: platformMeta.color }} />
                     <span>
                       {isRtl
                         ? 'مرر الماوس للمشغل الملكي'
@@ -1657,7 +1856,13 @@ export function ProfileRenderer({
                         e.stopPropagation();
                         setShowVideoModal(true);
                       }}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-red-400 hover:text-white bg-red-500/15 hover:bg-red-500/30 border border-red-500/40 hover:border-red-500/60 shadow-lg transition-all hover:scale-105 active:scale-95 shrink-0"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center border shadow-lg transition-all hover:scale-105 active:scale-95 shrink-0 cursor-pointer"
+                      style={{
+                        backgroundColor: platformMeta.badgeBg,
+                        borderColor: platformMeta.badgeBorder,
+                        color: platformMeta.color,
+                        boxShadow: `0 0 15px ${platformMeta.accentGlow}`,
+                      }}
                       title={
                         isRtl
                           ? 'مشغل الفيديو كليب الرسمي (شاشة التلفاز)'
@@ -1676,10 +1881,10 @@ export function ProfileRenderer({
                       e.stopPropagation();
                       setMediaPlaying((p) => !p);
                     }}
-                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                     style={{
-                      background: `linear-gradient(135deg, ${platformColor}, #7F1D1D)`,
-                      boxShadow: `0 0 20px ${platformColor}70`,
+                      background: platformMeta.btnGradient,
+                      boxShadow: `0 0 22px ${platformMeta.color}80`,
                     }}
                     aria-label={mediaPlaying ? 'Pause' : 'Play'}
                   >
@@ -2057,14 +2262,8 @@ export function ProfileRenderer({
                     const trType =
                       tr.type ||
                       (tr.url ? detectPlatformFromMediaUrl(tr.url) : 'youtube');
-                    const trColor =
-                      trType === 'youtube'
-                        ? '#EF4444'
-                        : trType === 'spotify'
-                        ? '#10B981'
-                        : trType === 'soundcloud'
-                        ? '#F97316'
-                        : theme.accentColor;
+                    const trMeta = getPlatformMeta(trType, theme.accentColor);
+                    const trColor = trMeta.color;
 
                     return (
                       <div
@@ -2078,21 +2277,24 @@ export function ProfileRenderer({
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div
-                            className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-mono font-black shadow-sm ${
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm overflow-hidden ${
                               isCurrent
-                                ? 'text-black'
-                                : 'text-zinc-400 bg-white/5 border border-white/10'
+                                ? 'border border-white/30'
+                                : 'bg-white/5 border border-white/10'
                             }`}
-                            style={isCurrent ? { backgroundColor: trColor } : {}}
+                            style={{
+                              background: isCurrent ? trMeta.iconBg : undefined,
+                              boxShadow: isCurrent ? `0 0 12px ${trMeta.accentGlow}` : undefined,
+                            }}
                           >
                             {isCurrent && mediaPlaying ? (
                               <div className="flex items-end gap-0.5 h-3">
-                                <div className="w-0.5 h-full bg-black rounded-full eq-1" />
-                                <div className="w-0.5 h-full bg-black rounded-full eq-2" />
-                                <div className="w-0.5 h-full bg-black rounded-full eq-3" />
+                                <div className="w-0.5 h-full bg-white rounded-full eq-1" />
+                                <div className="w-0.5 h-full bg-white rounded-full eq-2" />
+                                <div className="w-0.5 h-full bg-white rounded-full eq-3" />
                               </div>
                             ) : (
-                              `#${idx + 1}`
+                              <PlatformBrandIcon type={trType} className="w-4.5 h-4.5 drop-shadow" />
                             )}
                           </div>
 

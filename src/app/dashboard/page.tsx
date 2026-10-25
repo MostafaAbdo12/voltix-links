@@ -2561,10 +2561,14 @@ export default function DashboardPage() {
                         const trColor =
                           trType === 'youtube'
                             ? '#EF4444'
+                            : trType === 'youtube-music'
+                            ? '#FF0000'
                             : trType === 'spotify'
-                            ? '#10B981'
+                            ? '#1DB954'
                             : trType === 'soundcloud'
-                            ? '#F97316'
+                            ? '#FF5500'
+                            : trType === 'anghami'
+                            ? '#A855F7'
                             : '#D4AF37';
 
                         return (
@@ -2666,10 +2670,12 @@ export default function DashboardPage() {
                                   }
                                   className="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white"
                                 >
-                                  <option value="youtube">YouTube / YouTube Music</option>
-                                  <option value="spotify">Spotify</option>
-                                  <option value="soundcloud">SoundCloud</option>
-                                  <option value="custom">Direct MP3 / Audio Stream</option>
+                                  <option value="youtube">YouTube (فيديو / كليب)</option>
+                                  <option value="youtube-music">YouTube Music (يوتيوب ميوزيك)</option>
+                                  <option value="spotify">Spotify (سبوتيفاي)</option>
+                                  <option value="soundcloud">SoundCloud (ساوند كلاود)</option>
+                                  <option value="anghami">Anghami (أنغامي)</option>
+                                  <option value="custom">Direct MP3 / Lossless (ملف صوتي)</option>
                                 </select>
                               </div>
 
