@@ -47,6 +47,7 @@ import {
   Radio,
   Terminal,
   Activity,
+  Loader2,
 } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n';
 import {
@@ -225,6 +226,9 @@ export default function DashboardPage() {
     artist: '',
     url: '',
   });
+  const [fetchingMetadataIdx, setFetchingMetadataIdx] = useState<number | null>(null);
+  const autoFetchDebounceRef = useRef<Record<number, NodeJS.Timeout>>({});
+
   const [qrConfig, setQrConfig] = useState({
     fgColor: '#D4AF37',
     bgColor: '#050508',
@@ -666,6 +670,41 @@ export default function DashboardPage() {
       url: nextTracks[0]?.url || '',
       type: nextTracks[0]?.type || 'youtube',
     }));
+  };
+
+  const handleFetchTrackMetadata = async (idx: number, urlToFetch?: string) => {
+    const targetUrl = (urlToFetch !== undefined ? urlToFetch : playlistTracks[idx]?.url || '').trim();
+    if (!targetUrl || !targetUrl.startsWith('http')) return;
+
+    setFetchingMetadataIdx(idx);
+    try {
+      const res = await fetch('/api/media-metadata', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        handleUpdatePlaylistTrack(idx, {
+          url: targetUrl,
+          type: data.platform || detectPlatformFromMediaUrl(targetUrl),
+          title: data.title || playlistTracks[idx]?.title || '',
+          artist: data.artist || playlistTracks[idx]?.artist || '',
+          coverUrl: data.coverUrl || playlistTracks[idx]?.coverUrl || '',
+        });
+        showNotification(
+          isRtl
+            ? `✨ تم استخراج البيانات تلقائياً: ${data.artist ? `${data.artist} - ` : ''}${data.title}`
+            : `✨ Auto-detected: ${data.artist ? `${data.artist} - ` : ''}${data.title}`
+        );
+      } else if (data.error) {
+        showNotification(data.error);
+      }
+    } catch (err) {
+      console.error('Failed to auto-fetch track metadata:', err);
+    } finally {
+      setFetchingMetadataIdx(null);
+    }
   };
 
   const handleDeletePlaylistTrack = (index: number) => {
@@ -2637,23 +2676,79 @@ export default function DashboardPage() {
 
                             {/* Track Inputs Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                              {/* Stream URL with Instant Platform Detection */}
-                              <div className="sm:col-span-2">
-                                <label className="block text-[11px] text-zinc-400 mb-1">
-                                  {isRtl ? 'رابط المقطع / الاستماع (YouTube, Spotify, SoundCloud, MP3)' : 'Stream URL (YouTube, Spotify, SoundCloud, MP3)'}
-                                </label>
-                                <input
-                                  type="text"
-                                  value={tr.url || ''}
-                                  onChange={(e) => {
-                                    const newUrl = e.target.value;
-                                    const detected = detectPlatformFromMediaUrl(newUrl);
-                                    handleUpdatePlaylistTrack(idx, { url: newUrl, type: detected });
-                                  }}
-                                  placeholder="https://music.youtube.com/watch?v=... أو https://open.spotify.com/..."
-                                  className="w-full rounded-xl bg-black/60 border border-white/15 focus:border-amber-400/60 px-3 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
-                                  dir="ltr"
-                                />
+                              {/* Stream URL with Instant Platform Detection & Auto Metadata Fetch */}
+                              <div className="sm:col-span-2 space-y-1.5">
+                                <div className="flex items-center justify-between gap-2">
+                                  <label className="block text-[11px] text-zinc-400 font-medium">
+                                    {isRtl ? 'رابط المقطع / الاستماع (YouTube, Spotify, SoundCloud, MP3)' : 'Stream URL (YouTube, Spotify, SoundCloud, MP3)'}
+                                  </label>
+                                  <button
+                                    type="button"
+                                    disabled={fetchingMetadataIdx === idx || !tr.url?.trim().startsWith('http')}
+                                    onClick={() => handleFetchTrackMetadata(idx, tr.url)}
+                                    className="px-2.5 py-1 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 disabled:opacity-30 disabled:pointer-events-none text-[10px] font-bold flex items-center gap-1.5 border border-amber-400/30 transition-all cursor-pointer shadow-sm active:scale-95"
+                                    title={isRtl ? 'جلب بيانات المقطع واسم الفنان والغلاف تلقائياً' : 'Auto-fetch title, artist and cover'}
+                                  >
+                                    {fetchingMetadataIdx === idx ? (
+                                      <>
+                                        <Loader2 className="w-3 h-3 animate-spin text-amber-400" />
+                                        <span>{isRtl ? 'جارٍ الجلب الذكي...' : 'Fetching...'}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Sparkles className="w-3 h-3 text-amber-400" />
+                                        <span>{isRtl ? 'جلب تلقائي للبيانات ✨' : 'Auto-Fetch Info ✨'}</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    value={tr.url || ''}
+                                    onChange={(e) => {
+                                      const newUrl = e.target.value;
+                                      const detected = detectPlatformFromMediaUrl(newUrl);
+                                      handleUpdatePlaylistTrack(idx, { url: newUrl, type: detected });
+
+                                      if (newUrl.trim().startsWith('http://') || newUrl.trim().startsWith('https://')) {
+                                        if (autoFetchDebounceRef.current[idx]) {
+                                          clearTimeout(autoFetchDebounceRef.current[idx]);
+                                        }
+                                        autoFetchDebounceRef.current[idx] = setTimeout(() => {
+                                          handleFetchTrackMetadata(idx, newUrl);
+                                        }, 650);
+                                      }
+                                    }}
+                                    onPaste={(e) => {
+                                      const pastedText = e.clipboardData.getData('text');
+                                      if (pastedText && (pastedText.trim().startsWith('http://') || pastedText.trim().startsWith('https://'))) {
+                                        const detected = detectPlatformFromMediaUrl(pastedText);
+                                        handleUpdatePlaylistTrack(idx, { url: pastedText, type: detected });
+                                        if (autoFetchDebounceRef.current[idx]) {
+                                          clearTimeout(autoFetchDebounceRef.current[idx]);
+                                        }
+                                        setTimeout(() => {
+                                          handleFetchTrackMetadata(idx, pastedText);
+                                        }, 120);
+                                      }
+                                    }}
+                                    placeholder="https://music.youtube.com/watch?v=... أو https://open.spotify.com/..."
+                                    className={`w-full rounded-xl bg-black/60 border ${
+                                      fetchingMetadataIdx === idx
+                                        ? 'border-amber-400/80 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                                        : 'border-white/15 focus:border-amber-400/60'
+                                    } px-3 py-2 text-xs text-white placeholder-zinc-600 transition-all`}
+                                    dir="ltr"
+                                  />
+                                  {fetchingMetadataIdx === idx && (
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-[10px] text-amber-300 font-medium pointer-events-none bg-black/85 px-2 py-0.5 rounded-md border border-amber-400/30">
+                                      <Loader2 className="w-3 h-3 animate-spin text-amber-400" />
+                                      <span>{isRtl ? 'جارٍ استخراج المنصة والفنان والعنوان...' : 'Auto-detecting info...'}</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
                               {/* Platform Selector */}
@@ -2681,18 +2776,37 @@ export default function DashboardPage() {
 
                               {/* Track Title */}
                               <div>
-                                <label className="block text-[11px] text-zinc-400 mb-1">
-                                  {isRtl ? 'عنوان المقطع / البودكاست' : 'Track / Episode Title'}
-                                </label>
-                                <input
-                                  type="text"
-                                  value={tr.title || ''}
-                                  onChange={(e) =>
-                                    handleUpdatePlaylistTrack(idx, { title: e.target.value })
-                                  }
-                                  placeholder={isRtl ? 'مثال: Yahh' : 'e.g. Midnight Symphony'}
-                                  className="w-full rounded-xl bg-black/60 border border-white/15 focus:border-amber-400/60 px-3 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
-                                />
+                                <div className="flex items-center justify-between gap-1 mb-1">
+                                  <label className="block text-[11px] text-zinc-400">
+                                    {isRtl ? 'عنوان المقطع / البودكاست' : 'Track / Episode Title'}
+                                  </label>
+                                  {tr.coverUrl && (
+                                    <span className="text-[10px] text-emerald-400/90 flex items-center gap-1 font-mono">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                      {isRtl ? 'تم جلب الغلاف' : 'Cover synced'}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {tr.coverUrl && (
+                                    <div className="relative w-9 h-9 rounded-lg overflow-hidden border border-white/20 shrink-0 bg-black/40 shadow-sm" title={isRtl ? 'غلاف المقطع المستخرج' : 'Extracted cover'}>
+                                      <img
+                                        src={tr.coverUrl}
+                                        alt={tr.title || 'Cover'}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  <input
+                                    type="text"
+                                    value={tr.title || ''}
+                                    onChange={(e) =>
+                                      handleUpdatePlaylistTrack(idx, { title: e.target.value })
+                                    }
+                                    placeholder={isRtl ? 'مثال: Yahh' : 'e.g. Midnight Symphony'}
+                                    className="w-full rounded-xl bg-black/60 border border-white/15 focus:border-amber-400/60 px-3 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
+                                  />
+                                </div>
                               </div>
 
                               {/* Artist / Channel Name */}
