@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoltiX Royal Gold Masterpiece Player — المعاينة التفاعلية الحية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Alexandria', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            gold: {
+              300: '#FDE68A',
+              400: '#F59E0B',
+              500: '#D4AF37',
+              600: '#B8860B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #040306;
+      color: #F8FAFC;
+      font-family: 'Alexandria', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .perspective-1200 {
+      perspective: 1200px;
+      -webkit-perspective: 1200px;
+    }
+
+    .preserve-3d {
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    @keyframes reelSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .animate-spin-reel {
+      animation: reelSpin 3s linear infinite;
+    }
+
+    .paused {
+      animation-play-state: paused !important;
+    }
+
+    @keyframes symmetricalWave {
+      0%, 100% {
+        transform: scaleY(0.25);
+        opacity: 0.55;
+      }
+      50% {
+        transform: scaleY(1.15);
+        opacity: 1;
+      }
+    }
+
+    .animate-symmetrical-wave {
+      animation: symmetricalWave 1.25s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    @keyframes redJewelGlow {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.95), 0 0 20px rgba(212, 175, 55, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 18px rgba(255, 60, 60, 1), 0 0 32px rgba(245, 158, 11, 0.85);
+      }
+    }
+
+    .animate-jewel-glow {
+      animation: redJewelGlow 2.2s ease-in-out infinite;
+    }
+
+    @keyframes rotateBorderBeam {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .animate-border-beam {
+      animation: rotateBorderBeam 7s linear infinite;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.3);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 sm:p-8 bg-[#040306] selection:bg-amber-500/30">
+
+  <!-- Ambient Luxury Background Illumination -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-b from-amber-600/15 via-red-900/10 to-transparent blur-[120px] rounded-full"></div>
+    <div class="absolute bottom-10 -left-20 w-[450px] h-[350px] bg-red-600/10 blur-[130px] rounded-full"></div>
+    <div class="absolute top-1/2 -right-20 w-[450px] h-[350px] bg-amber-500/10 blur-[130px] rounded-full"></div>
+    <!-- Fine Subtle Grid -->
+    <div class="absolute inset-0 bg-[radial-gradient(rgba(212,175,55,0.08)_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="relative z-10 w-full max-w-4xl text-center pt-4 pb-8 space-y-3">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-bold shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+      <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+      <span>VOLTIX ROYAL AUDIO SUITE • المعاينة الحية الشاملة</span>
+    </div>
+    <h1 class="text-2xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500 leading-tight">
+      مشغل الموسيقى الملكي ثلاثي الأبعاد (Royal Gold Masterpiece)
+    </h1>
+    <p class="text-xs sm:text-sm text-zinc-400 max-w-2xl mx-auto">
+      مستوحى بدقة واحترافية من التصميم الملكي الفاخر — مع بطاقة أنيقة تتحول بتأثير ترانزيشن 3D انسيابي عند تمرير الماوس أو النقر إلى الكبسولة الملكية.
+    </p>
+
+    <!-- Interactive Mode Controllers -->
+    <div class="flex flex-wrap items-center justify-center gap-2.5 pt-3 text-xs font-bold">
+      <button id="btn-toggle-hover" onclick="toggleHoverDemo()" class="px-3.5 py-2 rounded-xl bg-amber-400/15 text-amber-300 border border-amber-400/35 hover:bg-amber-400/25 transition-all shadow-sm">
+        ✦ اختبار الترانزيشن التلقائي (Auto Flip)
+      </button>
+      <button id="btn-toggle-play" onclick="togglePlayState()" class="px-3.5 py-2 rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30 transition-all shadow-sm flex items-center gap-1.5">
+        <span id="play-btn-dot" class="w-2 h-2 rounded-full bg-red-400"></span>
+        <span id="play-btn-text">تشغيل النغمات والموجات</span>
+      </button>
+      <button onclick="toggleQueueDemo()" class="px-3.5 py-2 rounded-xl bg-white/5 text-zinc-300 border border-white/10 hover:bg-white/10 transition-all shadow-sm">
+        ☰ فتح / غلق قائمة التشغيل
+      </button>
+    </div>
+  </header>
+
+  <!-- Interactive 3D Showcase Arena -->
+  <main class="relative z-10 w-full max-w-3xl my-auto py-6">
+
+    <!-- Status Tooltip Notice -->
+    <div class="text-center pb-4">
+      <span id="transition-status" class="inline-block text-[11px] font-mono text-amber-300/80 bg-black/60 px-3 py-1 rounded-full border border-amber-400/20">
+        حالة العرض: <strong>البطاقة الافتراضية (وجه أمامي)</strong> — مرر الماوس فوقها أو انقر لرؤية الترانزيشن الملكي
+      </span>
+    </div>
+
+    <!-- 3D PERSPECTIVE FLIP CONTAINER -->
+    <div
+      id="flip-container"
+      class="perspective-1200 w-full min-h-[114px] cursor-pointer select-none relative group"
+      onmouseenter="onCardMouseEnter()"
+      onmouseleave="onCardMouseLeave()"
+      onclick="onCardClick()"
+    >
+      <div
+        id="card-flipper"
+        class="relative w-full h-full min-h-[114px] preserve-3d transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        style="transform: rotateY(0deg);"
+      >
+
+        <!-- ==================================================================
+             FRONT FACE: SLEEK VOLTIX AUDIO IDENTITY CARD
+             ================================================================== -->
+        <div
+          id="face-front"
+          class="w-full min-h-[114px] backface-hidden rounded-[28px] p-[2px] relative overflow-hidden shadow-2xl transition-all"
+          style="box-shadow: 0 20px 50px -10px rgba(0,0,0,0.9), 0 0 35px rgba(212, 175, 55, 0.25);"
+        >
+          <!-- Border Beam Laser Glow -->
+          <div
+            class="absolute -inset-[150%] animate-border-beam opacity-90 pointer-events-none"
+            style="background: conic-gradient(from 0deg, transparent 0deg, #D4AF37 65deg, #FFFFFF 80deg, #D4AF37 95deg, transparent 135deg, transparent 360deg);"
+          ></div>
+
+          <!-- Spatial Glass Face Interior -->
+          <div class="relative h-full min-h-[110px] rounded-[26px] bg-[#07080E]/95 backdrop-blur-2xl p-3.5 sm:p-4.5 flex items-center justify-between border border-white/10 z-10 gap-3">
+            <!-- Left: Turntable Vinyl Core + Metadata -->
+            <div class="flex items-center gap-3.5 min-w-0">
+              <!-- Spinning Vinyl Disc -->
+              <div
+                class="relative w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-xl group/vinyl"
+                onclick="event.stopPropagation(); togglePlayState();"
+                title="تشغيل / إيقاف"
+              >
+                <div
+                  id="front-vinyl-disc"
+                  class="absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel paused"
+                  style="background: radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%);"
+                >
+                  <div class="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=300&auto=format&fit=crop&q=80"
+                      alt="Album Artwork"
+                      class="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                <div class="relative z-10 w-6 h-6 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
+                  <svg id="front-play-icon" class="w-3 h-3 fill-current ml-0.5" viewBox="0 0 24 24">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Metadata Info -->
+              <div class="min-w-0 text-start space-y-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/40 shadow-sm">
+                    YOUTUBE MUSIC
+                  </span>
+                  <span class="text-[10px] font-mono text-zinc-400 font-bold">
+                    LOSSLESS MASTER
+                  </span>
+                  <span class="text-[10px] font-mono text-amber-300 font-bold px-1.5 py-0.2 bg-amber-400/10 rounded-full border border-amber-400/25">
+                    1 / 3
+                  </span>
+                </div>
+                <h3 class="text-sm sm:text-base font-black text-white truncate leading-snug">
+                  ليلة مختلفة
+                </h3>
+                <p class="text-xs text-amber-200/80 truncate">
+                  سليم • النسخة الأصلية الملكية
+                </p>
+              </div>
+            </div>
+
+            <!-- Right: Interactive Hover Prompt & Fast Play Button -->
+            <div class="flex items-center gap-2.5 shrink-0">
+              <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 border border-amber-400/35 text-[11px] font-bold text-amber-300 shadow-sm animate-pulse">
+                <span>✦ مرر الماوس للمشغل الملكي</span>
+              </div>
+
+              <button
+                type="button"
+                onclick="event.stopPropagation(); togglePlayState();"
+                class="w-11 h-11 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                style="background: linear-gradient(135deg, #EF4444, #7F1D1D); box-shadow: 0 0 22px rgba(239,68,68,0.7);"
+                aria-label="Play/Pause"
+              >
+                <svg id="front-action-icon" class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             BACK FACE: VOLTIX ROYAL GOLD MASTERPIECE CAPSULE
+             Matching media_1792946339652_63524eb1.png Pixel-by-Pixel
+             ================================================================== -->
+        <div
+          id="face-back"
+          class="w-full min-h-[114px] absolute inset-0 backface-hidden rounded-[34px] sm:rounded-full p-[2.5px] shadow-2xl transition-all"
+          style="
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #FFF0B3 0%, #D4AF37 20%, #7A5711 45%, #FFDF73 72%, #A88121 100%);
+            box-shadow: 0 25px 65px -12px rgba(0,0,0,0.98), 0 0 38px rgba(212, 175, 55, 0.42), inset 0 1px 2px rgba(255,255,255,0.8);
+          "
+          onclick="event.stopPropagation();"
+        >
+          <!-- Specular Highlight Glints (Top & Bottom Center Flares) -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-44 sm:w-56 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95 shadow-[0_0_10px_#FFFFFF] pointer-events-none z-30"></div>
+          <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-36 sm:w-48 h-[2px] bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-85 shadow-[0_0_8px_rgba(251,191,36,0.8)] pointer-events-none z-30"></div>
+
+          <!-- Obsidian & Crimson Silk Luxury Chamber -->
+          <div
+            class="relative w-full h-full min-h-[109px] rounded-[32px] sm:rounded-full bg-[#060406] px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3 sm:gap-4.5 border border-amber-400/25 overflow-hidden z-20"
+            style="
+              background-image:
+                radial-gradient(ellipse at 75% 35%, rgba(185, 28, 28, 0.28) 0%, transparent 60%),
+                radial-gradient(ellipse at 25% 65%, rgba(212, 175, 55, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 50%, rgba(12, 8, 12, 0.95) 0%, #060406 100%);
+            "
+            dir="ltr"
+          >
+            <!-- 1. LEFT: 3D Turntable Vinyl Disc (Concentric Grooves + Album Art) -->
+            <div
+              class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-2xl group/vinyl"
+              onclick="togglePlayState()"
+              style="box-shadow: 0 0 0 1.5px rgba(212, 175, 55, 0.85), 0 4px 18px rgba(0,0,0,0.95);"
+              title="تشغيل / إيقاف الأسطوانة"
+            >
+              <!-- Concentric Circular Vinyl Grooves -->
+              <div
+                id="back-vinyl-disc"
+                class="absolute inset-0 rounded-full flex items-center justify-center animate-spin-reel paused"
+                style="background: repeating-radial-gradient(circle, #242424 0px, #242424 1px, #0e0e0e 1.5px, #0e0e0e 3px);"
+              >
+                <!-- Center Circular Label Artwork -->
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-amber-300/80 overflow-hidden shadow-inner relative flex items-center justify-center bg-black">
+                  <img
+                    src="https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=300&auto=format&fit=crop&q=80"
+                    alt="Album Cover"
+                    class="w-full h-full object-cover"
+                  />
+                  <!-- Spindle Center Hole -->
+                  <div class="absolute w-2 h-2 rounded-full bg-amber-400 border border-white/60 shadow-md"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. CENTER-LEFT: Track Metadata & Lossless Badge -->
+            <div class="min-w-0 max-w-[130px] sm:max-w-[170px] text-left shrink-0">
+              <div class="flex items-center gap-1.5 mb-0.5">
+                <span class="text-[8.5px] sm:text-[9px] font-bold tracking-[0.2em] uppercase text-zinc-400 font-mono">
+                  NOW PLAYING
+                </span>
+                <span class="h-[1px] w-5 sm:w-7 bg-gradient-to-r from-amber-400/70 to-transparent inline-block"></span>
+              </div>
+              <h3 class="text-sm sm:text-base font-black text-white leading-tight truncate font-sans" dir="rtl">
+                ليلة مختلفة
+              </h3>
+              <p class="text-xs text-amber-200/80 truncate leading-snug font-sans" dir="rtl">
+                سليم
+              </p>
+              <div class="flex items-center gap-1.5 text-[8.5px] sm:text-[9px] font-mono tracking-wider text-amber-400/90 pt-0.5">
+                <span>LOSSLESS</span>
+                <span class="w-1 h-1 rounded-full bg-amber-400/70"></span>
+                <span>48 kHz</span>
+              </div>
+            </div>
+
+            <!-- 3. CENTER: Symmetrical Mirrored Waveform + Ruby Jewel Timeline Scrubber -->
+            <div class="flex-1 min-w-0 flex flex-col justify-center px-1 sm:px-2 gap-1.5">
+              <!-- Symmetrical Mirrored Acoustic Waveform -->
+              <div id="waveform-container" class="flex items-center justify-center gap-[2px] sm:gap-[2.5px] h-6 sm:h-7 overflow-hidden">
+                <!-- Bars will be generated via JavaScript -->
+              </div>
+
+              <!-- Timeline Scrubber with 3D Spherical Ruby-Red Jewel Knob -->
+              <div class="flex items-center gap-2">
+                <span id="label-current-time" class="text-[9.5px] sm:text-[10px] font-mono font-bold text-amber-200/90 shrink-0">
+                  01:24
+                </span>
+
+                <div
+                  id="scrubber-track"
+                  class="relative flex-1 h-3 flex items-center cursor-pointer group/scrub"
+                  onclick="onScrubberClick(event)"
+                  title="تقديم وتأخير المقطع"
+                >
+                  <!-- Background Inactive Groove -->
+                  <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                    <!-- Active Filled Track -->
+                    <div
+                      id="scrubber-fill"
+                      class="h-full rounded-full bg-gradient-to-r from-amber-400 via-red-500 to-red-600 shadow-[0_0_8px_rgba(239,68,68,0.7)]"
+                      style="width: 37%;"
+                    ></div>
+                  </div>
+
+                  <!-- 3D Spherical Ruby-Red Jewel Knob -->
+                  <div
+                    id="ruby-jewel-knob"
+                    class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-amber-300/90 shadow-[0_0_12px_rgba(239,68,68,0.95)] animate-jewel-glow transition-all duration-75 pointer-events-none"
+                    style="
+                      left: 37%;
+                      background: radial-gradient(circle at 35% 30%, #FFA8A8 0%, #EF4444 40%, #7F1D1D 80%, #2A0404 100%);
+                      box-shadow: 0 0 10px rgba(239, 68, 68, 0.95), 0 0 20px rgba(212, 175, 55, 0.5), inset 0 1px 1.5px rgba(255,255,255,0.7);
+                    "
+                  ></div>
+                </div>
+
+                <span id="label-duration" class="text-[9.5px] sm:text-[10px] font-mono font-bold text-zinc-400 shrink-0">
+                  03:45
+                </span>
+              </div>
+            </div>
+
+            <!-- 4. RIGHT: Master Brushed Gold Controls Suite -->
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <!-- Skip Previous |< -->
+              <button
+                type="button"
+                onclick="skipSeconds(-10)"
+                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                title="تراجع 10 ثوانٍ"
+              >
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                  <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line>
+                </svg>
+              </button>
+
+              <!-- MASTER BRUSHED GOLD CIRCULAR PLAY/PAUSE BUTTON -->
+              <button
+                type="button"
+                id="master-gold-play-btn"
+                onclick="togglePlayState()"
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer relative group/play shrink-0"
+                style="
+                  background: radial-gradient(circle at 35% 35%, #FFF8D6 0%, #E6C265 35%, #B88A28 70%, #6E4F10 100%);
+                  box-shadow: 0 4px 18px rgba(0,0,0,0.9), 0 0 22px rgba(212, 175, 55, 0.5), inset 0 1px 2px rgba(255,255,255,0.85);
+                "
+                aria-label="Play/Pause Master"
+              >
+                <div class="absolute inset-[3px] rounded-full border border-amber-200/50 pointer-events-none"></div>
+                <svg id="master-play-icon" class="w-4 h-4 sm:w-5 sm:h-5 fill-black text-black ml-0.5" viewBox="0 0 24 24">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+
+              <!-- Skip Next >| -->
+              <button
+                type="button"
+                onclick="skipSeconds(10)"
+                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                title="تقديم 10 ثوانٍ"
+              >
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                  <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line>
+                </svg>
+              </button>
+
+              <!-- YouTube Video Clip Lacquer Button -->
+              <button
+                type="button"
+                onclick="openVideoDemo()"
+                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 active:scale-90 shadow-lg relative cursor-pointer shrink-0"
+                style="
+                  background: radial-gradient(circle at 35% 30%, #FF6B6B 0%, #DC2626 50%, #7F1D1D 90%, #350505 100%);
+                  box-shadow: 0 0 12px rgba(239, 68, 68, 0.75), inset 0 1px 1px rgba(255,255,255,0.6);
+                  border: 1px solid rgba(254, 202, 202, 0.4);
+                "
+                title="مشاهدة الفيديو كليب بدقة عالية"
+              >
+                <svg class="w-3.5 h-3.5 fill-white ml-0.5" viewBox="0 0 24 24">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+
+              <!-- Heart / Favorite Button -->
+              <button
+                type="button"
+                id="btn-favorite"
+                onclick="toggleFavorite()"
+                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-200/70 hover:text-amber-200 bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-110 active:scale-90 shadow-md shrink-0"
+                title="إضافة للمفضلة"
+              >
+                <svg id="heart-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
+                </svg>
+              </button>
+
+              <!-- Flip Back Button -->
+              <button
+                type="button"
+                onclick="flipBackToCard()"
+                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-110 active:scale-90 shadow-md shrink-0"
+                title="العودة للبطاقة الأصلية"
+              >
+                <svg class="w-3.5 h-3.5 stroke-current fill-none" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                  <path d="M16 21h5v-5"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Expandable Playlist Queue Demo -->
+    <div id="playlist-queue" class="hidden mt-4 p-4 rounded-[24px] bg-[#07080E]/95 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all">
+      <div class="flex items-center justify-between pb-3 text-xs font-bold text-zinc-400 border-b border-white/10">
+        <span class="flex items-center gap-2 text-amber-300">
+          <span>قائمة التشغيل المتتالية (Continuous Queue)</span>
+        </span>
+        <span class="text-[11px] text-zinc-500 font-mono">انقر لاختيار مقطع</span>
+      </div>
+      <div class="mt-3 space-y-2">
+        <div class="p-2.5 rounded-xl bg-white/15 border border-white/25 flex items-center justify-between cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-lg bg-red-500 text-black font-black text-xs flex items-center justify-center">1</span>
+            <div>
+              <div class="text-xs font-bold text-white">ليلة مختلفة</div>
+              <div class="text-[10px] text-zinc-400">سليم</div>
+            </div>
+          </div>
+          <span class="text-[10px] text-amber-300 font-mono">03:45</span>
+        </div>
+        <div class="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between hover:bg-white/10 transition-all cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <span class="w-6 h-6 rounded-lg bg-white/10 text-zinc-300 font-black text-xs flex items-center justify-center">2</span>
+            <div>
+              <div class="text-xs font-bold text-zinc-200">صوت السكون الملكي</div>
+              <div class="text-[10px] text-zinc-500">VoltiX Studio Master</div>
+            </div>
+          </div>
+          <span class="text-[10px] text-zinc-500 font-mono">04:12</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Video Modal Simulation -->
+  <div id="video-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 hidden">
+    <div class="relative w-full max-w-2xl bg-[#08080c] rounded-2xl border border-white/20 p-4 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-white/10 pb-2">
+        <div class="text-sm font-bold text-white flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+          <span>معاينة الفيديو كليب الرسمي بدقة عالية (Cinema Grade)</span>
+        </div>
+        <button onclick="closeVideoDemo()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold">✕</button>
+      </div>
+      <div class="aspect-video w-full rounded-xl bg-black overflow-hidden relative flex items-center justify-center">
+        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80" class="w-full h-full object-cover opacity-60" />
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-gradient-to-t from-black via-transparent to-transparent">
+          <div class="w-16 h-16 rounded-full bg-red-600/90 flex items-center justify-center text-white shadow-2xl mb-2">
+            <svg class="w-7 h-7 fill-white ml-1" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          </div>
+          <h4 class="text-white font-bold text-base">ليلة مختلفة — سليم</h4>
+          <p class="text-xs text-zinc-300">يتم تشغيل الفيديو عبر مشغل VoltiX المستقل خارج نطاق الكبسولة بنظام Stacking Context معزول</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Specs -->
+  <footer class="relative z-10 w-full max-w-4xl text-center text-xs text-zinc-500 py-4 border-t border-white/5 space-y-1">
+    <p>VoltiX Links Platform — Sovereign Design System 2026</p>
+    <p class="text-[11px] text-zinc-600">3D Card Flip • Symmetrical Mirrored Waveform • Spherical Ruby-Red Jewel • Concentric Brushed Gold Core</p>
+  </footer>
+
+  <script>
+    // State management
+    let isPlaying = false;
+    let isFlipped = false;
+    let isHovered = false;
+    let isAutoHover = false;
+    let isFavorite = false;
+    let currentTime = 84; // 01:24
+    const totalDuration = 225; // 03:45
+    let playInterval = null;
+
+    // Symmetrical Mirrored Waveform Heights (mimicking reference image)
+    const WAVE_BARS = [
+      20, 24, 30, 42, 58, 75, 92, 100, 95, 82, 65, 48, 36, 30, 36, 50,
+      70, 88, 100, 94, 82, 65, 50, 40, 46, 62, 80, 92, 82, 68, 52, 38,
+      28, 22, 18, 14
+    ];
+
+    // Generate waveform bars dynamically
+    const waveContainer = document.getElementById('waveform-container');
+    WAVE_BARS.forEach((h, idx) => {
+      const bar = document.createElement('div');
+      const isRuby = idx >= 13 && idx <= 22;
+      const isLeft = idx < 13;
+
+      bar.className = 'w-[2px] sm:w-[2.5px] rounded-full animate-symmetrical-wave paused';
+      bar.style.height = `${h}%`;
+      bar.style.animationDelay = `${idx * 0.038}s`;
+
+      if (isRuby) {
+        bar.style.background = 'linear-gradient(180deg, #FCA5A5 0%, #EF4444 35%, #DC2626 70%, #991B1B 100%)';
+        bar.style.boxShadow = '0 0 6px rgba(239, 68, 68, 0.85)';
+      } else if (isLeft) {
+        bar.style.background = 'linear-gradient(180deg, #FEF08A 0%, #D4AF37 40%, #B45309 85%, #78350F 100%)';
+        bar.style.boxShadow = '0 0 4px rgba(212, 175, 55, 0.6)';
+      } else {
+        bar.style.background = 'linear-gradient(180deg, #FDE68A 0%, #EAB308 40%, #D97706 85%, #92400E 100%)';
+        bar.style.boxShadow = '0 0 4px rgba(245, 158, 11, 0.6)';
+      }
+
+      waveContainer.appendChild(bar);
+    });
+
+    function updateFlipper() {
+      const flipper = document.getElementById('card-flipper');
+      const status = document.getElementById('transition-status');
+      const shouldFlip = isFlipped || isHovered || isPlaying;
+
+      if (shouldFlip) {
+        flipper.style.transform = 'rotateY(180deg)';
+        status.innerHTML = 'حالة العرض: <strong>المشغل الملكي (Masterpiece Player)</strong> — مستوحى من صورتك بدقة فائقة';
+      } else {
+        flipper.style.transform = 'rotateY(0deg)';
+        status.innerHTML = 'حالة العرض: <strong>البطاقة الافتراضية (وجه أمامي)</strong> — مرر الماوس فوقها أو انقر لرؤية الترانزيشن الملكي';
+      }
+    }
+
+    function onCardMouseEnter() {
+      isHovered = true;
+      updateFlipper();
+    }
+
+    function onCardMouseLeave() {
+      isHovered = false;
+      updateFlipper();
+    }
+
+    function onCardClick() {
+      isFlipped = !isFlipped;
+      updateFlipper();
+    }
+
+    function flipBackToCard() {
+      isFlipped = false;
+      isHovered = false;
+      if (isPlaying) togglePlayState();
+      updateFlipper();
+    }
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function updateScrubber() {
+      const pct = (currentTime / totalDuration) * 100;
+      document.getElementById('scrubber-fill').style.width = `${pct}%`;
+      document.getElementById('ruby-jewel-knob').style.left = `${pct}%`;
+      document.getElementById('label-current-time').innerText = formatTime(currentTime);
+      document.getElementById('label-duration').innerText = formatTime(totalDuration);
+    }
+
+    function onScrubberClick(e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      currentTime = Math.round(pct * totalDuration);
+      updateScrubber();
+    }
+
+    function skipSeconds(delta) {
+      currentTime = Math.max(0, Math.min(totalDuration, currentTime + delta));
+      updateScrubber();
+    }
+
+    function togglePlayState() {
+      isPlaying = !isPlaying;
+
+      const frontVinyl = document.getElementById('front-vinyl-disc');
+      const backVinyl = document.getElementById('back-vinyl-disc');
+      const playBtnText = document.getElementById('play-btn-text');
+      const playBtnDot = document.getElementById('play-btn-dot');
+      const waveBars = document.querySelectorAll('#waveform-container > div');
+
+      const masterPlayIcon = document.getElementById('master-play-icon');
+      const frontPlayIcon = document.getElementById('front-play-icon');
+      const frontActionIcon = document.getElementById('front-action-icon');
+
+      const pauseSvg = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+      const playSvg = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+
+      if (isPlaying) {
+        frontVinyl.classList.remove('paused');
+        backVinyl.classList.remove('paused');
+        waveBars.forEach(b => b.classList.remove('paused'));
+
+        masterPlayIcon.innerHTML = pauseSvg;
+        frontPlayIcon.innerHTML = pauseSvg;
+        frontActionIcon.innerHTML = pauseSvg;
+
+        playBtnText.innerText = 'إيقاف مؤقت';
+        playBtnDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
+
+        playInterval = setInterval(() => {
+          if (currentTime >= totalDuration) {
+            currentTime = 0;
+          } else {
+            currentTime += 1;
+          }
+          updateScrubber();
+        }, 1000);
+      } else {
+        frontVinyl.classList.add('paused');
+        backVinyl.classList.add('paused');
+        waveBars.forEach(b => b.classList.add('paused'));
+
+        masterPlayIcon.innerHTML = playSvg;
+        frontPlayIcon.innerHTML = playSvg;
+        frontActionIcon.innerHTML = playSvg;
+
+        playBtnText.innerText = 'تشغيل النغمات والموجات';
+        playBtnDot.className = 'w-2 h-2 rounded-full bg-red-400';
+
+        clearInterval(playInterval);
+      }
+
+      updateFlipper();
+    }
+
+    function toggleFavorite() {
+      isFavorite = !isFavorite;
+      const btn = document.getElementById('btn-favorite');
+      const icon = document.getElementById('heart-icon');
+
+      if (isFavorite) {
+        btn.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-red-400 bg-red-500/20 border border-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.7)] transition-all hover:scale-110 active:scale-90 shrink-0';
+        icon.setAttribute('fill', 'currentColor');
+      } else {
+        btn.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-200/70 hover:text-amber-200 bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-110 active:scale-90 shadow-md shrink-0';
+        icon.setAttribute('fill', 'none');
+      }
+    }
+
+    function toggleQueueDemo() {
+      const q = document.getElementById('playlist-queue');
+      q.classList.toggle('hidden');
+    }
+
+    function toggleHoverDemo() {
+      isAutoHover = !isAutoHover;
+      isHovered = isAutoHover;
+      updateFlipper();
+    }
+
+    function openVideoDemo() {
+      document.getElementById('video-modal').classList.remove('hidden');
+    }
+
+    function closeVideoDemo() {
+      document.getElementById('video-modal').classList.add('hidden');
+    }
+
+    // Init
+    updateScrubber();
+  </script>
+</body>
+</html>

@@ -401,6 +401,52 @@ label {
   transform-origin: bottom;
 }
 
+@keyframes reelSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-reel {
+  animation: reelSpin 3s linear infinite;
+}
+
+.paused {
+  animation-play-state: paused !important;
+}
+
+@keyframes symmetricalWave {
+  0%, 100% {
+    transform: scaleY(0.26);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1.15);
+    opacity: 1;
+  }
+}
+
+.animate-symmetrical-wave {
+  animation: symmetricalWave 1.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes redJewelGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.9), 0 0 20px rgba(212, 175, 55, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 60, 60, 1), 0 0 32px rgba(245, 158, 11, 0.85);
+  }
+}
+
+.animate-jewel-glow {
+  animation: redJewelGlow 2.2s ease-in-out infinite;
+}
+
 /* ============================================================================
    SOVEREIGN LIGHTING & PROFESSIONAL VERIFICATION BADGE ANIMATIONS
    ============================================================================ */

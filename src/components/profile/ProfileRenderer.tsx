@@ -33,6 +33,7 @@ import {
   ListMusic,
   ChevronDown,
   ChevronUp,
+  Heart,
 } from 'lucide-react';
 
 function extractYouTubeId(url?: string): string | null {
@@ -126,6 +127,7 @@ export interface MediaEmbedTrack {
   artist?: string;
   url: string;
   type?: 'spotify' | 'youtube' | 'soundcloud' | 'custom';
+  coverUrl?: string;
 }
 
 export interface MediaEmbedConfig {
@@ -135,6 +137,7 @@ export interface MediaEmbedConfig {
   artist?: string;
   url?: string;
   embedUrl?: string;
+  coverUrl?: string;
   tracks?: MediaEmbedTrack[];
 }
 
@@ -280,6 +283,8 @@ export function ProfileRenderer({
   const [copiedHandle, setCopiedHandle] = useState(false);
   const [mediaPlaying, setMediaPlaying] = useState(false);
   const [mediaFlipped, setMediaFlipped] = useState(false);
+  const [mediaHovered, setMediaHovered] = useState(false);
+  const [mediaFavorite, setMediaFavorite] = useState(false);
   const [mediaProgress, setMediaProgress] = useState(0);
   const [mediaCurrentTime, setMediaCurrentTime] = useState(0);
   const [mediaDuration, setMediaDuration] = useState(225); // 3:45 default
@@ -1425,6 +1430,15 @@ export function ProfileRenderer({
     );
   };
 
+  const SYMMETRICAL_WAVE_BARS = useMemo(
+    () => [
+      20, 24, 30, 42, 58, 75, 92, 100, 95, 82, 65, 48, 36, 30, 36, 50,
+      70, 88, 100, 94, 82, 65, 50, 40, 46, 62, 80, 92, 82, 68, 52, 38,
+      28, 22, 18, 14,
+    ],
+    []
+  );
+
   const renderMediaSection = () => {
     if (playlistTracks.length === 0 || !activeTrack) return null;
 
@@ -1458,15 +1472,11 @@ export function ProfileRenderer({
       ? 'SOUNDCLOUD'
       : 'AUDIO STREAM';
 
+    const isMasterpieceVisible = mediaFlipped || mediaHovered || mediaPlaying;
+
     return (
-      <div
-        key="section-media"
-        className="mb-6 relative w-full rounded-[28px] p-[2px] overflow-hidden group shadow-2xl transition-all"
-        style={{
-          boxShadow: `0 20px 50px -10px rgba(0,0,0,0.85), 0 0 35px ${platformColor}25`,
-        }}
-      >
-        {/* Real Audio Engine */}
+      <div key="section-media" className="mb-6 w-full">
+        {/* Real HTML5 Direct Audio Engine */}
         {isDirectAudio && (
           <audio
             key={`audio-engine-${activeTrack.id || activeTrack.url}`}
@@ -1508,326 +1518,590 @@ export function ProfileRenderer({
           />
         )}
 
-        {/* Animated Laser Border Beam around Capsule */}
-        {!reduceMotion && (
+        {/* 3D Interactive Morph / Flip Transition Container */}
+        <div
+          className="relative w-full perspective-1200 cursor-pointer select-none min-h-[106px] sm:min-h-[114px]"
+          onMouseEnter={() => setMediaHovered(true)}
+          onMouseLeave={() => setMediaHovered(false)}
+        >
           <div
-            className="absolute -inset-[150%] animate-border-beam opacity-85 pointer-events-none"
-            style={{
-              background: `conic-gradient(from 0deg, transparent 0deg, ${platformColor} 65deg, #FFFFFF 80deg, ${platformColor} 95deg, transparent 135deg, transparent 360deg)`,
-            }}
-          />
-        )}
-
-        {/* Inner Spatial Capsule Container */}
-        <div className="relative rounded-[26px] bg-[#07080E]/95 backdrop-blur-2xl p-3.5 sm:p-4.5 flex flex-col border border-white/10 z-10 gap-3">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 w-full">
-            {/* Left: 3D Spinning Vinyl Turntable Core */}
+            className={`relative w-full h-full min-h-[106px] sm:min-h-[114px] preserve-3d transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+              isMasterpieceVisible
+                ? '[transform:rotateY(180deg)]'
+                : '[transform:rotateY(0deg)]'
+            }`}
+          >
+            {/* ====================================================================
+                FRONT FACE: SLEEK VOLTIX AUDIO IDENTITY CARD (DEFAULT STATE)
+                ==================================================================== */}
             <div
-              className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer group/vinyl shadow-xl"
-              onClick={() => setMediaPlaying((p) => !p)}
-              title={mediaPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
+              className="w-full h-full min-h-[106px] sm:min-h-[114px] backface-hidden rounded-[26px] p-[2px] relative overflow-hidden shadow-2xl transition-all group/front-card"
+              style={{
+                boxShadow: `0 20px 50px -10px rgba(0,0,0,0.85), 0 0 32px ${platformColor}25`,
+              }}
+              onClick={() => setMediaFlipped(true)}
+              title={isRtl ? 'انقر أو مرر لعرض المشغل الملكي' : 'Click or hover for Royal Player'}
             >
-              {/* Spinning Vinyl Record Disc */}
-              <div
-                className={`absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel ${
-                  mediaPlaying ? '' : 'paused'
-                }`}
-                style={{
-                  background: 'radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%)',
-                }}
-              >
-                {/* Vinyl Grooves Inlay */}
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center">
-                  <div
-                    className="w-4 h-4 rounded-full shadow-md"
-                    style={{ backgroundColor: platformColor }}
-                  />
-                </div>
-              </div>
-
-              {/* Floating Center Indicator */}
-              <div className="relative z-10 w-7 h-7 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
-                {mediaPlaying ? (
-                  <Pause className="w-3.5 h-3.5 fill-current" />
-                ) : (
-                  <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                )}
-              </div>
-            </div>
-
-            {/* Center: Song Info, Progress Scrubber & Live Frequency Equalizer */}
-            <div className="flex-1 min-w-0 w-full text-start space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span
-                  className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider border shadow-sm"
-                  style={{
-                    backgroundColor: `${platformColor}18`,
-                    color: platformColor,
-                    borderColor: `${platformColor}40`,
-                  }}
-                >
-                  {platformLabel}
-                </span>
-                <span
-                  className={`w-2 h-2 rounded-full ${mediaPlaying ? 'animate-ping' : 'opacity-40'}`}
-                  style={{ backgroundColor: platformColor }}
-                />
-                <span className="text-[10px] font-mono text-zinc-400 font-bold">
-                  LOSSLESS MASTER
-                </span>
-
-                {/* Playlist Counter & Quick Drawer Pill */}
-                {playlistTracks.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setPlaylistDrawerOpen((o) => !o)}
-                    className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-400/15 text-amber-300 border border-amber-400/35 hover:bg-amber-400/25 transition-all cursor-pointer shadow-sm ml-auto sm:ml-0"
-                    title={isRtl ? 'عرض قائمة التشغيل' : 'View Playlist Queue'}
-                  >
-                    <ListMusic className="w-3 h-3 text-amber-400" />
-                    <span>
-                      {safeTrackIndex + 1} / {playlistTracks.length}
-                    </span>
-                    {playlistDrawerOpen ? (
-                      <ChevronUp className="w-3 h-3 text-amber-400" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3 text-amber-400" />
-                    )}
-                  </button>
-                )}
-              </div>
-
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-sm sm:text-base font-black text-white truncate leading-snug">
-                  {activeTrack.title}
-                </h3>
-                <span className="text-xs text-zinc-400 truncate shrink-0">
-                  {activeTrack.artist || (isRtl ? 'فنان رسمي' : 'Official Creator')}
-                </span>
-              </div>
-
-              {/* Interactive Timeline Scrubber & EQ Frequency Wave */}
-              <div className="flex items-center gap-2.5 pt-0.5" dir="ltr">
-                <span className="text-[11px] font-mono font-bold text-zinc-400">
-                  {formatAudioTime(mediaCurrentTime)}
-                </span>
+              {/* Dynamic Laser Border Beam */}
+              {!reduceMotion && (
                 <div
-                  className="flex-1 h-2 bg-white/15 hover:bg-white/25 rounded-full overflow-hidden relative cursor-pointer transition-colors"
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                    const newTime = Math.round(pct * mediaDuration);
-                    setMediaCurrentTime(newTime);
-                    setMediaProgress(Math.round(pct * 100));
-                    if (audioRef.current) audioRef.current.currentTime = newTime;
+                  className="absolute -inset-[150%] animate-border-beam opacity-85 pointer-events-none"
+                  style={{
+                    background: `conic-gradient(from 0deg, transparent 0deg, ${platformColor} 65deg, #FFFFFF 80deg, ${platformColor} 95deg, transparent 135deg, transparent 360deg)`,
                   }}
-                >
+                />
+              )}
+
+              {/* Spatial Glass Face */}
+              <div className="relative h-full min-h-[102px] sm:min-h-[110px] rounded-[24px] bg-[#07080E]/95 backdrop-blur-2xl p-3 sm:p-4 flex items-center justify-between border border-white/10 z-10 gap-3">
+                {/* Turntable Core + Track Metadata */}
+                <div className="flex items-center gap-3.5 min-w-0">
                   <div
-                    className="h-full rounded-full transition-all duration-150 shadow-sm"
-                    style={{
-                      width: `${mediaProgress}%`,
-                      backgroundColor: platformColor,
+                    className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-xl group/vinyl"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMediaPlaying((p) => !p);
                     }}
-                  />
+                    title={
+                      mediaPlaying
+                        ? isRtl
+                          ? 'إيقاف مؤقت'
+                          : 'Pause'
+                        : isRtl
+                        ? 'تشغيل'
+                        : 'Play'
+                    }
+                  >
+                    <div
+                      className={`absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel ${
+                        mediaPlaying ? '' : 'paused'
+                      }`}
+                      style={{
+                        background:
+                          'radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%)',
+                      }}
+                    >
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/10 flex items-center justify-center overflow-hidden">
+                        {activeTrack.coverUrl ? (
+                          <img
+                            src={activeTrack.coverUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-4 h-4 rounded-full shadow-md"
+                            style={{ backgroundColor: platformColor }}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="relative z-10 w-6 h-6 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
+                      {mediaPlaying ? (
+                        <Pause className="w-3 h-3 fill-current" />
+                      ) : (
+                        <Play className="w-3 h-3 fill-current ml-0.5" />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 text-start space-y-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shadow-sm"
+                        style={{
+                          backgroundColor: `${platformColor}18`,
+                          color: platformColor,
+                          borderColor: `${platformColor}40`,
+                        }}
+                      >
+                        {platformLabel}
+                      </span>
+                      <span className="text-[10px] font-mono text-zinc-400 font-bold">
+                        LOSSLESS MASTER
+                      </span>
+                      {playlistTracks.length > 1 && (
+                        <span className="text-[10px] font-mono text-amber-300 font-bold px-1.5 py-0.2 bg-amber-400/10 rounded-full border border-amber-400/25">
+                          {safeTrackIndex + 1}/{playlistTracks.length}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-black text-white truncate leading-snug">
+                      {activeTrack.title}
+                    </h3>
+                    <p className="text-xs text-zinc-400 truncate">
+                      {activeTrack.artist ||
+                        (isRtl ? 'فنان رسمي' : 'Official Creator')}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-[11px] font-mono font-bold text-zinc-500">
-                  {formatAudioTime(mediaDuration)}
-                </span>
 
-                {/* Bouncing Equalizer Wave Bars */}
-                <div className="flex items-end gap-0.5 h-3.5 pl-1 shrink-0">
-                  <div className={`w-0.5 rounded-full eq-1 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                  <div className={`w-0.5 rounded-full eq-2 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                  <div className={`w-0.5 rounded-full eq-3 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                  <div className={`w-0.5 rounded-full eq-4 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Tactile Master Controls (No Clutter, Full Ergonomics) */}
-            <div className="flex items-center gap-2 shrink-0" dir="ltr">
-              {/* Previous Track / -10s */}
-              <button
-                type="button"
-                onClick={handlePrevTrack}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
-                title={playlistTracks.length > 1 ? (isRtl ? 'المقطع السابق' : 'Previous Track') : 'Skip -10s'}
-              >
-                <SkipBack className="w-3.5 h-3.5" />
-              </button>
-
-              {/* Master Tactile Play Button */}
-              <button
-                type="button"
-                onClick={() => setMediaPlaying((p) => !p)}
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all"
-                style={{
-                  background: `linear-gradient(135deg, ${platformColor}, #7F1D1D)`,
-                  boxShadow: `0 0 25px ${platformColor}80`,
-                }}
-                aria-label={mediaPlaying ? 'Pause' : 'Play'}
-              >
-                {mediaPlaying ? (
-                  <Pause className="w-5 h-5 fill-current" />
-                ) : (
-                  <Play className="w-5 h-5 fill-current ml-0.5" />
-                )}
-              </button>
-
-              {/* Next Track / +10s */}
-              <button
-                type="button"
-                onClick={handleNextTrack}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
-                title={playlistTracks.length > 1 ? (isRtl ? 'المقطع التالي' : 'Next Track') : 'Skip +10s'}
-              >
-                <SkipForward className="w-3.5 h-3.5" />
-              </button>
-
-              {/* Watch Video Clip Modal Trigger */}
-              {isYouTube && ytVideoId && (
-                <button
-                  type="button"
-                  onClick={() => setShowVideoModal(true)}
-                  className="w-9 h-9 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all hover:scale-105 active:scale-90 shadow-md"
-                  title={isRtl ? 'مشاهدة الفيديو كليب بدقة عالية' : 'Watch HD Video Clip'}
-                >
-                  <Film className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Playlist Toggle Button (if multiple tracks) */}
-              {playlistTracks.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setPlaylistDrawerOpen((o) => !o)}
-                  className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all hover:scale-105 active:scale-90 shadow-md ${
-                    playlistDrawerOpen
-                      ? 'bg-amber-400/20 border-amber-400/60 text-amber-300'
-                      : 'bg-white/5 hover:bg-white/15 border-white/10 text-zinc-300 hover:text-white'
-                  }`}
-                  title={isRtl ? 'قائمة التشغيل' : 'Playlist Queue'}
-                >
-                  <ListMusic className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* External Platform Link */}
-              {activeTrack.url && (
-                <a
-                  href={activeTrack.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-105"
-                  title={isRtl ? 'فتح في المنصة الرسمية' : 'Open in Official App'}
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* Expandable Luxury Playlist Drawer */}
-          {playlistTracks.length > 1 && (
-            <AnimatePresence>
-              {playlistDrawerOpen && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.28, ease: 'easeOut' }}
-                  className="pt-2 border-t border-white/10 overflow-hidden"
-                >
-                  <div className="flex items-center justify-between px-1 pb-2 text-[11px] font-bold text-zinc-400">
-                    <span className="flex items-center gap-1.5 text-amber-300">
-                      <ListMusic className="w-3.5 h-3.5" />
-                      <span>{isRtl ? 'قائمة التشغيل المتتالية' : 'Continuous Playlist Queue'}</span>
-                    </span>
-                    <span className="text-[10px] text-zinc-500 font-mono">
-                      {isRtl ? 'انقر على أي مقطع للانتقال الفوري' : 'Tap any track to play'}
+                {/* Right / End: Visualizer Hint & Master Actions */}
+                <div className="flex items-center gap-2.5 shrink-0">
+                  {/* Interactive Flip Invitation Pill */}
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 border border-amber-400/35 text-[11px] font-bold text-amber-300 shadow-sm animate-pulse">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>
+                      {isRtl
+                        ? 'مرر الماوس للمشغل الملكي'
+                        : 'Hover for Royal Player'}
                     </span>
                   </div>
 
-                  <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-                    {playlistTracks.map((tr, idx) => {
-                      const isCurrent = idx === safeTrackIndex;
-                      const trType =
-                        tr.type || (tr.url ? detectPlatformFromMediaUrl(tr.url) : 'youtube');
-                      const trColor =
-                        trType === 'youtube'
-                          ? '#EF4444'
-                          : trType === 'spotify'
-                          ? '#10B981'
-                          : trType === 'soundcloud'
-                          ? '#F97316'
-                          : theme.accentColor;
+                  {/* Direct Play/Pause Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMediaPlaying((p) => !p);
+                    }}
+                    className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
+                    style={{
+                      background: `linear-gradient(135deg, ${platformColor}, #7F1D1D)`,
+                      boxShadow: `0 0 20px ${platformColor}70`,
+                    }}
+                    aria-label={mediaPlaying ? 'Pause' : 'Play'}
+                  >
+                    {mediaPlaying ? (
+                      <Pause className="w-4 h-4 fill-current" />
+                    ) : (
+                      <Play className="w-4 h-4 fill-current ml-0.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ====================================================================
+                BACK FACE: VOLTIX ROYAL GOLD MASTERPIECE CAPSULE (HOVER/ACTIVE)
+                Inspired pixel-by-pixel by the uploaded image design
+                ==================================================================== */}
+            <div
+              className="w-full h-full min-h-[106px] sm:min-h-[114px] absolute inset-0 backface-hidden [transform:rotateY(180deg)] rounded-[32px] sm:rounded-full p-[2.5px] shadow-2xl transition-all"
+              style={{
+                background:
+                  'linear-gradient(135deg, #FFF0B3 0%, #D4AF37 20%, #7A5711 45%, #FFDF73 72%, #A88121 100%)',
+                boxShadow:
+                  '0 25px 65px -12px rgba(0,0,0,0.98), 0 0 35px rgba(212, 175, 55, 0.4), inset 0 1px 2px rgba(255,255,255,0.75)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Specular Highlight Glints (Top & Bottom Center Flares) */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-36 sm:w-44 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent opacity-95 shadow-[0_0_10px_#FFFFFF] pointer-events-none z-30" />
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-28 sm:w-36 h-[2px] bg-gradient-to-r from-transparent via-amber-300 to-transparent opacity-85 shadow-[0_0_8px_rgba(251,191,36,0.8)] pointer-events-none z-30" />
+
+              {/* Obsidian & Crimson Silk Luxury Chamber */}
+              <div
+                className="relative w-full h-full min-h-[101px] sm:min-h-[109px] rounded-[30px] sm:rounded-full bg-[#060406] px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-3 sm:gap-4.5 border border-amber-400/25 overflow-hidden z-20"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(ellipse at 75% 35%, rgba(185, 28, 28, 0.28) 0%, transparent 60%), radial-gradient(ellipse at 25% 65%, rgba(212, 175, 55, 0.16) 0%, transparent 55%), radial-gradient(ellipse at 50% 50%, rgba(12, 8, 12, 0.95) 0%, #060406 100%)',
+                }}
+                dir="ltr"
+              >
+                {/* 1. LEFT: 3D Turntable Vinyl Disc (Concentric Grooves + Album Art) */}
+                <div
+                  className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shrink-0 cursor-pointer shadow-2xl group/vinyl"
+                  onClick={() => setMediaPlaying((p) => !p)}
+                  style={{
+                    boxShadow:
+                      '0 0 0 1.5px rgba(212, 175, 55, 0.85), 0 4px 18px rgba(0,0,0,0.95)',
+                  }}
+                  title={
+                    mediaPlaying
+                      ? isRtl
+                        ? 'إيقاف مؤقت'
+                        : 'Pause'
+                      : isRtl
+                      ? 'تشغيل'
+                      : 'Play'
+                  }
+                >
+                  {/* Concentric Circular Vinyl Grooves */}
+                  <div
+                    className={`absolute inset-0 rounded-full flex items-center justify-center animate-spin-reel ${
+                      mediaPlaying ? '' : 'paused'
+                    }`}
+                    style={{
+                      background:
+                        'repeating-radial-gradient(circle, #242424 0px, #242424 1px, #0e0e0e 1.5px, #0e0e0e 3px)',
+                    }}
+                  >
+                    {/* Center Circular Label Artwork */}
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-amber-300/80 overflow-hidden shadow-inner relative flex items-center justify-center bg-black">
+                      <img
+                        src={
+                          activeTrack.coverUrl ||
+                          'https://images.unsplash.com/photo-1532767153582-b1a0e5145009?w=300&auto=format&fit=crop&q=80'
+                        }
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Spindle Pin Point */}
+                      <div className="absolute w-2 h-2 rounded-full bg-amber-400 border border-white/60 shadow-md" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. CENTER-LEFT: Track Metadata & Lossless Badge */}
+                <div className="min-w-0 max-w-[130px] sm:max-w-[170px] text-left shrink-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[8.5px] sm:text-[9px] font-bold tracking-[0.2em] uppercase text-zinc-400">
+                      NOW PLAYING
+                    </span>
+                    <span className="h-[1px] w-5 sm:w-7 bg-gradient-to-r from-amber-400/70 to-transparent inline-block" />
+                  </div>
+                  <h3
+                    className="text-sm sm:text-base font-black text-white leading-tight truncate"
+                    dir={isRtl ? 'rtl' : 'ltr'}
+                  >
+                    {activeTrack.title}
+                  </h3>
+                  <p
+                    className="text-xs text-amber-200/80 truncate leading-snug"
+                    dir={isRtl ? 'rtl' : 'ltr'}
+                  >
+                    {activeTrack.artist || (isRtl ? 'سليم' : 'Official Artist')}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[8.5px] sm:text-[9px] font-mono tracking-wider text-amber-400/90 pt-0.5">
+                    <span>LOSSLESS</span>
+                    <span className="w-1 h-1 rounded-full bg-amber-400/70" />
+                    <span>48 kHz</span>
+                  </div>
+                </div>
+
+                {/* 3. CENTER: Symmetrical Mirrored Waveform + Ruby Jewel Timeline Scrubber */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center px-1 sm:px-2 gap-1.5">
+                  {/* Symmetrical Mirrored Acoustic Waveform */}
+                  <div className="flex items-center justify-center gap-[2px] sm:gap-[2.5px] h-6 sm:h-7 overflow-hidden">
+                    {SYMMETRICAL_WAVE_BARS.map((h, idx) => {
+                      const isRubyCrimson = idx >= 13 && idx <= 22;
+                      const isLeftChampagne = idx < 13;
+
+                      const barBg = isRubyCrimson
+                        ? 'linear-gradient(180deg, #FCA5A5 0%, #EF4444 35%, #DC2626 70%, #991B1B 100%)'
+                        : isLeftChampagne
+                        ? 'linear-gradient(180deg, #FEF08A 0%, #D4AF37 40%, #B45309 85%, #78350F 100%)'
+                        : 'linear-gradient(180deg, #FDE68A 0%, #EAB308 40%, #D97706 85%, #92400E 100%)';
+
+                      const barShadow = isRubyCrimson
+                        ? '0 0 6px rgba(239,68,68,0.85)'
+                        : '0 0 4px rgba(212,175,55,0.6)';
 
                       return (
                         <div
-                          key={tr.id || `track-row-${idx}`}
-                          onClick={() => handleSelectTrack(idx)}
-                          className={`w-full p-2.5 rounded-2xl flex items-center justify-between gap-3 transition-all cursor-pointer select-none ${
-                            isCurrent
-                              ? 'bg-white/15 border border-white/25 shadow-lg'
-                              : 'bg-white/[0.03] hover:bg-white/[0.08] border border-white/5'
+                          key={`sym-bar-${idx}`}
+                          className={`w-[2px] sm:w-[2.5px] rounded-full animate-symmetrical-wave ${
+                            mediaPlaying ? '' : 'paused'
                           }`}
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div
-                              className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-mono font-black shadow-sm ${
-                                isCurrent ? 'text-black' : 'text-zinc-400 bg-white/5 border border-white/10'
-                              }`}
-                              style={isCurrent ? { backgroundColor: trColor } : {}}
-                            >
-                              {isCurrent && mediaPlaying ? (
-                                <div className="flex items-end gap-0.5 h-3">
-                                  <div className="w-0.5 h-full bg-black rounded-full eq-1" />
-                                  <div className="w-0.5 h-full bg-black rounded-full eq-2" />
-                                  <div className="w-0.5 h-full bg-black rounded-full eq-3" />
-                                </div>
-                              ) : (
-                                `#${idx + 1}`
-                              )}
-                            </div>
-
-                            <div className="min-w-0 text-start">
-                              <div
-                                className={`text-xs font-bold truncate ${
-                                  isCurrent ? 'text-white font-black' : 'text-zinc-300'
-                                }`}
-                              >
-                                {tr.title}
-                              </div>
-                              <div className="text-[10px] text-zinc-500 truncate">
-                                {tr.artist || (isRtl ? 'فنان رسمي' : 'Official Artist')}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span
-                              className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shadow-sm"
-                              style={{
-                                color: trColor,
-                                borderColor: `${trColor}40`,
-                                backgroundColor: `${trColor}15`,
-                              }}
-                            >
-                              {trType}
-                            </span>
-                            {isCurrent && (
-                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                            )}
-                          </div>
-                        </div>
+                          style={{
+                            height: `${h}%`,
+                            background: barBg,
+                            boxShadow: barShadow,
+                            animationDelay: `${idx * 0.038}s`,
+                          }}
+                        />
                       );
                     })}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          )}
+
+                  {/* Timeline Scrubber with 3D Spherical Ruby-Red Jewel Knob */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9.5px] sm:text-[10px] font-mono font-bold text-amber-200/90 shrink-0">
+                      {formatAudioTime(mediaCurrentTime)}
+                    </span>
+
+                    <div
+                      className="relative flex-1 h-3 flex items-center cursor-pointer group/scrub"
+                      onClick={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const pct = Math.max(
+                          0,
+                          Math.min(1, (e.clientX - rect.left) / rect.width)
+                        );
+                        const newTime = Math.round(pct * mediaDuration);
+                        setMediaCurrentTime(newTime);
+                        setMediaProgress(Math.round(pct * 100));
+                        if (audioRef.current)
+                          audioRef.current.currentTime = newTime;
+                      }}
+                      title={isRtl ? 'تقديم / تأخير المقطع' : 'Seek Timeline'}
+                    >
+                      {/* Background Groove */}
+                      <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                        {/* Active Filled Track */}
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-amber-400 via-red-500 to-red-600 shadow-[0_0_8px_rgba(239,68,68,0.7)]"
+                          style={{ width: `${mediaProgress}%` }}
+                        />
+                      </div>
+
+                      {/* 3D Spherical Ruby-Red Jewel Knob */}
+                      <div
+                        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border border-amber-300/90 shadow-[0_0_12px_rgba(239,68,68,0.95)] animate-jewel-glow transition-all duration-75 pointer-events-none"
+                        style={{
+                          left: `${mediaProgress}%`,
+                          background:
+                            'radial-gradient(circle at 35% 30%, #FFA8A8 0%, #EF4444 40%, #7F1D1D 80%, #2A0404 100%)',
+                          boxShadow:
+                            '0 0 10px rgba(239, 68, 68, 0.95), 0 0 20px rgba(212, 175, 55, 0.5), inset 0 1px 1.5px rgba(255,255,255,0.7)',
+                        }}
+                      />
+                    </div>
+
+                    <span className="text-[9.5px] sm:text-[10px] font-mono font-bold text-zinc-400 shrink-0">
+                      {formatAudioTime(mediaDuration)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 4. RIGHT: Master Brushed Gold Controls Suite */}
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  {/* Skip Previous |< */}
+                  <button
+                    type="button"
+                    onClick={handlePrevTrack}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                    title={
+                      playlistTracks.length > 1
+                        ? isRtl
+                          ? 'المقطع السابق'
+                          : 'Previous Track'
+                        : 'Skip -10s'
+                    }
+                  >
+                    <SkipBack className="w-3.5 h-3.5 fill-current" />
+                  </button>
+
+                  {/* MASTER BRUSHED GOLD CIRCULAR PLAY/PAUSE BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() => setMediaPlaying((p) => !p)}
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer relative group/play shrink-0"
+                    style={{
+                      background:
+                        'radial-gradient(circle at 35% 35%, #FFF8D6 0%, #E6C265 35%, #B88A28 70%, #6E4F10 100%)',
+                      boxShadow:
+                        '0 4px 18px rgba(0,0,0,0.9), 0 0 22px rgba(212, 175, 55, 0.5), inset 0 1px 2px rgba(255,255,255,0.85)',
+                    }}
+                    aria-label={mediaPlaying ? 'Pause' : 'Play'}
+                  >
+                    <div className="absolute inset-[3px] rounded-full border border-amber-200/50 pointer-events-none" />
+                    {mediaPlaying ? (
+                      <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-black text-black" />
+                    ) : (
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-black text-black ml-0.5" />
+                    )}
+                  </button>
+
+                  {/* Skip Next >| */}
+                  <button
+                    type="button"
+                    onClick={handleNextTrack}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                    title={
+                      playlistTracks.length > 1
+                        ? isRtl
+                          ? 'المقطع التالي'
+                          : 'Next Track'
+                        : 'Skip +10s'
+                    }
+                  >
+                    <SkipForward className="w-3.5 h-3.5 fill-current" />
+                  </button>
+
+                  {/* YouTube Video Clip Lacquer Button (Top-Right Action) */}
+                  {isYouTube && ytVideoId && (
+                    <button
+                      type="button"
+                      onClick={() => setShowVideoModal(true)}
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white transition-all hover:scale-110 active:scale-90 shadow-lg relative group/clip cursor-pointer shrink-0"
+                      style={{
+                        background:
+                          'radial-gradient(circle at 35% 30%, #FF6B6B 0%, #DC2626 50%, #7F1D1D 90%, #350505 100%)',
+                        boxShadow:
+                          '0 0 12px rgba(239, 68, 68, 0.75), inset 0 1px 1px rgba(255,255,255,0.6)',
+                        border: '1px solid rgba(254, 202, 202, 0.4)',
+                      }}
+                      title={
+                        isRtl
+                          ? 'مشاهدة الفيديو كليب بدقة عالية'
+                          : 'Watch HD Video Clip'
+                      }
+                    >
+                      <Film className="w-3.5 h-3.5 text-white" />
+                    </button>
+                  )}
+
+                  {/* Favorite / Heart Button */}
+                  <button
+                    type="button"
+                    onClick={() => setMediaFavorite((f) => !f)}
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-90 shadow-md shrink-0 ${
+                      mediaFavorite
+                        ? 'text-red-400 bg-red-500/20 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.5)]'
+                        : 'text-amber-200/70 hover:text-amber-200 bg-white/5 hover:bg-white/10 border border-white/10'
+                    }`}
+                    title={isRtl ? 'إضافة للمفضلة' : 'Favorite Track'}
+                  >
+                    <Heart
+                      className={`w-3.5 h-3.5 ${
+                        mediaFavorite ? 'fill-current' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Continuous Playlist Drawer Toggle */}
+                  {playlistTracks.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setPlaylistDrawerOpen((o) => !o)}
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-90 shadow-md shrink-0 ${
+                        playlistDrawerOpen
+                          ? 'text-amber-300 bg-amber-400/20 border border-amber-400/60 shadow-[0_0_10px_rgba(212,175,55,0.4)]'
+                          : 'text-amber-200/70 hover:text-amber-200 bg-white/5 hover:bg-white/10 border border-white/10'
+                      }`}
+                      title={
+                        isRtl ? 'قائمة التشغيل المتتالية' : 'Playlist Queue'
+                      }
+                    >
+                      <ListMusic className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  {/* Manual Flip-Back Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMediaFlipped(false);
+                      setMediaHovered(false);
+                    }}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-amber-300/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-110 active:scale-90 shadow-md shrink-0"
+                    title={isRtl ? 'العودة للبطاقة الأصلية' : 'Flip to Card'}
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* ====================================================================
+            EXPANDABLE LUXURY PLAYLIST QUEUE DRAWER
+            ==================================================================== */}
+        {playlistTracks.length > 1 && (
+          <AnimatePresence>
+            {playlistDrawerOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.28, ease: 'easeOut' }}
+                className="mt-3 p-3.5 rounded-[24px] bg-[#07080E]/95 backdrop-blur-2xl border border-white/10 shadow-2xl overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-1 pb-2 text-[11px] font-bold text-zinc-400">
+                  <span className="flex items-center gap-1.5 text-amber-300">
+                    <ListMusic className="w-3.5 h-3.5" />
+                    <span>
+                      {isRtl
+                        ? 'قائمة التشغيل المتتالية'
+                        : 'Continuous Playlist Queue'}
+                    </span>
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">
+                    {isRtl
+                      ? 'انقر على أي مقطع للانتقال الفوري'
+                      : 'Tap any track to play'}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                  {playlistTracks.map((tr, idx) => {
+                    const isCurrent = idx === safeTrackIndex;
+                    const trType =
+                      tr.type ||
+                      (tr.url ? detectPlatformFromMediaUrl(tr.url) : 'youtube');
+                    const trColor =
+                      trType === 'youtube'
+                        ? '#EF4444'
+                        : trType === 'spotify'
+                        ? '#10B981'
+                        : trType === 'soundcloud'
+                        ? '#F97316'
+                        : theme.accentColor;
+
+                    return (
+                      <div
+                        key={tr.id || `track-row-${idx}`}
+                        onClick={() => handleSelectTrack(idx)}
+                        className={`w-full p-2.5 rounded-2xl flex items-center justify-between gap-3 transition-all cursor-pointer select-none ${
+                          isCurrent
+                            ? 'bg-white/15 border border-white/25 shadow-lg'
+                            : 'bg-white/[0.03] hover:bg-white/[0.08] border border-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div
+                            className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-mono font-black shadow-sm ${
+                              isCurrent
+                                ? 'text-black'
+                                : 'text-zinc-400 bg-white/5 border border-white/10'
+                            }`}
+                            style={isCurrent ? { backgroundColor: trColor } : {}}
+                          >
+                            {isCurrent && mediaPlaying ? (
+                              <div className="flex items-end gap-0.5 h-3">
+                                <div className="w-0.5 h-full bg-black rounded-full eq-1" />
+                                <div className="w-0.5 h-full bg-black rounded-full eq-2" />
+                                <div className="w-0.5 h-full bg-black rounded-full eq-3" />
+                              </div>
+                            ) : (
+                              `#${idx + 1}`
+                            )}
+                          </div>
+
+                          <div className="min-w-0 text-start">
+                            <div
+                              className={`text-xs font-bold truncate ${
+                                isCurrent
+                                  ? 'text-white font-black'
+                                  : 'text-zinc-300'
+                              }`}
+                            >
+                              {tr.title}
+                            </div>
+                            <div className="text-[10px] text-zinc-500 truncate">
+                              {tr.artist ||
+                                (isRtl ? 'فنان رسمي' : 'Official Artist')}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shadow-sm"
+                            style={{
+                              color: trColor,
+                              borderColor: `${trColor}40`,
+                              backgroundColor: `${trColor}15`,
+                            }}
+                          >
+                            {trType}
+                          </span>
+                          {isCurrent && (
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
     );
   };
