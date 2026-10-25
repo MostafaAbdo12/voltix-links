@@ -29,6 +29,7 @@ import {
   Zap,
   Image as ImageIcon,
   Tv,
+  Film,
 } from 'lucide-react';
 
 function extractYouTubeId(url?: string): string | null {
@@ -262,6 +263,7 @@ export function ProfileRenderer({
   const [mediaDuration, setMediaDuration] = useState(225); // 3:45 default
   const [showVideoModal, setShowVideoModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const rootYtVideoId = profile.mediaEmbed?.url ? extractYouTubeId(profile.mediaEmbed.url) : null;
 
   // Active audio progress timer
   useEffect(() => {
@@ -1360,10 +1362,10 @@ export function ProfileRenderer({
     return (
       <div
         key="section-media"
-        onMouseEnter={() => setMediaFlipped(true)}
-        onMouseLeave={() => setMediaFlipped(false)}
-        onClick={() => setMediaFlipped((f) => !f)}
-        className="mb-6 perspective-1200 cursor-pointer select-none group/media-flip relative w-full h-[96px] sm:h-[102px]"
+        className="mb-6 relative w-full rounded-[28px] p-[2px] overflow-hidden group shadow-2xl transition-all"
+        style={{
+          boxShadow: `0 20px 50px -10px rgba(0,0,0,0.85), 0 0 35px ${platformColor}25`,
+        }}
       >
         {/* Real Audio Engine */}
         {isDirectAudio && (
@@ -1402,320 +1404,195 @@ export function ProfileRenderer({
           />
         )}
 
-        {/* YouTube HD Video Clip Pop-up Modal */}
-        {showVideoModal && ytVideoId && (
+        {/* Animated Laser Border Beam around Capsule */}
+        {!reduceMotion && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fade-in"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowVideoModal(false);
+            className="absolute -inset-[150%] animate-border-beam opacity-85 pointer-events-none"
+            style={{
+              background: `conic-gradient(from 0deg, transparent 0deg, ${platformColor} 65deg, #FFFFFF 80deg, ${platformColor} 95deg, transparent 135deg, transparent 360deg)`,
             }}
-          >
-            <div
-              className="relative w-full max-w-2xl aspect-video rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-black"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${ytVideoId}?autoplay=1&playsinline=1`}
-                title={media.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full"
-              />
-              <button
-                type="button"
-                onClick={() => setShowVideoModal(false)}
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/80 text-white flex items-center justify-center border border-white/20 hover:scale-110 transition-transform"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
+          />
         )}
 
+        {/* Inner Spatial Capsule Container */}
         <div
-          className={`relative w-full h-full preserve-3d transition-transform duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-            mediaFlipped ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'
-          }`}
+          className="relative rounded-[26px] bg-[#07080E]/95 backdrop-blur-2xl p-3.5 sm:p-4.5 flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 border border-white/10 z-10"
         >
-          {/* ==========================================================
-              FRONT FACE: ORIGINAL SLEEK COMPACT MUSIC CARD (STATIONARY)
-          ========================================================== */}
+          {/* Left: 3D Spinning Vinyl Turntable Core */}
           <div
-            className="absolute inset-0 w-full h-full p-3.5 sm:p-4 rounded-3xl border overflow-hidden backface-hidden shadow-2xl flex items-center justify-between gap-3.5"
-            style={{
-              background: theme.cardBg,
-              borderColor: theme.cardBorder,
-              backdropFilter: `blur(${theme.glassBlur}px)`,
-              boxShadow: `0 16px 40px -12px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.2)`,
-            }}
+            className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer group/vinyl shadow-xl"
+            onClick={() => setMediaPlaying((p) => !p)}
+            title={mediaPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
           >
-            {/* Moving Light Beam around Front Media Card */}
-            {!reduceMotion && (
-              <>
-                <span
-                  className="voltix-card-beam"
-                  style={{
-                    '--beam-c1': platformColor,
-                    '--beam-c2': theme.glowColor,
-                    '--beam-speed': '4.2s',
-                  } as React.CSSProperties}
+            {/* Spinning Vinyl Record Disc */}
+            <div
+              className={`absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel ${
+                mediaPlaying ? '' : 'paused'
+              }`}
+              style={{
+                background: 'radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%)',
+              }}
+            >
+              {/* Vinyl Grooves Inlay */}
+              <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center">
+                <div
+                  className="w-4 h-4 rounded-full shadow-md"
+                  style={{ backgroundColor: platformColor }}
                 />
-                <span
-                  className="voltix-card-beam-glow"
-                  style={{
-                    '--beam-c1': platformColor,
-                    '--beam-c2': theme.glowColor,
-                    '--beam-speed': '4.2s',
-                  } as React.CSSProperties}
-                />
-              </>
-            )}
-
-            <div className="flex items-center gap-3.5 min-w-0 flex-1">
-              <OfficialSocialBadge
-                platformId={platformBadgeId}
-                size="md"
-                variant="gradient"
-              />
-              <div className="min-w-0 text-start">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: `${platformColor}22`,
-                      color: platformColor,
-                    }}
-                  >
-                    {platformLabel}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] text-zinc-400 font-bold opacity-75 group-hover/media-flip:opacity-100 transition-opacity">
-                    <RotateCw className="w-2.5 h-2.5" />
-                    <span>{isRtl ? 'المس للقلب' : 'Hover to Flip'}</span>
-                  </span>
-                </div>
-                <h4 className="font-bold text-sm truncate mt-1" style={{ color: theme.textColor }}>
-                  {media.title}
-                </h4>
-                <p className="text-xs truncate" style={{ color: theme.secondaryTextColor }}>
-                  {media.artist || (isRtl ? 'فنان رسمي' : 'Official Artist')}
-                </p>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMediaPlaying((p) => !p);
-              }}
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform hover:scale-110 shrink-0 shadow-lg text-white"
-              style={{
-                backgroundColor: platformColor,
-              }}
-              aria-label={mediaPlaying ? 'Pause media preview' : 'Play media preview'}
-            >
-              {mediaPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
-            </button>
+            {/* Floating Center Indicator */}
+            <div className="relative z-10 w-7 h-7 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
+              {mediaPlaying ? (
+                <Pause className="w-3.5 h-3.5 fill-current" />
+              ) : (
+                <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+              )}
+            </div>
           </div>
 
-          {/* ==========================================================
-              BACK FACE: CLEAN LUXURY STUDIO PLAYER (PRO AUDIOPHILE)
-          ========================================================== */}
-          <div
-            className="absolute inset-0 w-full h-full p-3 sm:p-3.5 rounded-3xl border overflow-hidden backface-hidden [transform:rotateY(180deg)] shadow-2xl flex flex-col justify-between"
-            style={{
-              background: `radial-gradient(ellipse at 80% 20%, ${platformColor}26 0%, transparent 60%),
-                           linear-gradient(135deg, #090A10 0%, #06070B 60%, #0F121C 100%)`,
-              borderColor: `${platformColor}55`,
-              backdropFilter: `blur(${theme.glassBlur + 8}px)`,
-              boxShadow: `0 20px 50px -10px rgba(0,0,0,0.85), inset 0 1px 1.5px rgba(255,255,255,0.22)`,
-            }}
-          >
-            {/* Moving Light Beam around Pro Studio Card */}
-            {!reduceMotion && (
-              <>
-                <span
-                  className="voltix-card-beam"
-                  style={{
-                    '--beam-c1': platformColor,
-                    '--beam-c2': '#FFFFFF',
-                    '--beam-speed': '3.5s',
-                  } as React.CSSProperties}
-                />
-                <span
-                  className="voltix-card-beam-glow"
-                  style={{
-                    '--beam-c1': platformColor,
-                    '--beam-c2': '#FFFFFF',
-                    '--beam-speed': '3.5s',
-                  } as React.CSSProperties}
-                />
-              </>
-            )}
-
-            {/* TOP ROW: Album Cover + Title + Transport Controls */}
-            <div className="flex items-center justify-between gap-3">
-              {/* Left: Platform Emblem & Track Title */}
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div
-                  className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-black via-zinc-900 to-black border flex items-center justify-center shrink-0 shadow-lg"
-                  style={{ borderColor: `${platformColor}40` }}
-                >
-                  <OfficialSocialBadge platformId={platformBadgeId} size="sm" variant="gradient" interactive={false} />
-                  {mediaPlaying && (
-                    <span
-                      className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-ping"
-                      style={{ backgroundColor: platformColor }}
-                    />
-                  )}
-                </div>
-
-                <div className="min-w-0 text-start">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className="w-1.5 h-1.5 rounded-full animate-pulse"
-                      style={{ backgroundColor: platformColor }}
-                    />
-                    <span
-                      className="text-[9.5px] font-black uppercase tracking-wider"
-                      style={{ color: platformColor }}
-                    >
-                      {platformLabel}
-                    </span>
-                  </div>
-                  <h4 className="font-extrabold text-xs sm:text-sm truncate text-white leading-snug mt-0.5">
-                    {media.title}
-                  </h4>
-                  <p className="text-[11px] text-zinc-400 truncate">
-                    {media.artist || (isRtl ? 'فنان رسمي' : 'Official Artist')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Right: Master Playback Transport Deck */}
-              <div dir="ltr" className="flex items-center gap-1.5 shrink-0">
-                {isYouTube && ytVideoId && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowVideoModal(true);
-                    }}
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all active:scale-90"
-                    title={isRtl ? 'مشاهدة فيديو كليب' : 'Watch Video Clip'}
-                  >
-                    <Tv className="w-3.5 h-3.5" />
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMediaCurrentTime((p) => Math.max(0, p - 10));
-                  }}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white flex items-center justify-center transition-all active:scale-90"
-                  title="Skip -10s"
-                >
-                  <SkipBack className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMediaPlaying((p) => !p);
-                  }}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all"
-                  style={{
-                    backgroundColor: platformColor,
-                    boxShadow: `0 8px 24px -4px ${platformColor}66`,
-                  }}
-                  aria-label={mediaPlaying ? 'Pause' : 'Play'}
-                >
-                  {mediaPlaying ? (
-                    <Pause className="w-4 h-4 fill-current" />
-                  ) : (
-                    <Play className="w-4 h-4 fill-current translate-x-0.5" />
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMediaCurrentTime((p) => Math.min(mediaDuration, p + 10));
-                  }}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white flex items-center justify-center transition-all active:scale-90"
-                  title="Skip +10s"
-                >
-                  <SkipForward className="w-3.5 h-3.5" />
-                </button>
-
-                {media.url && (
-                  <a
-                    href={media.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/5 hover:bg-white/20 text-white border border-white/15 flex items-center justify-center transition-all active:scale-90 ml-0.5"
-                    title={`Open on ${platformLabel}`}
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
+          {/* Center: Song Info, Progress Scrubber & Live Frequency Equalizer */}
+          <div className="flex-1 min-w-0 w-full text-start space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider border shadow-sm"
+                style={{
+                  backgroundColor: `${platformColor}18`,
+                  color: platformColor,
+                  borderColor: `${platformColor}40`,
+                }}
+              >
+                {platformLabel}
+              </span>
+              <span
+                className={`w-2 h-2 rounded-full ${mediaPlaying ? 'animate-ping' : 'opacity-40'}`}
+                style={{ backgroundColor: platformColor }}
+              />
+              <span className="text-[10px] font-mono text-zinc-400 font-bold">
+                LOSSLESS MASTER
+              </span>
             </div>
 
-            {/* BOTTOM ROW: Interactive Timeline Scrubber & Live Equalizer */}
-            <div dir="ltr" className="flex items-center gap-2 pt-1 border-t border-white/5">
-              <span className="shrink-0 text-[10px] font-mono font-bold" style={{ color: platformColor }}>
+            <div className="flex items-baseline justify-between gap-2">
+              <h3 className="text-sm sm:text-base font-black text-white truncate leading-snug">
+                {media.title}
+              </h3>
+              <span className="text-xs text-zinc-400 truncate shrink-0">
+                {media.artist || (isRtl ? 'فنان رسمي' : 'Official Creator')}
+              </span>
+            </div>
+
+            {/* Interactive Timeline Scrubber & EQ Frequency Wave */}
+            <div className="flex items-center gap-2.5 pt-0.5" dir="ltr">
+              <span className="text-[11px] font-mono font-bold text-zinc-400">
                 {formatAudioTime(mediaCurrentTime)}
               </span>
-
               <div
-                className="relative flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden cursor-pointer group/scrub"
+                className="flex-1 h-2 bg-white/15 hover:bg-white/25 rounded-full overflow-hidden relative cursor-pointer transition-colors"
                 onClick={(e) => {
-                  e.stopPropagation();
                   const rect = e.currentTarget.getBoundingClientRect();
-                  const pct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-                  setMediaProgress(Math.round(pct));
-                  setMediaCurrentTime(Math.round((pct / 100) * mediaDuration));
-                  if (audioRef.current) {
-                    audioRef.current.currentTime = (pct / 100) * mediaDuration;
-                  }
+                  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                  const newTime = Math.round(pct * mediaDuration);
+                  setMediaCurrentTime(newTime);
+                  setMediaProgress(Math.round(pct * 100));
+                  if (audioRef.current) audioRef.current.currentTime = newTime;
                 }}
               >
                 <div
-                  className="h-full rounded-full transition-all duration-150 relative"
+                  className="h-full rounded-full transition-all duration-150 shadow-sm"
                   style={{
                     width: `${mediaProgress}%`,
-                    background: `linear-gradient(90deg, ${platformColor} 0%, #FFFFFF 100%)`,
-                    boxShadow: `0 0 10px ${platformColor}cc`,
+                    backgroundColor: platformColor,
                   }}
                 />
               </div>
-
-              <span className="shrink-0 text-[10px] font-mono text-zinc-400">
+              <span className="text-[11px] font-mono font-bold text-zinc-500">
                 {formatAudioTime(mediaDuration)}
               </span>
 
-              {/* Dynamic 5-Bar Audio Equalizer */}
-              <div className="flex items-end gap-0.5 h-3.5 shrink-0 ml-1">
-                {[40, 85, 55, 100, 65].map((h, i) => (
-                  <span
-                    key={i}
-                    className="w-0.5 rounded-full"
-                    style={{
-                      backgroundColor: platformColor,
-                      height: mediaPlaying ? `${h}%` : '25%',
-                      animation: mediaPlaying ? `eqBarWave 0.6s ease-in-out infinite alternate ${i * 0.12}s` : 'none',
-                    }}
-                  />
-                ))}
+              {/* Bouncing Equalizer Wave Bars */}
+              <div className="flex items-end gap-0.5 h-3.5 pl-1 shrink-0">
+                <div className={`w-0.5 rounded-full eq-1 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                <div className={`w-0.5 rounded-full eq-2 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                <div className={`w-0.5 rounded-full eq-3 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                <div className={`w-0.5 rounded-full eq-4 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
               </div>
             </div>
+          </div>
+
+          {/* Right: Tactile Master Controls (No Clutter, Full Ergonomics) */}
+          <div className="flex items-center gap-2 shrink-0" dir="ltr">
+            {/* Skip -10s */}
+            <button
+              type="button"
+              onClick={() => {
+                const newT = Math.max(0, mediaCurrentTime - 10);
+                setMediaCurrentTime(newT);
+                if (audioRef.current) audioRef.current.currentTime = newT;
+              }}
+              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
+              title="Skip -10s"
+            >
+              <SkipBack className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Master Tactile Play Button */}
+            <button
+              type="button"
+              onClick={() => setMediaPlaying((p) => !p)}
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all"
+              style={{
+                background: `linear-gradient(135deg, ${platformColor}, #7F1D1D)`,
+                boxShadow: `0 0 25px ${platformColor}80`,
+              }}
+              aria-label={mediaPlaying ? 'Pause' : 'Play'}
+            >
+              {mediaPlaying ? (
+                <Pause className="w-5 h-5 fill-current" />
+              ) : (
+                <Play className="w-5 h-5 fill-current ml-0.5" />
+              )}
+            </button>
+
+            {/* Skip +10s */}
+            <button
+              type="button"
+              onClick={() => {
+                const newT = Math.min(mediaDuration, mediaCurrentTime + 10);
+                setMediaCurrentTime(newT);
+                if (audioRef.current) audioRef.current.currentTime = newT;
+              }}
+              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
+              title="Skip +10s"
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Watch Video Clip Modal Trigger */}
+            {isYouTube && ytVideoId && (
+              <button
+                type="button"
+                onClick={() => setShowVideoModal(true)}
+                className="w-9 h-9 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all hover:scale-105 active:scale-90 shadow-md"
+                title={isRtl ? 'مشاهدة الفيديو كليب بدقة عالية' : 'Watch HD Video Clip'}
+              >
+                <Film className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* External Platform Link */}
+            {media.url && (
+              <a
+                href={media.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-105"
+                title={isRtl ? 'فتح في المنصة الرسمية' : 'Open in Official App'}
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -2223,6 +2100,51 @@ export function ProfileRenderer({
                   </button>
                 </form>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Fullscreen Cinema-Grade Video Clip Theatre Modal */}
+        {showVideoModal && rootYtVideoId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 md:p-10 bg-black/92 backdrop-blur-2xl"
+            onClick={() => setShowVideoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 15 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-4xl aspect-video rounded-3xl sm:rounded-[32px] overflow-hidden border-2 border-white/20 shadow-[0_25px_100px_rgba(0,0,0,0.98),0_0_50px_rgba(239,68,68,0.35)] bg-black flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top Bar with Title and Close Button */}
+              <div className="absolute top-0 inset-x-0 z-20 px-4 sm:px-6 py-3.5 bg-gradient-to-b from-black/95 via-black/75 to-transparent flex items-center justify-between pointer-events-auto">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                  <span className="text-xs sm:text-sm font-black text-white truncate max-w-[200px] sm:max-w-md">
+                    {profile.mediaEmbed?.title || 'YouTube HD Video'} {profile.mediaEmbed?.artist ? `— ${profile.mediaEmbed.artist}` : ''}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowVideoModal(false)}
+                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600 text-white flex items-center justify-center border border-white/20 hover:border-rose-500 transition-all shadow-xl active:scale-90 shrink-0"
+                  title={isRtl ? 'إغلاق الفيديو' : 'Close Video'}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${rootYtVideoId}?autoplay=1&playsinline=1&rel=0`}
+                title={profile.mediaEmbed?.title || 'Video Clip'}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full pt-10 sm:pt-12"
+              />
             </motion.div>
           </motion.div>
         )}
