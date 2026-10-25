@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('✦ Seeding AURA LINKS database...');
+  console.log('✦ Seeding VoltiX database...');
 
   // 1. SiteSettings
   await prisma.siteSettings.upsert({
@@ -26,40 +26,44 @@ async function main() {
     },
   });
 
-  const adminHash = await bcrypt.hash('Am2710165@', 12);
+  // 2. Sovereign Admin User (Strictly Loaded via Environment Variables)
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminUsername = process.env.ADMIN_USERNAME || 'voltix';
 
-  // 2. Platform Owner / Sovereign Admin User (@voltix)
-  await prisma.user.upsert({
-    where: { email: 'aboaysel2710@gmail.com' },
-    create: {
-      email: 'aboaysel2710@gmail.com',
-      username: 'voltix',
-      passwordHash: adminHash,
-      displayName: 'مصطفى عبده | VoltiX Founder',
-      bio: 'مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة ومصمم واجهات تفاعلية ثلاثية الأبعاد ✨',
-      role: 'ADMIN',
-      isVerified: true,
-      emailVerified: new Date(),
-      locale: 'ar',
-      profileConfig: {
-        create: {
-          themeId: 'obsidian-luxury',
-          layout: 'centered',
-          entranceAnimation: 'cinematic-fade',
-          moodPreset: 'luxury',
-          seoTitle: 'مصطفى عبده | VoltiX Official',
-          seoDescription: 'الصفحة الرسمية لمؤسس منصة VoltiX للهويات الرقمية الفاخرة.',
+  if (adminEmail && adminPassword) {
+    const adminHash = await bcrypt.hash(adminPassword, 12);
+    await prisma.user.upsert({
+      where: { email: adminEmail.toLowerCase().trim() },
+      create: {
+        email: adminEmail.toLowerCase().trim(),
+        username: adminUsername.toLowerCase().trim(),
+        passwordHash: adminHash,
+        displayName: 'VoltiX Founder',
+        bio: 'مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة ومصمم واجهات تفاعلية ثلاثية الأبعاد ✨',
+        role: 'ADMIN',
+        isVerified: true,
+        emailVerified: new Date(),
+        locale: 'ar',
+        profileConfig: {
+          create: {
+            themeId: 'obsidian-luxury',
+            layout: 'centered',
+            entranceAnimation: 'cinematic-fade',
+            moodPreset: 'luxury',
+            seoTitle: 'VoltiX Official',
+            seoDescription: 'الصفحة الرسمية لمؤسس منصة VoltiX للهويات الرقمية الفاخرة.',
+          },
         },
       },
-    },
-    update: {
-      displayName: 'مصطفى عبده | VoltiX Founder',
-      role: 'ADMIN',
-      isVerified: true,
-    },
-  });
+      update: {
+        role: 'ADMIN',
+        isVerified: true,
+      },
+    });
+  }
 
-  console.log('✔ VoltiX clean production database initialized with sovereign owner account.');
+  console.log('✔ VoltiX clean production database initialized securely.');
 }
 
 main()
@@ -70,4 +74,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
