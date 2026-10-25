@@ -571,7 +571,7 @@ export default function AdminSiteControlCenterPage() {
       siteConfig.heroPhone.bio ||
       'منصة الهوية الرقمية الفاخرة • استكشف 30 عالمًا بصريًا بمعاينة حية فورية ✨',
     avatarUrl: siteConfig.heroPhone.avatarUrl || siteConfig.logoUrl || '/voltix-logo.png',
-    coverUrl: '',
+    coverUrl: siteConfig.heroPhone.coverUrl || '',
     isVerified: true,
     links: [
       {
@@ -3088,6 +3088,36 @@ export default function AdminSiteControlCenterPage() {
                       compact={true}
                     />
                   </div>
+
+                  <div className="sm:col-span-2">
+                    <UniversalImageUploader
+                      label={
+                        isRtl
+                          ? 'صورة الغلاف والخلفية في الهاتف التفاعلي (رفع صورة بجميع الصيغ أو رابط)'
+                          : 'Demo Phone Cover / Background (Upload Any Format or URL)'
+                      }
+                      value={siteConfig.heroPhone.coverUrl || ''}
+                      onChange={(newCover) =>
+                        setSiteConfig({
+                          ...siteConfig,
+                          heroPhone: { ...siteConfig.heroPhone, coverUrl: newCover },
+                        })
+                      }
+                      defaultUrl=""
+                      placeholder={
+                        isRtl
+                          ? 'رابط صورة الغلاف أو ارفع ملفًا من جهازك (PNG, JPG, WebP, GIF...)'
+                          : 'Cover image URL or upload from device'
+                      }
+                      isRtl={isRtl}
+                      compact={true}
+                      helperText={
+                        isRtl
+                          ? 'تظهر كخلفية بانورامية ملكية في أعلى بطاقة الهاتف التفاعلي في المعاينة الفورية والصفحة الرئيسية'
+                          : 'Appears as the luxury panoramic cover banner in the interactive hero phone'
+                      }
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -3265,7 +3295,7 @@ export default function AdminSiteControlCenterPage() {
               siteConfig.heroPhone.bio ||
               'منصة الهوية الرقمية الفاخرة • استكشف 30 عالمًا بصريًا بمعاينة حية فورية ✨',
             avatarUrl: siteConfig.heroPhone.avatarUrl || siteConfig.logoUrl || '/voltix-logo.png',
-            coverUrl: '',
+            coverUrl: siteConfig.heroPhone.coverUrl || '',
             isVerified: true,
             links: [
               {
