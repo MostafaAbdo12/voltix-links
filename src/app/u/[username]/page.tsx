@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { mergeThemeWithCustom, mergeEffectsConfig, ProfileLayoutType } from '@/lib/themes';
 import { PublicProfileClient } from '@/components/profile/PublicProfileClient';
-import { ProfileData } from '@/components/profile/ProfileRenderer';
+import { ProfileData, MediaEmbedConfig } from '@/components/profile/ProfileRenderer';
 
 // Incremental Static Regeneration: 60-second edge cache with background revalidation
 export const revalidate = 60;
@@ -90,13 +90,14 @@ export default async function PublicProfilePage({
   let avatarPos = { zoom: 1, x: 0, y: 0 };
   let coverPos = { zoom: 1, x: 0, y: 0 };
   let sectionsOrder = ['header', 'social', 'featured', 'media', 'links'];
-  let mediaEmbed = {
+  let mediaEmbed: MediaEmbedConfig = {
     enabled: false,
     type: 'spotify' as const,
     title: '',
     artist: '',
     url: '',
     embedUrl: '',
+    tracks: [],
   };
   let qrConfig = {
     fgColor: mergedTheme.accentColor,

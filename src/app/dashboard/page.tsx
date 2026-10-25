@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -35,6 +35,7 @@ import {
   X,
   Calendar,
   Music,
+  ListMusic,
   Crown,
   CheckCircle2,
   ChevronRight,
@@ -88,6 +89,8 @@ import {
   ProfileLinkItem,
   ProfileSocialItem,
   MediaEmbedConfig,
+  MediaEmbedTrack,
+  detectPlatformFromMediaUrl,
 } from '@/components/profile/ProfileRenderer';
 import { QrCodeView } from '@/components/profile/QrCodeStudio';
 import {
@@ -421,7 +424,23 @@ export default function DashboardPage() {
             if (pc.sectionsOrderJson) initialSections = JSON.parse(pc.sectionsOrderJson);
           } catch {}
           try {
-            if (pc.mediaEmbedJson) setMediaEmbed(JSON.parse(pc.mediaEmbedJson));
+            if (pc.mediaEmbedJson) {
+              const parsed = JSON.parse(pc.mediaEmbedJson);
+              if (parsed && typeof parsed === 'object') {
+                if (!Array.isArray(parsed.tracks) && (parsed.title || parsed.url)) {
+                  parsed.tracks = [
+                    {
+                      id: 'track-1',
+                      title: parsed.title || '',
+                      artist: parsed.artist || '',
+                      url: parsed.url || '',
+                      type: parsed.type || 'youtube',
+                    },
+                  ];
+                }
+                setMediaEmbed(parsed);
+              }
+            }
           } catch {}
           try {
             if (pc.qrConfigJson) setQrConfig(JSON.parse(pc.qrConfigJson));
@@ -586,8 +605,117 @@ export default function DashboardPage() {
   };
 
   // ==========================================================================
-  // LINK MANAGEMENT OPERATIONS
+  // EMBEDDED MEDIA PLAYLIST OPERATIONS
   // ==========================================================================
+  const playlistTracks: MediaEmbedTrack[] = useMemo(() => {
+    if (Array.isArray(mediaEmbed.tracks) && mediaEmbed.tracks.length > 0) {
+      return mediaEmbed.tracks;
+    }
+    if (mediaEmbed.title || mediaEmbed.url) {
+      return [
+        {
+          id: 'track-default-1',
+          title: mediaEmbed.title || '',
+          artist: mediaEmbed.artist || '',
+          url: mediaEmbed.url || '',
+          type: mediaEmbed.type || 'youtube',
+        },
+      ];
+    }
+    return [
+      {
+        id: 'track-default-1',
+        title: '',
+        artist: '',
+        url: '',
+        type: 'youtube',
+      },
+    ];
+  }, [mediaEmbed.tracks, mediaEmbed.title, mediaEmbed.artist, mediaEmbed.url, mediaEmbed.type]);
+
+  const handleAddPlaylistTrack = () => {
+    const newTrack: MediaEmbedTrack = {
+      id: `track-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      title: isRtl ? `مقطع جديد #${playlistTracks.length + 1}` : `New Track #${playlistTracks.length + 1}`,
+      artist: '',
+      url: '',
+      type: 'youtube',
+    };
+    const nextTracks = [...playlistTracks, newTrack];
+    setMediaEmbed((prev) => ({
+      ...prev,
+      tracks: nextTracks,
+      title: nextTracks[0]?.title || prev.title,
+      artist: nextTracks[0]?.artist || prev.artist,
+      url: nextTracks[0]?.url || prev.url,
+      type: nextTracks[0]?.type || prev.type,
+    }));
+  };
+
+  const handleUpdatePlaylistTrack = (index: number, updates: Partial<MediaEmbedTrack>) => {
+    const nextTracks = [...playlistTracks];
+    if (updates.url && !updates.type) {
+      updates.type = detectPlatformFromMediaUrl(updates.url);
+    }
+    nextTracks[index] = { ...nextTracks[index], ...updates };
+    setMediaEmbed((prev) => ({
+      ...prev,
+      tracks: nextTracks,
+      title: nextTracks[0]?.title || '',
+      artist: nextTracks[0]?.artist || '',
+      url: nextTracks[0]?.url || '',
+      type: nextTracks[0]?.type || 'youtube',
+    }));
+  };
+
+  const handleDeletePlaylistTrack = (index: number) => {
+    if (playlistTracks.length <= 1) {
+      const clearedTracks: MediaEmbedTrack[] = [
+        {
+          id: playlistTracks[0]?.id || 'track-1',
+          title: '',
+          artist: '',
+          url: '',
+          type: 'youtube',
+        },
+      ];
+      setMediaEmbed((prev) => ({
+        ...prev,
+        tracks: clearedTracks,
+        title: '',
+        artist: '',
+        url: '',
+        type: 'youtube',
+      }));
+      return;
+    }
+    const nextTracks = playlistTracks.filter((_, i) => i !== index);
+    setMediaEmbed((prev) => ({
+      ...prev,
+      tracks: nextTracks,
+      title: nextTracks[0]?.title || '',
+      artist: nextTracks[0]?.artist || '',
+      url: nextTracks[0]?.url || '',
+      type: nextTracks[0]?.type || 'youtube',
+    }));
+  };
+
+  const handleMovePlaylistTrack = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= playlistTracks.length) return;
+    const nextTracks = [...playlistTracks];
+    const temp = nextTracks[index];
+    nextTracks[index] = nextTracks[targetIndex];
+    nextTracks[targetIndex] = temp;
+    setMediaEmbed((prev) => ({
+      ...prev,
+      tracks: nextTracks,
+      title: nextTracks[0]?.title || '',
+      artist: nextTracks[0]?.artist || '',
+      url: nextTracks[0]?.url || '',
+      type: nextTracks[0]?.type || 'youtube',
+    }));
+  };
   const openAddLinkModal = () => {
     setEditingLink(null);
     setFormTitle('');
@@ -2366,96 +2494,245 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Embedded Music & Media Widget */}
-              <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
+              {/* Embedded Music & Media Widget (Interactive Playlist Studio) */}
+              <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Music className="w-5 h-5 text-amber-400" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/25 flex items-center justify-center text-amber-400 shadow-md">
+                      <Music className="w-5 h-5" />
+                    </div>
                     <div>
-                      <h3 className="text-base font-bold">
-                        {isRtl ? 'مشغل الموسيقى والوسائط المدمج' : 'Embedded Music & Media Player'}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-white">
+                          {isRtl ? 'مشغل الموسيقى وقائمة التشغيل المدمجة' : 'Embedded Music & Playlist Studio'}
+                        </h3>
+                        {mediaEmbed.enabled && playlistTracks.length > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-[10px] font-mono font-bold">
+                            {playlistTracks.length} {isRtl ? (playlistTracks.length === 1 ? 'مقطع' : 'مقاطع') : (playlistTracks.length === 1 ? 'track' : 'tracks')}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-zinc-400">
                         {isRtl
-                          ? 'يعمل عند تفاعل الزائر دون تشغيل تلقائي مزعج'
-                          : 'Interactive audio/media showcase without intrusive autoplay'}
+                          ? 'أضف مقطعاً واحداً أو قائمة تشغيل متتالية تعمل عند تفاعل الزائر'
+                          : 'Showcase a single track or an interactive multi-track playlist queue'}
                       </p>
                     </div>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={mediaEmbed.enabled}
-                    onChange={(e) =>
-                      setMediaEmbed((prev) => ({ ...prev, enabled: e.target.checked }))
-                    }
-                    className="w-5 h-5 accent-amber-400"
-                  />
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mediaEmbed.enabled}
+                      onChange={(e) =>
+                        setMediaEmbed((prev) => ({ ...prev, enabled: e.target.checked }))
+                      }
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-amber-400 peer-checked:to-amber-500"></div>
+                  </label>
                 </div>
 
                 {mediaEmbed.enabled && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">
-                        {isRtl ? 'المنصة' : 'Platform'}
-                      </label>
-                      <select
-                        value={mediaEmbed.type}
-                        onChange={(e) =>
-                          setMediaEmbed((prev) => ({
-                            ...prev,
-                            type: e.target.value as MediaEmbedConfig['type'],
-                          }))
-                        }
-                        className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2 text-xs text-white"
+                  <div className="space-y-4 pt-1">
+                    {/* Header Controls & Add Button */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-white/10">
+                      <div className="flex items-center gap-2 text-xs text-zinc-400">
+                        <ListMusic className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>
+                          {isRtl
+                            ? 'قائمة مقاطع الصوت (يدعم YouTube, Spotify, SoundCloud, MP3):'
+                            : 'Playlist Tracks (Supports YouTube, Spotify, SoundCloud, MP3):'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddPlaylistTrack}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
                       >
-                        <option value="spotify">Spotify</option>
-                        <option value="youtube">YouTube Music</option>
-                        <option value="soundcloud">SoundCloud</option>
-                        <option value="custom">Custom Audio</option>
-                      </select>
+                        <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>{isRtl ? 'إضافة مقطع جديد للقائمة' : 'Add New Track'}</span>
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">
-                        {isRtl ? 'عنوان المقطع / البودكاست' : 'Track / Episode Title'}
-                      </label>
-                      <input
-                        type="text"
-                        value={mediaEmbed.title}
-                        onChange={(e) =>
-                          setMediaEmbed((prev) => ({ ...prev, title: e.target.value }))
-                        }
-                        placeholder="Midnight Obsidian Symphony"
-                        className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2 text-xs text-white"
-                      />
+
+                    {/* Track Cards List */}
+                    <div className="space-y-3.5">
+                      {playlistTracks.map((tr, idx) => {
+                        const trType = tr.type || (tr.url ? detectPlatformFromMediaUrl(tr.url) : 'youtube');
+                        const trColor =
+                          trType === 'youtube'
+                            ? '#EF4444'
+                            : trType === 'spotify'
+                            ? '#10B981'
+                            : trType === 'soundcloud'
+                            ? '#F97316'
+                            : '#D4AF37';
+
+                        return (
+                          <div
+                            key={tr.id || `track-box-${idx}`}
+                            className="p-4 rounded-2xl bg-black/60 border border-white/10 hover:border-white/20 transition-all space-y-3 shadow-md"
+                          >
+                            {/* Track Header with Badge and Order Actions */}
+                            <div className="flex items-center justify-between gap-2 pb-2 border-b border-white/5">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="w-6 h-6 rounded-lg text-black text-[11px] font-mono font-black flex items-center justify-center shadow-sm"
+                                  style={{ backgroundColor: trColor }}
+                                >
+                                  {idx + 1}
+                                </span>
+                                <span className="text-xs font-bold text-white">
+                                  {idx === 0
+                                    ? (isRtl ? 'المقطع الأساسي (الافتراضي)' : 'Primary Track (Default)')
+                                    : (isRtl ? `المقطع #${idx + 1}` : `Track #${idx + 1}`)}
+                                </span>
+                                <span
+                                  className="text-[9.5px] uppercase font-mono font-black px-2 py-0.5 rounded-full border"
+                                  style={{
+                                    color: trColor,
+                                    borderColor: `${trColor}40`,
+                                    backgroundColor: `${trColor}15`,
+                                  }}
+                                >
+                                  {trType}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-1">
+                                {/* Move Up */}
+                                <button
+                                  type="button"
+                                  disabled={idx === 0}
+                                  onClick={() => handleMovePlaylistTrack(idx, 'up')}
+                                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-white/5 text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                                  title={isRtl ? 'تحريك للأعلى' : 'Move Up'}
+                                >
+                                  <ArrowUp className="w-3.5 h-3.5" />
+                                </button>
+                                {/* Move Down */}
+                                <button
+                                  type="button"
+                                  disabled={idx === playlistTracks.length - 1}
+                                  onClick={() => handleMovePlaylistTrack(idx, 'down')}
+                                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-white/5 text-zinc-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                                  title={isRtl ? 'تحريك للأسفل' : 'Move Down'}
+                                >
+                                  <ArrowDown className="w-3.5 h-3.5" />
+                                </button>
+                                {/* Delete Track */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePlaylistTrack(idx)}
+                                  className="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 flex items-center justify-center transition-all ml-1 cursor-pointer"
+                                  title={playlistTracks.length > 1 ? (isRtl ? 'حذف هذا المقطع' : 'Delete Track') : (isRtl ? 'مسح البيانات' : 'Clear Fields')}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Track Inputs Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                              {/* Stream URL with Instant Platform Detection */}
+                              <div className="sm:col-span-2">
+                                <label className="block text-[11px] text-zinc-400 mb-1">
+                                  {isRtl ? 'رابط المقطع / الاستماع (YouTube, Spotify, SoundCloud, MP3)' : 'Stream URL (YouTube, Spotify, SoundCloud, MP3)'}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={tr.url || ''}
+                                  onChange={(e) => {
+                                    const newUrl = e.target.value;
+                                    const detected = detectPlatformFromMediaUrl(newUrl);
+                                    handleUpdatePlaylistTrack(idx, { url: newUrl, type: detected });
+                                  }}
+                                  placeholder="https://music.youtube.com/watch?v=... أو https://open.spotify.com/..."
+                                  className="w-full rounded-xl bg-black/60 border border-white/15 focus:border-amber-400/60 px-3 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
+                                  dir="ltr"
+                                />
+                              </div>
+
+                              {/* Platform Selector */}
+                              <div>
+                                <label className="block text-[11px] text-zinc-400 mb-1">
+                                  {isRtl ? 'المنصة' : 'Platform'}
+                                </label>
+                                <select
+                                  value={trType}
+                                  onChange={(e) =>
+                                    handleUpdatePlaylistTrack(idx, {
+                                      type: e.target.value as MediaEmbedConfig['type'],
+                                    })
+                                  }
+                                  className="w-full rounded-xl bg-black/60 border border-white/15 px-3 py-2 text-xs text-white"
+                                >
+                                  <option value="youtube">YouTube / YouTube Music</option>
+                                  <option value="spotify">Spotify</option>
+                                  <option value="soundcloud">SoundCloud</option>
+                                  <option value="custom">Direct MP3 / Audio Stream</option>
+                                </select>
+                              </div>
+
+                              {/* Track Title */}
+                              <div>
+                                <label className="block text-[11px] text-zinc-400 mb-1">
+                                  {isRtl ? 'عنوان المقطع / البودكاست' : 'Track / Episode Title'}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={tr.title || ''}
+                                  onChange={(e) =>
+                                    handleUpdatePlaylistTrack(idx, { title: e.target.value })
+                                  }
+                                  placeholder={isRtl ? 'مثال: Yahh' : 'e.g. Midnight Symphony'}
+                                  className="w-full rounded-xl bg-black/60 border border-white/15 focus:border-amber-400/60 px-3 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
+                                />
+                              </div>
+
+                              {/* Artist / Channel Name */}
+                              <div className="sm:col-span-2">
+                                <label className="block text-[11px] text-zinc-400 mb-1">
+                                  {isRtl ? 'اسم الفنان / القناة / صانع المحتوى' : 'Artist / Creator / Channel'}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={tr.artist || ''}
+                                  onChange={(e) =>
+                                    handleUpdatePlaylistTrack(idx, { artist: e.target.value })
+                                  }
+                                  placeholder={isRtl ? 'مثال: تامر عاشور | Tamer Ashour' : 'e.g. AURA Sound Lab'}
+                                  className="w-full rounded-xl bg-black/60 border border-white/15 focus:border-amber-400/60 px-3 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">
-                        {isRtl ? 'اسم الفنان / القناة' : 'Artist / Creator'}
-                      </label>
-                      <input
-                        type="text"
-                        value={mediaEmbed.artist || ''}
-                        onChange={(e) =>
-                          setMediaEmbed((prev) => ({ ...prev, artist: e.target.value }))
-                        }
-                        placeholder="AURA Sound Lab"
-                        className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2 text-xs text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-zinc-400 mb-1">
-                        {isRtl ? 'رابط الاستماع' : 'Stream URL'}
-                      </label>
-                      <input
-                        type="text"
-                        value={mediaEmbed.url || ''}
-                        onChange={(e) =>
-                          setMediaEmbed((prev) => ({ ...prev, url: e.target.value }))
-                        }
-                        placeholder="https://open.spotify.com/..."
-                        className="w-full rounded-xl bg-black/50 border border-white/15 px-3 py-2 text-xs text-white"
-                        dir="ltr"
-                      />
+
+                    {/* Bottom Add Track Button for Convenience */}
+                    {playlistTracks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={handleAddPlaylistTrack}
+                        className="w-full py-2.5 rounded-xl border border-dashed border-white/20 hover:border-amber-400/50 bg-white/[0.02] hover:bg-amber-400/5 text-zinc-300 hover:text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>{isRtl ? 'إضافة مقطع صوتي آخر إلى القائمة +' : 'Add Another Track to Playlist +'}</span>
+                      </button>
+                    )}
+
+                    {/* Pro Tip Box */}
+                    <div className="p-3.5 rounded-2xl bg-amber-400/5 border border-amber-400/20 text-xs text-amber-200/90 space-y-1">
+                      <div className="font-bold flex items-center gap-1.5 text-amber-300">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{isRtl ? 'ميزة التشغيل التلقائي المتتالي (Continuous Queue)' : 'Continuous Playlist Queue Feature'}</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-zinc-300">
+                        {isRtl
+                          ? 'عند إضافة أكثر من مقطع، ستتحول بطاقة الصوت في صفحتك تلقائياً إلى قائمة تشغيل متكاملة تتيح للزوار التنقل بين المقاطع أو الاستماع إليها بشكل متتالٍ.'
+                          : 'When multiple tracks are added, the media card automatically transforms into a full playlist queue allowing visitors to switch or listen continuously.'}
+                      </p>
                     </div>
                   </div>
                 )}

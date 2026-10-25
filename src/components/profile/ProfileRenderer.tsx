@@ -30,6 +30,9 @@ import {
   Image as ImageIcon,
   Tv,
   Film,
+  ListMusic,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 function extractYouTubeId(url?: string): string | null {
@@ -42,6 +45,16 @@ function extractSpotifyTrackId(url?: string): string | null {
   if (!url) return null;
   const match = url.match(/track[\/:]([a-zA-Z0-9]+)/i);
   return match ? match[1] : null;
+}
+
+export function detectPlatformFromMediaUrl(url: string): 'spotify' | 'youtube' | 'soundcloud' | 'custom' {
+  if (!url) return 'youtube';
+  const clean = url.trim().toLowerCase();
+  if (/youtube\.com|youtu\.be/i.test(clean)) return 'youtube';
+  if (/spotify\.com/i.test(clean)) return 'spotify';
+  if (/soundcloud\.com/i.test(clean)) return 'soundcloud';
+  if (/\.(mp3|wav|ogg|m4a|aac)(\?.*)?$/i.test(clean) || clean.startsWith('blob:') || clean.startsWith('data:audio')) return 'custom';
+  return 'youtube';
 }
 
 function isCoverVideo(url?: string | null): boolean {
@@ -107,6 +120,14 @@ export interface ProfileSocialItem {
   order?: number;
 }
 
+export interface MediaEmbedTrack {
+  id: string;
+  title: string;
+  artist?: string;
+  url: string;
+  type?: 'spotify' | 'youtube' | 'soundcloud' | 'custom';
+}
+
 export interface MediaEmbedConfig {
   enabled: boolean;
   type: 'spotify' | 'youtube' | 'soundcloud' | 'custom';
@@ -114,6 +135,7 @@ export interface MediaEmbedConfig {
   artist?: string;
   url?: string;
   embedUrl?: string;
+  tracks?: MediaEmbedTrack[];
 }
 
 export interface ProfileData {
@@ -262,8 +284,81 @@ export function ProfileRenderer({
   const [mediaCurrentTime, setMediaCurrentTime] = useState(0);
   const [mediaDuration, setMediaDuration] = useState(225); // 3:45 default
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [playlistDrawerOpen, setPlaylistDrawerOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const rootYtVideoId = profile.mediaEmbed?.url ? extractYouTubeId(profile.mediaEmbed.url) : null;
+
+  // Normalized playlist tracks (with seamless backward compatibility)
+  const playlistTracks: MediaEmbedTrack[] = useMemo(() => {
+    const media = profile.mediaEmbed;
+    if (!media || !media.enabled) return [];
+    if (Array.isArray(media.tracks) && media.tracks.length > 0) {
+      const filtered = media.tracks.filter(
+        (t) => (t.title && t.title.trim()) || (t.url && t.url.trim())
+      );
+      if (filtered.length > 0) return filtered;
+    }
+    if (media.title || media.url) {
+      return [
+        {
+          id: 'legacy-default',
+          title: media.title,
+          artist: media.artist || '',
+          url: media.url || '',
+          type: media.type || 'youtube',
+        },
+      ];
+    }
+    return [];
+  }, [profile.mediaEmbed]);
+
+  const safeTrackIndex =
+    currentTrackIndex < playlistTracks.length ? currentTrackIndex : 0;
+  const activeTrack = playlistTracks[safeTrackIndex] || null;
+  const rootYtVideoId = activeTrack?.url ? extractYouTubeId(activeTrack.url) : null;
+
+  const handleSelectTrack = (idx: number) => {
+    if (idx === safeTrackIndex) {
+      setMediaPlaying((p) => !p);
+    } else {
+      setCurrentTrackIndex(idx);
+      setMediaCurrentTime(0);
+      setMediaProgress(0);
+      setMediaPlaying(true);
+    }
+  };
+
+  const handleNextTrack = () => {
+    if (playlistTracks.length <= 1) {
+      const newT = Math.min(mediaDuration, mediaCurrentTime + 10);
+      setMediaCurrentTime(newT);
+      if (audioRef.current) audioRef.current.currentTime = newT;
+      return;
+    }
+    setCurrentTrackIndex((prev) => (prev + 1) % playlistTracks.length);
+    setMediaCurrentTime(0);
+    setMediaProgress(0);
+    setMediaPlaying(true);
+  };
+
+  const handlePrevTrack = () => {
+    if (playlistTracks.length <= 1) {
+      const newT = Math.max(0, mediaCurrentTime - 10);
+      setMediaCurrentTime(newT);
+      if (audioRef.current) audioRef.current.currentTime = newT;
+      return;
+    }
+    if (mediaCurrentTime > 3) {
+      setMediaCurrentTime(0);
+      setMediaProgress(0);
+      if (audioRef.current) audioRef.current.currentTime = 0;
+    } else {
+      setCurrentTrackIndex((prev) => (prev - 1 + playlistTracks.length) % playlistTracks.length);
+      setMediaCurrentTime(0);
+      setMediaProgress(0);
+      setMediaPlaying(true);
+    }
+  };
 
   // Active audio progress timer
   useEffect(() => {
@@ -1330,16 +1425,21 @@ export function ProfileRenderer({
   };
 
   const renderMediaSection = () => {
-    const media = profile.mediaEmbed;
-    if (!media || !media.enabled || !media.title) return null;
+    if (playlistTracks.length === 0 || !activeTrack) return null;
 
-    const isYouTube = media.type === 'youtube' || /youtube\.com|youtu\.be/i.test(media.url || '');
-    const isSpotify = media.type === 'spotify' || /spotify\.com/i.test(media.url || '');
-    const isSoundcloud = media.type === 'soundcloud' || /soundcloud\.com/i.test(media.url || '');
-    const isDirectAudio = isDirectAudioFile(media.url);
+    const trackType =
+      activeTrack.type ||
+      (activeTrack.url ? detectPlatformFromMediaUrl(activeTrack.url) : 'youtube');
+    const isYouTube =
+      trackType === 'youtube' || /youtube\.com|youtu\.be/i.test(activeTrack.url || '');
+    const isSpotify =
+      trackType === 'spotify' || /spotify\.com/i.test(activeTrack.url || '');
+    const isSoundcloud =
+      trackType === 'soundcloud' || /soundcloud\.com/i.test(activeTrack.url || '');
+    const isDirectAudio = isDirectAudioFile(activeTrack.url);
 
-    const ytVideoId = isYouTube ? extractYouTubeId(media.url) : null;
-    const spotifyTrackId = isSpotify ? extractSpotifyTrackId(media.url) : null;
+    const ytVideoId = isYouTube ? extractYouTubeId(activeTrack.url) : null;
+    const spotifyTrackId = isSpotify ? extractSpotifyTrackId(activeTrack.url) : null;
 
     const platformColor = isYouTube
       ? '#EF4444'
@@ -1357,8 +1457,6 @@ export function ProfileRenderer({
       ? 'SOUNDCLOUD'
       : 'AUDIO STREAM';
 
-    const platformBadgeId: SocialPlatformId = isYouTube ? 'youtube' : isSpotify ? 'spotify' : 'youtube';
-
     return (
       <div
         key="section-media"
@@ -1370,8 +1468,9 @@ export function ProfileRenderer({
         {/* Real Audio Engine */}
         {isDirectAudio && (
           <audio
+            key={`audio-engine-${activeTrack.id || activeTrack.url}`}
             ref={audioRef}
-            src={media.url}
+            src={activeTrack.url}
             preload="metadata"
             onLoadedMetadata={(e) => {
               const dur = Math.round(e.currentTarget.duration);
@@ -1385,9 +1484,13 @@ export function ProfileRenderer({
               }
             }}
             onEnded={() => {
-              setMediaPlaying(false);
-              setMediaCurrentTime(0);
-              setMediaProgress(0);
+              if (playlistTracks.length > 1) {
+                handleNextTrack();
+              } else {
+                setMediaPlaying(false);
+                setMediaCurrentTime(0);
+                setMediaProgress(0);
+              }
             }}
           />
         )}
@@ -1397,7 +1500,7 @@ export function ProfileRenderer({
           <iframe
             key={`yt-audio-${ytVideoId}`}
             src={`https://www.youtube-nocookie.com/embed/${ytVideoId}?autoplay=1&playsinline=1&controls=0&modestbranding=1&rel=0`}
-            title={media.title}
+            title={activeTrack.title}
             allow="autoplay; encrypted-media"
             className="w-1 h-1 opacity-0 fixed -bottom-10 -left-10 pointer-events-none"
             tabIndex={-1}
@@ -1415,185 +1518,314 @@ export function ProfileRenderer({
         )}
 
         {/* Inner Spatial Capsule Container */}
-        <div
-          className="relative rounded-[26px] bg-[#07080E]/95 backdrop-blur-2xl p-3.5 sm:p-4.5 flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 border border-white/10 z-10"
-        >
-          {/* Left: 3D Spinning Vinyl Turntable Core */}
-          <div
-            className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer group/vinyl shadow-xl"
-            onClick={() => setMediaPlaying((p) => !p)}
-            title={mediaPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
-          >
-            {/* Spinning Vinyl Record Disc */}
+        <div className="relative rounded-[26px] bg-[#07080E]/95 backdrop-blur-2xl p-3.5 sm:p-4.5 flex flex-col border border-white/10 z-10 gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 w-full">
+            {/* Left: 3D Spinning Vinyl Turntable Core */}
             <div
-              className={`absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel ${
-                mediaPlaying ? '' : 'paused'
-              }`}
-              style={{
-                background: 'radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%)',
-              }}
+              className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shrink-0 cursor-pointer group/vinyl shadow-xl"
+              onClick={() => setMediaPlaying((p) => !p)}
+              title={mediaPlaying ? (isRtl ? 'إيقاف مؤقت' : 'Pause') : (isRtl ? 'تشغيل' : 'Play')}
             >
-              {/* Vinyl Grooves Inlay */}
-              <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center">
-                <div
-                  className="w-4 h-4 rounded-full shadow-md"
+              {/* Spinning Vinyl Record Disc */}
+              <div
+                className={`absolute inset-0 rounded-full border border-white/20 shadow-2xl flex items-center justify-center animate-spin-reel ${
+                  mediaPlaying ? '' : 'paused'
+                }`}
+                style={{
+                  background: 'radial-gradient(circle at center, #252525 15%, #050508 45%, #161616 70%, #000 100%)',
+                }}
+              >
+                {/* Vinyl Grooves Inlay */}
+                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center">
+                  <div
+                    className="w-4 h-4 rounded-full shadow-md"
+                    style={{ backgroundColor: platformColor }}
+                  />
+                </div>
+              </div>
+
+              {/* Floating Center Indicator */}
+              <div className="relative z-10 w-7 h-7 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
+                {mediaPlaying ? (
+                  <Pause className="w-3.5 h-3.5 fill-current" />
+                ) : (
+                  <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                )}
+              </div>
+            </div>
+
+            {/* Center: Song Info, Progress Scrubber & Live Frequency Equalizer */}
+            <div className="flex-1 min-w-0 w-full text-start space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider border shadow-sm"
+                  style={{
+                    backgroundColor: `${platformColor}18`,
+                    color: platformColor,
+                    borderColor: `${platformColor}40`,
+                  }}
+                >
+                  {platformLabel}
+                </span>
+                <span
+                  className={`w-2 h-2 rounded-full ${mediaPlaying ? 'animate-ping' : 'opacity-40'}`}
                   style={{ backgroundColor: platformColor }}
                 />
+                <span className="text-[10px] font-mono text-zinc-400 font-bold">
+                  LOSSLESS MASTER
+                </span>
+
+                {/* Playlist Counter & Quick Drawer Pill */}
+                {playlistTracks.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setPlaylistDrawerOpen((o) => !o)}
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-400/15 text-amber-300 border border-amber-400/35 hover:bg-amber-400/25 transition-all cursor-pointer shadow-sm ml-auto sm:ml-0"
+                    title={isRtl ? 'عرض قائمة التشغيل' : 'View Playlist Queue'}
+                  >
+                    <ListMusic className="w-3 h-3 text-amber-400" />
+                    <span>
+                      {safeTrackIndex + 1} / {playlistTracks.length}
+                    </span>
+                    {playlistDrawerOpen ? (
+                      <ChevronUp className="w-3 h-3 text-amber-400" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 text-amber-400" />
+                    )}
+                  </button>
+                )}
               </div>
-            </div>
 
-            {/* Floating Center Indicator */}
-            <div className="relative z-10 w-7 h-7 rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center text-white border border-white/25 group-hover/vinyl:scale-110 transition-transform">
-              {mediaPlaying ? (
-                <Pause className="w-3.5 h-3.5 fill-current" />
-              ) : (
-                <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-              )}
-            </div>
-          </div>
+              <div className="flex items-baseline justify-between gap-2">
+                <h3 className="text-sm sm:text-base font-black text-white truncate leading-snug">
+                  {activeTrack.title}
+                </h3>
+                <span className="text-xs text-zinc-400 truncate shrink-0">
+                  {activeTrack.artist || (isRtl ? 'فنان رسمي' : 'Official Creator')}
+                </span>
+              </div>
 
-          {/* Center: Song Info, Progress Scrubber & Live Frequency Equalizer */}
-          <div className="flex-1 min-w-0 w-full text-start space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className="px-2 py-0.5 rounded-full text-[9.5px] font-black uppercase tracking-wider border shadow-sm"
-                style={{
-                  backgroundColor: `${platformColor}18`,
-                  color: platformColor,
-                  borderColor: `${platformColor}40`,
-                }}
-              >
-                {platformLabel}
-              </span>
-              <span
-                className={`w-2 h-2 rounded-full ${mediaPlaying ? 'animate-ping' : 'opacity-40'}`}
-                style={{ backgroundColor: platformColor }}
-              />
-              <span className="text-[10px] font-mono text-zinc-400 font-bold">
-                LOSSLESS MASTER
-              </span>
-            </div>
-
-            <div className="flex items-baseline justify-between gap-2">
-              <h3 className="text-sm sm:text-base font-black text-white truncate leading-snug">
-                {media.title}
-              </h3>
-              <span className="text-xs text-zinc-400 truncate shrink-0">
-                {media.artist || (isRtl ? 'فنان رسمي' : 'Official Creator')}
-              </span>
-            </div>
-
-            {/* Interactive Timeline Scrubber & EQ Frequency Wave */}
-            <div className="flex items-center gap-2.5 pt-0.5" dir="ltr">
-              <span className="text-[11px] font-mono font-bold text-zinc-400">
-                {formatAudioTime(mediaCurrentTime)}
-              </span>
-              <div
-                className="flex-1 h-2 bg-white/15 hover:bg-white/25 rounded-full overflow-hidden relative cursor-pointer transition-colors"
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                  const newTime = Math.round(pct * mediaDuration);
-                  setMediaCurrentTime(newTime);
-                  setMediaProgress(Math.round(pct * 100));
-                  if (audioRef.current) audioRef.current.currentTime = newTime;
-                }}
-              >
+              {/* Interactive Timeline Scrubber & EQ Frequency Wave */}
+              <div className="flex items-center gap-2.5 pt-0.5" dir="ltr">
+                <span className="text-[11px] font-mono font-bold text-zinc-400">
+                  {formatAudioTime(mediaCurrentTime)}
+                </span>
                 <div
-                  className="h-full rounded-full transition-all duration-150 shadow-sm"
-                  style={{
-                    width: `${mediaProgress}%`,
-                    backgroundColor: platformColor,
+                  className="flex-1 h-2 bg-white/15 hover:bg-white/25 rounded-full overflow-hidden relative cursor-pointer transition-colors"
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                    const newTime = Math.round(pct * mediaDuration);
+                    setMediaCurrentTime(newTime);
+                    setMediaProgress(Math.round(pct * 100));
+                    if (audioRef.current) audioRef.current.currentTime = newTime;
                   }}
-                />
-              </div>
-              <span className="text-[11px] font-mono font-bold text-zinc-500">
-                {formatAudioTime(mediaDuration)}
-              </span>
+                >
+                  <div
+                    className="h-full rounded-full transition-all duration-150 shadow-sm"
+                    style={{
+                      width: `${mediaProgress}%`,
+                      backgroundColor: platformColor,
+                    }}
+                  />
+                </div>
+                <span className="text-[11px] font-mono font-bold text-zinc-500">
+                  {formatAudioTime(mediaDuration)}
+                </span>
 
-              {/* Bouncing Equalizer Wave Bars */}
-              <div className="flex items-end gap-0.5 h-3.5 pl-1 shrink-0">
-                <div className={`w-0.5 rounded-full eq-1 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                <div className={`w-0.5 rounded-full eq-2 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                <div className={`w-0.5 rounded-full eq-3 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
-                <div className={`w-0.5 rounded-full eq-4 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                {/* Bouncing Equalizer Wave Bars */}
+                <div className="flex items-end gap-0.5 h-3.5 pl-1 shrink-0">
+                  <div className={`w-0.5 rounded-full eq-1 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                  <div className={`w-0.5 rounded-full eq-2 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                  <div className={`w-0.5 rounded-full eq-3 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                  <div className={`w-0.5 rounded-full eq-4 ${mediaPlaying ? '' : 'paused'}`} style={{ backgroundColor: platformColor }} />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Right: Tactile Master Controls (No Clutter, Full Ergonomics) */}
-          <div className="flex items-center gap-2 shrink-0" dir="ltr">
-            {/* Skip -10s */}
-            <button
-              type="button"
-              onClick={() => {
-                const newT = Math.max(0, mediaCurrentTime - 10);
-                setMediaCurrentTime(newT);
-                if (audioRef.current) audioRef.current.currentTime = newT;
-              }}
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
-              title="Skip -10s"
-            >
-              <SkipBack className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Master Tactile Play Button */}
-            <button
-              type="button"
-              onClick={() => setMediaPlaying((p) => !p)}
-              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all"
-              style={{
-                background: `linear-gradient(135deg, ${platformColor}, #7F1D1D)`,
-                boxShadow: `0 0 25px ${platformColor}80`,
-              }}
-              aria-label={mediaPlaying ? 'Pause' : 'Play'}
-            >
-              {mediaPlaying ? (
-                <Pause className="w-5 h-5 fill-current" />
-              ) : (
-                <Play className="w-5 h-5 fill-current ml-0.5" />
-              )}
-            </button>
-
-            {/* Skip +10s */}
-            <button
-              type="button"
-              onClick={() => {
-                const newT = Math.min(mediaDuration, mediaCurrentTime + 10);
-                setMediaCurrentTime(newT);
-                if (audioRef.current) audioRef.current.currentTime = newT;
-              }}
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
-              title="Skip +10s"
-            >
-              <SkipForward className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Watch Video Clip Modal Trigger */}
-            {isYouTube && ytVideoId && (
+            {/* Right: Tactile Master Controls (No Clutter, Full Ergonomics) */}
+            <div className="flex items-center gap-2 shrink-0" dir="ltr">
+              {/* Previous Track / -10s */}
               <button
                 type="button"
-                onClick={() => setShowVideoModal(true)}
-                className="w-9 h-9 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all hover:scale-105 active:scale-90 shadow-md"
-                title={isRtl ? 'مشاهدة الفيديو كليب بدقة عالية' : 'Watch HD Video Clip'}
+                onClick={handlePrevTrack}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
+                title={playlistTracks.length > 1 ? (isRtl ? 'المقطع السابق' : 'Previous Track') : 'Skip -10s'}
               >
-                <Film className="w-4 h-4" />
+                <SkipBack className="w-3.5 h-3.5" />
               </button>
-            )}
 
-            {/* External Platform Link */}
-            {media.url && (
-              <a
-                href={media.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-105"
-                title={isRtl ? 'فتح في المنصة الرسمية' : 'Open in Official App'}
+              {/* Master Tactile Play Button */}
+              <button
+                type="button"
+                onClick={() => setMediaPlaying((p) => !p)}
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                style={{
+                  background: `linear-gradient(135deg, ${platformColor}, #7F1D1D)`,
+                  boxShadow: `0 0 25px ${platformColor}80`,
+                }}
+                aria-label={mediaPlaying ? 'Pause' : 'Play'}
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
+                {mediaPlaying ? (
+                  <Pause className="w-5 h-5 fill-current" />
+                ) : (
+                  <Play className="w-5 h-5 fill-current ml-0.5" />
+                )}
+              </button>
+
+              {/* Next Track / +10s */}
+              <button
+                type="button"
+                onClick={handleNextTrack}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-300 hover:text-white border border-white/10 flex items-center justify-center transition-all active:scale-90"
+                title={playlistTracks.length > 1 ? (isRtl ? 'المقطع التالي' : 'Next Track') : 'Skip +10s'}
+              >
+                <SkipForward className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Watch Video Clip Modal Trigger */}
+              {isYouTube && ytVideoId && (
+                <button
+                  type="button"
+                  onClick={() => setShowVideoModal(true)}
+                  className="w-9 h-9 rounded-full bg-white/5 hover:bg-red-500/20 text-zinc-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition-all hover:scale-105 active:scale-90 shadow-md"
+                  title={isRtl ? 'مشاهدة الفيديو كليب بدقة عالية' : 'Watch HD Video Clip'}
+                >
+                  <Film className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* Playlist Toggle Button (if multiple tracks) */}
+              {playlistTracks.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setPlaylistDrawerOpen((o) => !o)}
+                  className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all hover:scale-105 active:scale-90 shadow-md ${
+                    playlistDrawerOpen
+                      ? 'bg-amber-400/20 border-amber-400/60 text-amber-300'
+                      : 'bg-white/5 hover:bg-white/15 border-white/10 text-zinc-300 hover:text-white'
+                  }`}
+                  title={isRtl ? 'قائمة التشغيل' : 'Playlist Queue'}
+                >
+                  <ListMusic className="w-4 h-4" />
+                </button>
+              )}
+
+              {/* External Platform Link */}
+              {activeTrack.url && (
+                <a
+                  href={activeTrack.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all hover:scale-105"
+                  title={isRtl ? 'فتح في المنصة الرسمية' : 'Open in Official App'}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
           </div>
+
+          {/* Expandable Luxury Playlist Drawer */}
+          {playlistTracks.length > 1 && (
+            <AnimatePresence>
+              {playlistDrawerOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  className="pt-2 border-t border-white/10 overflow-hidden"
+                >
+                  <div className="flex items-center justify-between px-1 pb-2 text-[11px] font-bold text-zinc-400">
+                    <span className="flex items-center gap-1.5 text-amber-300">
+                      <ListMusic className="w-3.5 h-3.5" />
+                      <span>{isRtl ? 'قائمة التشغيل المتتالية' : 'Continuous Playlist Queue'}</span>
+                    </span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {isRtl ? 'انقر على أي مقطع للانتقال الفوري' : 'Tap any track to play'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                    {playlistTracks.map((tr, idx) => {
+                      const isCurrent = idx === safeTrackIndex;
+                      const trType =
+                        tr.type || (tr.url ? detectPlatformFromMediaUrl(tr.url) : 'youtube');
+                      const trColor =
+                        trType === 'youtube'
+                          ? '#EF4444'
+                          : trType === 'spotify'
+                          ? '#10B981'
+                          : trType === 'soundcloud'
+                          ? '#F97316'
+                          : theme.accentColor;
+
+                      return (
+                        <div
+                          key={tr.id || `track-row-${idx}`}
+                          onClick={() => handleSelectTrack(idx)}
+                          className={`w-full p-2.5 rounded-2xl flex items-center justify-between gap-3 transition-all cursor-pointer select-none ${
+                            isCurrent
+                              ? 'bg-white/15 border border-white/25 shadow-lg'
+                              : 'bg-white/[0.03] hover:bg-white/[0.08] border border-white/5'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 text-xs font-mono font-black shadow-sm ${
+                                isCurrent ? 'text-black' : 'text-zinc-400 bg-white/5 border border-white/10'
+                              }`}
+                              style={isCurrent ? { backgroundColor: trColor } : {}}
+                            >
+                              {isCurrent && mediaPlaying ? (
+                                <div className="flex items-end gap-0.5 h-3">
+                                  <div className="w-0.5 h-full bg-black rounded-full eq-1" />
+                                  <div className="w-0.5 h-full bg-black rounded-full eq-2" />
+                                  <div className="w-0.5 h-full bg-black rounded-full eq-3" />
+                                </div>
+                              ) : (
+                                `#${idx + 1}`
+                              )}
+                            </div>
+
+                            <div className="min-w-0 text-start">
+                              <div
+                                className={`text-xs font-bold truncate ${
+                                  isCurrent ? 'text-white font-black' : 'text-zinc-300'
+                                }`}
+                              >
+                                {tr.title}
+                              </div>
+                              <div className="text-[10px] text-zinc-500 truncate">
+                                {tr.artist || (isRtl ? 'فنان رسمي' : 'Official Artist')}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shadow-sm"
+                              style={{
+                                color: trColor,
+                                borderColor: `${trColor}40`,
+                                backgroundColor: `${trColor}15`,
+                              }}
+                            >
+                              {trType}
+                            </span>
+                            {isCurrent && (
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
         </div>
       </div>
     );
@@ -2121,26 +2353,54 @@ export function ProfileRenderer({
               className="relative w-full max-w-4xl aspect-video rounded-3xl sm:rounded-[32px] overflow-hidden border-2 border-white/20 shadow-[0_25px_100px_rgba(0,0,0,0.98),0_0_50px_rgba(239,68,68,0.35)] bg-black flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Top Bar with Title and Close Button */}
+              {/* Top Bar with Title, Playlist Navigation, and Close Button */}
               <div className="absolute top-0 inset-x-0 z-20 px-4 sm:px-6 py-3.5 bg-gradient-to-b from-black/95 via-black/75 to-transparent flex items-center justify-between pointer-events-auto">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
                   <span className="text-xs sm:text-sm font-black text-white truncate max-w-[200px] sm:max-w-md">
-                    {profile.mediaEmbed?.title || 'YouTube HD Video'} {profile.mediaEmbed?.artist ? `— ${profile.mediaEmbed.artist}` : ''}
+                    {activeTrack?.title || 'YouTube HD Video'} {activeTrack?.artist ? `— ${activeTrack.artist}` : ''}
                   </span>
+                  {playlistTracks.length > 1 && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-zinc-300 shrink-0">
+                      {safeTrackIndex + 1}/{playlistTracks.length}
+                    </span>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowVideoModal(false)}
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600 text-white flex items-center justify-center border border-white/20 hover:border-rose-500 transition-all shadow-xl active:scale-90 shrink-0"
-                  title={isRtl ? 'إغلاق الفيديو' : 'Close Video'}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {playlistTracks.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handlePrevTrack}
+                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all active:scale-90"
+                        title={isRtl ? 'الفيديو السابق' : 'Previous Video'}
+                      >
+                        <SkipBack className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNextTrack}
+                        className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all active:scale-90"
+                        title={isRtl ? 'الفيديو التالي' : 'Next Video'}
+                      >
+                        <SkipForward className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowVideoModal(false)}
+                    className="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600 text-white flex items-center justify-center border border-white/20 hover:border-rose-500 transition-all shadow-xl active:scale-90 shrink-0"
+                    title={isRtl ? 'إغلاق الفيديو' : 'Close Video'}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <iframe
                 src={`https://www.youtube-nocookie.com/embed/${rootYtVideoId}?autoplay=1&playsinline=1&rel=0`}
-                title={profile.mediaEmbed?.title || 'Video Clip'}
+                title={activeTrack?.title || 'Video Clip'}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="w-full h-full pt-10 sm:pt-12"
