@@ -269,6 +269,7 @@ export default function DashboardPage() {
   const [formIcon, setFormIcon] = useState('Globe');
   const [formThumb, setFormThumb] = useState('');
   const [formGroup, setFormGroup] = useState('');
+  const [globalCardType, setGlobalCardType] = useState<LinkCardType>('glass');
   const [formCardType, setFormCardType] = useState<LinkCardType>('glass');
   const [formFeatured, setFormFeatured] = useState(false);
   const [formBadge, setFormBadge] = useState('');
@@ -435,6 +436,13 @@ export default function DashboardPage() {
         setSocialLinks(u.socialLinks || []);
         setSavedCustomThemes(u.customThemes || []);
 
+        const resolvedCardType: LinkCardType =
+          (initialCustomTheme.defaultCardType as LinkCardType) ||
+          (u.links?.[0]?.cardType as LinkCardType) ||
+          'glass';
+        setGlobalCardType(resolvedCardType);
+        setFormCardType(resolvedCardType);
+
         const snap: SnapshotState = {
           themeId: pc?.themeId || 'obsidian-luxury',
           layout: (pc?.layout as ProfileLayoutType) || 'centered',
@@ -589,7 +597,7 @@ export default function DashboardPage() {
     setFormIcon('Sparkles');
     setFormThumb('');
     setFormGroup('');
-    setFormCardType(effectiveTheme.defaultCardType || 'glass');
+    setFormCardType(globalCardType || effectiveTheme.defaultCardType || 'glass');
     setFormFeatured(false);
     setFormBadge('');
     setFormStart('');
@@ -607,7 +615,7 @@ export default function DashboardPage() {
     setFormIcon(preset.platformId);
     setFormThumb('');
     setFormGroup(isRtl ? 'القنوات والمجتمعات الرسمية' : 'Official Channels');
-    setFormCardType('spotlight');
+    setFormCardType(globalCardType || effectiveTheme.defaultCardType || 'glass');
     setFormFeatured(false);
     setFormBadge(isRtl ? preset.badgeAr : preset.badgeEn);
     setFormStart('');
@@ -749,11 +757,23 @@ export default function DashboardPage() {
 
   const handleApplyCardTypeToAll = async (cardType: LinkCardType) => {
     // 1. Immediately update UI state so preview updates without any latency
+    setGlobalCardType(cardType);
+    setFormCardType(cardType);
     setLinks((prev) => prev.map((l) => ({ ...l, cardType })));
-    updateCustomThemeField('defaultCardType', cardType);
+    const nextCustomTheme = { ...customTheme, defaultCardType: cardType };
+    setCustomTheme(nextCustomTheme);
+    pushSnapshot({
+      themeId,
+      layout,
+      customTheme: nextCustomTheme,
+      effects,
+      displayName,
+      bio,
+      sectionsOrder,
+    });
 
     try {
-      // 2. Persist to /api/links (all user links)
+      // 2. Persist to /api/links (all user links in database)
       const res = await fetch('/api/links', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -764,22 +784,22 @@ export default function DashboardPage() {
         setLinks(data.links);
       }
 
-      // 3. Persist defaultCardType to profileConfig so it survives page reloads
+      // 3. Persist defaultCardType to profileConfig so it survives page reloads & new links
       await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           profileConfig: {
             themeId,
-            customThemeJson: JSON.stringify({ ...customTheme, defaultCardType: cardType }),
+            customThemeJson: JSON.stringify(nextCustomTheme),
           },
         }),
       });
 
       showNotification(
         isRtl
-          ? 'تم تعميم نمط البطاقة على جميع الروابط وحفظه بنجاح ✨'
-          : 'Applied & saved card style to all links ✨'
+          ? 'تم تعميم وتطبيق نمط البطاقة على جميع الروابط الحالية والجديدة بنجاح ✨'
+          : 'Applied & saved card style to all current and future links ✨'
       );
     } catch (err) {
       console.error('Error applying card type to all:', err);
@@ -1995,7 +2015,8 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {LINK_CARD_TYPES.map((ct) => {
                     const active =
-                      effectiveTheme.defaultCardType === ct.id ||
+                      globalCardType === ct.id ||
+                      (effectiveTheme.defaultCardType === ct.id && !globalCardType) ||
                       (links.length > 0 && links.every((l) => l.cardType === ct.id));
                     return (
                       <button
@@ -2538,11 +2559,14 @@ export default function DashboardPage() {
                 onSelect={(selectedId, target) => {
                   setThemeId(target.id);
                   setLayout(target.profileLayout);
-                  setCustomTheme({});
+                  // Preserve user's globalCardType so switching themes keeps the chosen card style!
+                  const preservedCardType = globalCardType || customTheme.defaultCardType || target.defaultCardType;
+                  const nextCustom = { defaultCardType: preservedCardType };
+                  setCustomTheme(nextCustom);
                   pushSnapshot({
                     themeId: target.id,
                     layout: target.profileLayout,
-                    customTheme: {},
+                    customTheme: nextCustom,
                     effects,
                     displayName,
                     bio,
@@ -3832,7 +3856,7 @@ export default function DashboardPage() {
                         setFormIcon(preset.platformId);
                         setFormBadge(isRtl ? preset.badgeAr : preset.badgeEn);
                         setFormGroup(isRtl ? 'القنوات والمجتمعات الرسمية' : 'Official Channels');
-                        setFormCardType('spotlight');
+                        setFormCardType(globalCardType || effectiveTheme.defaultCardType || 'glass');
                       }}
                       className="p-3.5 rounded-2xl bg-black/60 hover:bg-white/[0.08] border border-white/15 hover:border-amber-400/60 text-xs sm:text-sm font-extrabold flex items-center gap-3 text-start transition-all group"
                     >

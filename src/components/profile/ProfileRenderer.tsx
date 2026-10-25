@@ -490,7 +490,7 @@ export function ProfileRenderer({
   // ==========================================================================
   const renderSingleLinkCard = (link: ProfileLinkItem, idx: number, isBentoLayout = false) => {
     const effectiveCardType: LinkCardType =
-      (link.cardType as LinkCardType) || theme.defaultCardType || 'glass';
+      (theme.defaultCardType as LinkCardType) || (link.cardType as LinkCardType) || 'glass';
     const coords = cardCoords[link.id] || { x: 160, y: 35, rx: 0, ry: 0 };
     const isHovered = hoveredLinkId === link.id;
     const radius = getRadiusStyle();

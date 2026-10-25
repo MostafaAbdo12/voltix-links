@@ -40,6 +40,17 @@ export async function POST(req: Request) {
 
     const count = await prisma.link.count({ where: { userId: user.id } });
 
+    let targetCardType = body.cardType;
+    if (!targetCardType) {
+      const pc = await prisma.profileConfig.findUnique({ where: { userId: user.id } });
+      if (pc?.customThemeJson) {
+        try {
+          const parsed = JSON.parse(pc.customThemeJson);
+          if (parsed.defaultCardType) targetCardType = parsed.defaultCardType;
+        } catch {}
+      }
+    }
+
     const created = await prisma.link.create({
       data: {
         userId: user.id,
@@ -49,7 +60,7 @@ export async function POST(req: Request) {
         icon: sanitizeText(body.icon || 'Globe', 40),
         thumbnailUrl: typeof body.thumbnailUrl === 'string' ? body.thumbnailUrl : '',
         groupName: sanitizeText(body.groupName || '', 60),
-        cardType: sanitizeText(body.cardType || 'glass', 40),
+        cardType: sanitizeText(targetCardType || 'glass', 40),
         isFeatured: Boolean(body.isFeatured),
         isActive: body.isActive !== false,
         order: typeof body.order === 'number' ? body.order : count,
