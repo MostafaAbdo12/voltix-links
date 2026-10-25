@@ -325,86 +325,108 @@ export default function LandingPage() {
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-16 lg:pt-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-8 items-center">
           {/* Left Column: Monumental Typography & VIP Handle Claim */}
-          <div className="lg:col-span-7 space-y-8 text-start">
+          <div className="lg:col-span-7 space-y-7 sm:space-y-8 text-start">
+            {/* 1. VIP Royal Crest Badge */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full vip-black-card text-amber-300 text-xs font-extrabold"
+              className="inline-flex items-center gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-amber-400/40 bg-gradient-to-r from-amber-950/40 via-[#0D0912] to-amber-950/30 text-amber-300 text-xs font-black shadow-[0_0_25px_rgba(212,175,55,0.22),inset_0_1px_1px_rgba(255,255,255,0.2)] tracking-wide"
             >
-              <Crown className="w-4 h-4 text-amber-400" />
-              <span>{isRtl ? siteConfig.heroBadgeAr : siteConfig.heroBadgeEn}</span>
+              <Crown className="w-4 h-4 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)] animate-pulse" />
+              <span className="font-sans font-bold">{isRtl ? siteConfig.heroBadgeAr : siteConfig.heroBadgeEn}</span>
             </motion.div>
 
+            {/* 2. Monumental Liquid Gold Typography */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
-              className={`text-3xl sm:text-5xl lg:text-[54px] font-black ${
-                isRtl ? 'leading-[1.42]' : 'leading-[1.16] tracking-tight'
-              }`}
+              className="text-4xl sm:text-6xl lg:text-[62px] font-black tracking-tight leading-[1.26] sm:leading-[1.22]"
             >
-              <span className="block text-white leading-[1.35]">
+              <span className="block text-white drop-shadow-[0_4px_25px_rgba(0,0,0,0.85)]">
                 {isRtl ? siteConfig.heroTitle1Ar : siteConfig.heroTitle1En}
               </span>
-              <span className="block mt-2.5 aurora-gradient-text leading-[1.38]">
+              <span className="block mt-2 sm:mt-3 bg-gradient-to-r from-[#FFFBEB] via-[#FDE68A] via-[#D4AF37] to-[#F59E0B] bg-clip-text text-transparent drop-shadow-[0_6px_35px_rgba(212,175,55,0.45)]">
                 {isRtl ? siteConfig.heroTitle2Ar : siteConfig.heroTitle2En}
               </span>
             </motion.h1>
 
+            {/* 3. Refined Editorial Subtitle with VIP Highlights */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.16 }}
-              className="text-base sm:text-[17px] text-zinc-300/95 max-w-xl leading-[1.85] font-normal"
+              className="text-base sm:text-lg text-zinc-300/90 max-w-2xl leading-[1.9] sm:leading-[2.1] font-normal"
             >
-              {isRtl ? siteConfig.heroSubtitleAr : siteConfig.heroSubtitleEn}
+              {isRtl ? (
+                <>
+                  منصة <span className="font-black text-amber-300 font-mono tracking-wide px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30">VoltiX</span> تجمع حساباتك، قنواتك الرسمية (واتساب، تيليغرام، ديسكورد، فيسبوك)، وأعمالك في تحفة بصرية تفاعلية مع <span className="text-white font-bold">20 ثيمًا سينمائيًا</span> وتقنيات <span className="text-white font-bold">الزجاج السائل ثلاثي الأبعاد</span>.
+                </>
+              ) : (
+                siteConfig.heroSubtitleEn
+              )}
             </motion.p>
 
-            {/* VIP Black Card Handle Claim Input */}
+            {/* 4. VIP Black Card Handle Claim Box (Rock-Solid Non-Wrapping Architecture) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.24 }}
-              className="p-2.5 rounded-3xl vip-black-card max-w-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5"
+              className="relative p-2 sm:p-2.5 rounded-[26px] bg-gradient-to-b from-[#140F18]/95 via-[#0A070E]/95 to-[#040205]/98 border border-amber-500/35 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95),0_0_35px_rgba(212,175,55,0.18),inset_0_1px_2px_rgba(255,255,255,0.15)] max-w-xl group"
             >
-              <div
-                className="flex items-center px-4 py-3 flex-1 bg-black/50 rounded-2xl border border-white/10"
-                dir="ltr"
-              >
-                <Sparkles className="w-4 h-4 text-amber-400 mr-2 shrink-0" />
-                <span className="text-zinc-400 font-bold text-sm select-none">
-                  {liveDomainPrefix}
-                </span>
-                <input
-                  type="text"
-                  value={claimUsername}
-                  onChange={(e) =>
-                    setClaimUsername(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))
-                  }
-                  placeholder="yourname"
-                  className="bg-transparent text-amber-300 font-extrabold text-sm focus:outline-none flex-1 min-w-0"
-                />
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5">
+                {/* Clean Recessed Input Track */}
+                <div
+                  className="flex items-center px-4 py-3 sm:py-3.5 flex-1 min-w-0 bg-black/60 rounded-[18px] sm:rounded-2xl border border-white/10 group-focus-within:border-amber-400/50 shadow-inner transition-colors"
+                  dir="ltr"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400 mr-2.5 shrink-0 animate-pulse" />
+                  <span className="text-zinc-400 font-mono font-bold text-xs sm:text-sm select-none shrink-0 truncate max-w-[150px] sm:max-w-[210px]">
+                    {liveDomainPrefix}
+                  </span>
+                  <input
+                    type="text"
+                    value={claimUsername}
+                    onChange={(e) =>
+                      setClaimUsername(e.target.value.replace(/[^a-zA-Z0-9_.-]/g, ''))
+                    }
+                    placeholder="yourname"
+                    className="bg-transparent text-amber-300 font-mono font-black text-sm sm:text-base focus:outline-none flex-1 min-w-0 placeholder:text-zinc-600 placeholder:font-normal"
+                  />
+                </div>
+
+                {/* Royal Gold Masterpiece Button - Strictly Single-Line */}
+                <Link
+                  href={claimUsername ? `/register?username=${claimUsername}` : '/register'}
+                  className="px-6 sm:px-7 py-3.5 sm:py-4 rounded-[18px] sm:rounded-2xl bg-gradient-to-r from-[#FFF0B3] via-[#E5BF5A] to-[#B88A28] text-black font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_8px_25px_rgba(212,175,55,0.45),inset_0_1px_2px_rgba(255,255,255,0.85)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all whitespace-nowrap shrink-0 cursor-pointer"
+                >
+                  <span className="whitespace-nowrap">{isRtl ? siteConfig.ctaPrimaryAr : siteConfig.ctaPrimaryEn}</span>
+                  <ArrowUpRight className="w-4 h-4 stroke-[2.5] shrink-0" />
+                </Link>
               </div>
-              <Link
-                href={claimUsername ? `/register?username=${claimUsername}` : '/register'}
-                className="px-7 py-4 rounded-2xl bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 text-black font-black text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 hover:scale-[1.02] transition-transform"
-              >
-                <span>{isRtl ? siteConfig.ctaPrimaryAr : siteConfig.ctaPrimaryEn}</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </Link>
             </motion.div>
 
-            {/* Interactive Official Website Social Channels Strip inside Hero */}
-            <div className="pt-2 space-y-3">
-              <div className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>
-                  {isRtl
-                    ? 'انضم إلى قنواتنا ومنصاتنا الرسمية المباشرة:'
-                    : 'Connect with our official channels & social platforms:'}
-                </span>
+            {/* 5. Cohesive Official Channels Spatial Glass Dock */}
+            <div className="pt-2 space-y-2.5 max-w-xl">
+              <div className="flex items-center justify-between text-xs font-bold">
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                  <span>
+                    {isRtl
+                      ? 'قنواتنا ومنصاتنا الرسمية المعتمدة:'
+                      : 'Connect with our official verified channels:'}
+                  </span>
+                </div>
+                <a
+                  href="#socials"
+                  className="text-[11px] font-black text-amber-300 hover:text-white transition-colors flex items-center gap-1 group/all"
+                >
+                  <span>{isRtl ? 'عرض الكل' : 'View all'}</span>
+                  <ArrowUpRight className="w-3 h-3 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5 transition-transform" />
+                </a>
               </div>
-              <div className="flex flex-wrap items-center gap-2.5">
+
+              <div className="p-2 sm:p-2.5 rounded-2xl bg-black/45 border border-white/10 backdrop-blur-xl flex flex-wrap items-center gap-2 sm:gap-2.5 shadow-lg">
                 {activeOfficialSocials.slice(0, 10).map((soc) => (
                   <a
                     key={soc.id}
@@ -412,7 +434,7 @@ export default function LandingPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     title={isRtl ? soc.labelAr : soc.labelEn}
-                    className="transition-transform hover:scale-110 hover:-translate-y-1"
+                    className="transition-transform hover:scale-115 hover:-translate-y-0.5"
                   >
                     <OfficialSocialBadge
                       platformId={soc.platform}
@@ -421,25 +443,37 @@ export default function LandingPage() {
                     />
                   </a>
                 ))}
+                <div className="h-6 w-px bg-white/15 mx-1 hidden sm:block" />
                 <a
                   href="#socials"
-                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-extrabold text-amber-300"
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-xs font-extrabold text-amber-300 hover:text-amber-200 transition-all flex items-center gap-1.5"
                 >
-                  {isRtl ? 'جميع القنوات الرسمية' : 'All Official Channels'}
+                  <span>{isRtl ? 'جميع القنوات' : 'All Channels'}</span>
+                  <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300">
+                    +{activeOfficialSocials.length}
+                  </span>
                 </a>
               </div>
             </div>
 
-            {/* Live Profiles Quick Bar */}
-            <div className="flex flex-wrap items-center gap-3 pt-2 text-xs">
+            {/* 6. Live Profiles Quick Bar with Correct BiDi & VIP Emblem */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs">
               <span className="font-bold text-zinc-400">
-                {isRtl ? 'استعرض هوية المنصة الحية:' : 'Live Official Profile:'}
+                {isRtl ? 'استعرض الهوية الحية للمنصة:' : 'Live Official Profile:'}
               </span>
               <Link
                 href="/@voltix"
-                className="px-3.5 py-1.5 rounded-full bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-bold transition-all"
+                className="group inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-amber-400/10 to-amber-500/15 hover:from-amber-500/25 hover:to-amber-500/25 border border-amber-500/40 text-amber-200 font-extrabold transition-all shadow-[0_0_20px_rgba(212,175,55,0.18)] hover:scale-105"
               >
-                ✦ /@voltix
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                <span dir="ltr" className="font-mono font-black text-amber-300 tracking-wider">
+                  @voltix
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#34d399]" />
+                <span className="text-[10.5px] text-amber-300/80 font-normal">
+                  {isRtl ? 'الهوية الملكية الموثقة' : 'Verified VIP Profile'}
+                </span>
+                <ArrowUpRight className="w-3 h-3 text-amber-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
             </div>
           </div>
