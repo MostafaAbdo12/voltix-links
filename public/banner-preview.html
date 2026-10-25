@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معاينة تصاميم البنر وخلفية الصورة الدائرية — VoltiX VIP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cinzel:wght@700;900&family=JetBrains+Mono:wght@600;800&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body {
+      font-family: 'Cairo', 'Plus Jakarta Sans', sans-serif;
+      background-color: #030305;
+      color: #F4F4F5;
+    }
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Moving Card Light Beam */
+    @keyframes cardBeam {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-card-beam {
+      animation: cardBeam 9s linear infinite;
+    }
+
+    /* Ambient Gold Shimmer */
+    @keyframes goldPulse {
+      0%, 100% { opacity: 0.45; transform: scale(1); }
+      50% { opacity: 0.95; transform: scale(1.05); }
+    }
+    .animate-gold-pulse {
+      animation: goldPulse 3.5s ease-in-out infinite;
+    }
+
+    /* Medallion Spin Slow */
+    @keyframes slowSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: slowSpin 14s linear infinite;
+    }
+
+    .glass-tab {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      transition: all 0.25s ease;
+    }
+    .glass-tab:hover {
+      background: rgba(212, 175, 55, 0.12);
+      border-color: rgba(212, 175, 55, 0.4);
+    }
+    .glass-tab.active {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.08));
+      border-color: #D4AF37;
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.35);
+      color: #FFF;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex flex-col items-center">
+
+  <!-- Studio Header -->
+  <header class="w-full max-w-5xl mb-8 text-center space-y-3">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-mono font-bold tracking-wider shadow-lg">
+      <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+      <span>VOLTIX LUXURY STUDIO • LIVE BANNER SHOWROOM</span>
+    </div>
+
+    <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
+      معاينة حية: معالجة التقاء البنر مع نصف دائرة الصورة الشخصية
+    </h1>
+    <p class="text-xs sm:text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+      اختر التصميم الذي يروق لك لتطبيقه مباشرة على المنصة. تم تصميم كل خيار ليلتقي البنر مع نصف دائرة الصورة بنعومة واحترافية دون أي قطع حاد أو عشوائي.
+    </p>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="flex flex-wrap items-center justify-center gap-2 pt-4" id="tabsContainer">
+      <button onclick="switchTab('design-1')" class="glass-tab active px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2">
+        <span>1. خط الاستواء الهندسي (50/50 Perfect Equator)</span>
+        <span class="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[10px] font-black">موصى به</span>
+      </button>
+
+      <button onclick="switchTab('design-2')" class="glass-tab px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2">
+        <span>2. القوس الملكي الحاضن (Sculpted Cradle Arc)</span>
+      </button>
+
+      <button onclick="switchTab('design-3')" class="glass-tab px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2">
+        <span>3. التلاشي السينمائي المتدرج (Vignette Fade)</span>
+      </button>
+
+      <button onclick="switchTab('design-4')" class="glass-tab px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2">
+        <span>4. المنصة الزجاجية المعلقة (Glass Identity Pod)</span>
+      </button>
+
+      <button onclick="switchTab('design-5')" class="glass-tab px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2">
+        <span>5. الأفق الملكي مع هالة الكسوف (Royal Horizon Halo)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Showcase Container -->
+  <main class="w-full max-w-xl">
+
+    <!-- ===================================================================
+         DESIGN 1: 50/50 PRECISION EQUATOR (THE CLASSIC MASTERPIECE)
+    =================================================================== -->
+    <div id="view-design-1" class="design-view space-y-4">
+      <div class="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/25 text-xs text-amber-200 flex items-center justify-between">
+        <div>
+          <span class="font-black text-amber-300">النمط الأول:</span>
+          <span>ينزل البنر حتى منتصف الصورة تماماً (50% Equator)، بحيث يجلس النصف العلوي للصورة على البنر، والنصف السفلي على خلفية البطاقة بسلاسة فائقة ودون أي بروز لخلفية النص فوق البنر.</span>
+        </div>
+      </div>
+
+      <!-- Outer Card with Border Beam -->
+      <div class="relative rounded-[32px] p-[2px] shadow-[0_26px_70px_-15px_rgba(0,0,0,0.95),0_0_45px_rgba(212,175,55,0.25)]">
+        <!-- Border Beam -->
+        <div class="absolute inset-0 rounded-[32px] overflow-hidden pointer-events-none">
+          <div class="absolute -inset-[150%] animate-card-beam" style="background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 65deg, #D4AF37 80deg, #FFFFFF 90deg, #F59E0B 100deg, transparent 115deg, transparent 245deg, #D4AF37 260deg, #FFFFFF 270deg, #F59E0B 280deg, transparent 295deg, transparent 360deg);"></div>
+        </div>
+
+        <!-- Inner Obsidian Backplate -->
+        <div class="relative rounded-[30px] overflow-hidden bg-[#07080E] z-10 flex flex-col">
+          
+          <!-- Banner Container: Height engineered so its bottom boundary matches 50% of the avatar -->
+          <div class="relative w-full h-40 sm:h-44 overflow-hidden">
+            <!-- VoltiX Luxury Banner Mockup -->
+            <div class="absolute inset-0 bg-[#050508] flex items-center justify-center overflow-hidden">
+              <div class="absolute inset-0 opacity-40" style="background-image: radial-gradient(#D4AF37 0.8px, transparent 0.8px); background-size: 16px 16px;"></div>
+              <!-- Luxury Silk Wave + Gold Graphics -->
+              <div class="absolute inset-0" style="background: radial-gradient(circle at 75% 30%, rgba(212,175,55,0.4) 0%, transparent 65%), linear-gradient(135deg, #020203 0%, #161208 50%, #030305 100%);"></div>
+              
+              <!-- VoltiX Typography Emblem inside Banner -->
+              <div class="relative z-10 flex flex-col items-center">
+                <div class="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 drop-shadow-[0_4px_16px_rgba(212,175,55,0.6)]">
+                  VoltiX
+                </div>
+                <div class="text-[9px] tracking-[0.35em] text-amber-300 font-mono font-bold mt-0.5">
+                  ROYAL PRIVATE NETWORK
+                </div>
+              </div>
+
+              <!-- Top Right VOLTIX VIP Badge -->
+              <div dir="ltr" class="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/40 text-[9.5px] font-black tracking-widest text-amber-200 flex items-center gap-1.5 shadow-xl">
+                <span>👑</span>
+                <span class="font-cinzel">VOLTIX VIP</span>
+              </div>
+            </div>
+
+            <!-- Soft vignette along bottom edge of banner -->
+            <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#07080E]/90 to-transparent pointer-events-none"></div>
+            <!-- Precision Equator Hairline -->
+            <div class="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent"></div>
+          </div>
+
+          <!-- Avatar Section: Exactly -mt-14 (half of 112px avatar) so top 50% overlaps banner, bottom 50% overlaps card body! -->
+          <div class="relative z-20 px-4 pb-7 -mt-14 flex flex-col items-center text-center">
+            
+            <!-- Avatar Medallion with Precision Centering -->
+            <div class="relative group mb-3.5">
+              <!-- Radiant Gold Ring Aura -->
+              <div class="absolute -inset-2 rounded-full blur-md opacity-85 animate-gold-pulse" style="background: conic-gradient(from 0deg, #D4AF37, #FFF5C0, #F59E0B, #D4AF37);"></div>
+              <div class="absolute -inset-1 rounded-full animate-spin-slow opacity-95" style="background: conic-gradient(from 90deg, #D4AF37, transparent 40%, #FFF5C0, transparent 80%, #D4AF37);"></div>
+
+              <!-- Avatar Disc (112px on sm, 96px on mobile) -->
+              <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-amber-400/90 shadow-[0_15px_35px_-6px_rgba(212,175,55,0.7),inset_0_1px_3px_rgba(255,255,255,0.6)] bg-[#07070C] flex items-center justify-center">
+                <img src="/voltix-logo.png" alt="VoltiX Medallion" class="w-full h-full object-contain p-2 drop-shadow-[0_4px_12px_rgba(212,175,55,0.8)]">
+              </div>
+
+              <!-- Official Sovereign Royal Crown Verification Badge -->
+              <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 p-0.5 shadow-[0_0_15px_rgba(212,175,55,0.9)] flex items-center justify-center border border-amber-200">
+                <div class="w-full h-full rounded-full bg-black/85 flex items-center justify-center text-amber-300 text-xs font-black">
+                  👑
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Name & Handle -->
+            <h2 class="text-xl sm:text-2xl font-black text-white flex items-center justify-center gap-2">
+              <span>مصطفى عبده | VoltiX Founder</span>
+            </h2>
+
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-bold flex items-center gap-1.5">
+                <span>👑</span>
+                <span>عضوية ملكية موثقة</span>
+              </span>
+              <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-[11px] font-mono">
+                @voltix
+              </span>
+            </div>
+
+            <p class="text-xs text-zinc-400 mt-3 max-w-md leading-relaxed">
+              مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة ومصمم واجهات تفاعلية ثلاثية الأبعاد ✨
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         DESIGN 2: SCULPTED CONCAVE CRADLE (ROYAL ARCH)
+    =================================================================== -->
+    <div id="view-design-2" class="design-view hidden space-y-4">
+      <div class="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/25 text-xs text-amber-200 flex items-center justify-between">
+        <div>
+          <span class="font-black text-amber-300">النمط الثاني (قوس منحوت):</span>
+          <span>بدلاً من القطع الأفقي المستقيم، ينزل البنر على الجانبين ويشكل قوساً مقعراً فخماً (Scooped Notch) يحتضن النصف الدائري للصورة كتاج ملكي محفور، مما يلغي تماماً أي شعور بالقص الحاد!</span>
+        </div>
+      </div>
+
+      <div class="relative rounded-[32px] p-[2px] shadow-[0_26px_70px_-15px_rgba(0,0,0,0.95),0_0_45px_rgba(212,175,55,0.25)]">
+        <div class="relative rounded-[30px] overflow-hidden bg-[#07080E] z-10 flex flex-col">
+          
+          <!-- Banner Container with Curved Sculpted Bottom -->
+          <div class="relative w-full h-44 sm:h-48 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-[#0B0C12] via-[#1B150A] to-[#040406] flex items-center justify-center">
+              <div class="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 drop-shadow-[0_4px_16px_rgba(212,175,55,0.6)]">
+                VoltiX
+              </div>
+              <div dir="ltr" class="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/40 text-[9.5px] font-black tracking-widest text-amber-200 flex items-center gap-1.5 shadow-xl">
+                <span>👑</span>
+                <span class="font-cinzel">VOLTIX VIP</span>
+              </div>
+            </div>
+
+            <!-- Sculpted Concave SVG Mask at bottom of banner -->
+            <svg class="absolute bottom-0 inset-x-0 w-full h-12 text-[#07080E] fill-current pointer-events-none" viewBox="0 0 400 48" preserveAspectRatio="none">
+              <!-- Gentle organic notch in the center that cradles the circular avatar -->
+              <path d="M0,0 L140,0 Q170,0 180,24 Q200,48 220,24 Q230,0 260,0 L400,0 L400,48 L0,48 Z" />
+            </svg>
+            <div class="absolute bottom-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent"></div>
+          </div>
+
+          <!-- Avatar Section -->
+          <div class="relative z-20 px-4 pb-7 -mt-10 flex flex-col items-center text-center">
+            <div class="relative group mb-3.5">
+              <div class="absolute -inset-2 rounded-full blur-md opacity-85 animate-gold-pulse" style="background: conic-gradient(from 0deg, #D4AF37, #FFF5C0, #F59E0B, #D4AF37);"></div>
+              <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-amber-400 shadow-[0_15px_35px_-6px_rgba(212,175,55,0.7)] bg-[#07070C] flex items-center justify-center">
+                <img src="/voltix-logo.png" alt="VoltiX Medallion" class="w-full h-full object-contain p-2">
+              </div>
+              <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-amber-700 p-0.5 shadow-lg flex items-center justify-center border border-amber-200">
+                <div class="w-full h-full rounded-full bg-black/85 flex items-center justify-center text-amber-300 text-xs">👑</div>
+              </div>
+            </div>
+
+            <h2 class="text-xl sm:text-2xl font-black text-white">مصطفى عبده | VoltiX Founder</h2>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-bold">👑 عضوية ملكية موثقة</span>
+              <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-[11px] font-mono">@voltix</span>
+            </div>
+            <p class="text-xs text-zinc-400 mt-3 max-w-md leading-relaxed">
+              مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة ومصمم واجهات تفاعلية ثلاثية الأبعاد ✨
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         DESIGN 3: CINEMATIC VIGNETTE FADE (ZERO CUT LINES)
+    =================================================================== -->
+    <div id="view-design-3" class="design-view hidden space-y-4">
+      <div class="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/25 text-xs text-amber-200 flex items-center justify-between">
+        <div>
+          <span class="font-black text-amber-300">النمط الثالث (تلاشٍ سينمائي):</span>
+          <span>يمتد البنر خلف الصورة متجاوزاً خط المنتصف، ثم يذوب ويتلاشى تدريجياً بنعومة تامة في سواد البطاقة الفاخرة، بحيث لا يوجد أي خط قطع على الإطلاق!</span>
+        </div>
+      </div>
+
+      <div class="relative rounded-[32px] p-[2px] shadow-[0_26px_70px_-15px_rgba(0,0,0,0.95),0_0_45px_rgba(212,175,55,0.25)]">
+        <div class="relative rounded-[30px] overflow-hidden bg-[#07080E] z-10 flex flex-col">
+          
+          <!-- Banner Container with Deep Fade Gradient -->
+          <div class="relative w-full h-48 sm:h-52 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#1A1408] via-[#0D0B06] to-[#07080E] flex items-center justify-center">
+              <div class="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 drop-shadow-[0_4px_16px_rgba(212,175,55,0.6)]">
+                VoltiX
+              </div>
+              <div dir="ltr" class="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/40 text-[9.5px] font-black tracking-widest text-amber-200 flex items-center gap-1.5 shadow-xl">
+                <span>👑</span>
+                <span class="font-cinzel">VOLTIX VIP</span>
+              </div>
+            </div>
+
+            <!-- Deep Multi-Stop Transparent Dissolve -->
+            <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#07080E] via-[#07080E]/75 to-transparent pointer-events-none"></div>
+          </div>
+
+          <!-- Avatar Section -->
+          <div class="relative z-20 px-4 pb-7 -mt-20 flex flex-col items-center text-center">
+            <div class="relative group mb-3.5">
+              <div class="absolute -inset-2 rounded-full blur-md opacity-85 animate-gold-pulse" style="background: conic-gradient(from 0deg, #D4AF37, #FFF5C0, #F59E0B, #D4AF37);"></div>
+              <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-amber-400 shadow-[0_15px_35px_-6px_rgba(212,175,55,0.7)] bg-[#07070C] flex items-center justify-center">
+                <img src="/voltix-logo.png" alt="VoltiX Medallion" class="w-full h-full object-contain p-2">
+              </div>
+              <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-amber-700 p-0.5 shadow-lg flex items-center justify-center border border-amber-200">
+                <div class="w-full h-full rounded-full bg-black/85 flex items-center justify-center text-amber-300 text-xs">👑</div>
+              </div>
+            </div>
+
+            <h2 class="text-xl sm:text-2xl font-black text-white">مصطفى عبده | VoltiX Founder</h2>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-bold">👑 عضوية ملكية موثقة</span>
+              <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-[11px] font-mono">@voltix</span>
+            </div>
+            <p class="text-xs text-zinc-400 mt-3 max-w-md leading-relaxed">
+              مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة ومصمم واجهات تفاعلية ثلاثية الأبعاد ✨
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         DESIGN 4: FLOATING GLASS IDENTITY POD
+    =================================================================== -->
+    <div id="view-design-4" class="design-view hidden space-y-4">
+      <div class="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/25 text-xs text-amber-200 flex items-center justify-between">
+        <div>
+          <span class="font-black text-amber-300">النمط الرابع (كبسولة زجاجية عائمة):</span>
+          <span>يمتد البنر بخلفية بانورامية كاملة، وتطفو بيانات الحساب والصورة داخل كبسولة زجاجية شبه شفافة تلتقي مع نصف الصورة الدائرية وتسمح برؤية البنر الفاخر من خلال الزجاج المضبب.</span>
+        </div>
+      </div>
+
+      <div class="relative rounded-[32px] p-[2px] shadow-[0_26px_70px_-15px_rgba(0,0,0,0.95),0_0_45px_rgba(212,175,55,0.25)]">
+        <div class="relative rounded-[30px] overflow-hidden bg-[#07080E] z-10 flex flex-col p-4 sm:p-5">
+          
+          <!-- Large Panoramic Banner -->
+          <div class="relative w-full h-44 rounded-2xl overflow-hidden border border-white/10">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#030305] via-[#1B150A] to-[#040406] flex items-center justify-center">
+              <div class="font-cinzel text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">
+                VoltiX VIP
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating Glass Pod overlapping the banner by 50% of the avatar -->
+          <div class="relative z-20 -mt-14 mx-auto w-full max-w-md rounded-3xl bg-[#07080E]/90 backdrop-blur-2xl border border-amber-400/30 p-5 flex flex-col items-center text-center shadow-2xl">
+            <div class="relative group mb-3 -mt-12">
+              <div class="relative w-24 h-24 rounded-full overflow-hidden border-2 border-amber-400 shadow-xl bg-[#07070C] flex items-center justify-center">
+                <img src="/voltix-logo.png" alt="VoltiX Medallion" class="w-full h-full object-contain p-2">
+              </div>
+              <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-br from-amber-300 to-amber-700 flex items-center justify-center text-xs">👑</div>
+            </div>
+
+            <h2 class="text-xl font-black text-white">مصطفى عبده | VoltiX Founder</h2>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-bold">👑 عضوية ملكية</span>
+              <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-[11px] font-mono">@voltix</span>
+            </div>
+            <p class="text-xs text-zinc-400 mt-2.5 max-w-xs leading-relaxed">
+              مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         DESIGN 5: DUAL HORIZON WITH ROYAL HALO
+    =================================================================== -->
+    <div id="view-design-5" class="design-view hidden space-y-4">
+      <div class="p-3 rounded-2xl bg-amber-400/10 border border-amber-400/25 text-xs text-amber-200 flex items-center justify-between">
+        <div>
+          <span class="font-black text-amber-300">النمط الخامس (هالة الأفق والكسوف):</span>
+          <span>ينتهي البنر بالضبط عند خط نصف الصورة (50%)، وتشع من خلف الصورة هالة ضوء ذهبية أفقية (Horizon Light Beam) تشبه شروق الشمس أو الكسوف، مما يعطي فخامة ملكية درامية.</span>
+        </div>
+      </div>
+
+      <div class="relative rounded-[32px] p-[2px] shadow-[0_26px_70px_-15px_rgba(0,0,0,0.95),0_0_45px_rgba(212,175,55,0.25)]">
+        <div class="relative rounded-[30px] overflow-hidden bg-[#07080E] z-10 flex flex-col">
+          
+          <div class="relative w-full h-40 sm:h-44 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-[#0B0C12] via-[#20180B] to-[#040406] flex items-center justify-center">
+              <div class="font-cinzel text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">
+                VoltiX
+              </div>
+              <div dir="ltr" class="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-amber-400/40 text-[9.5px] font-black tracking-widest text-amber-200 flex items-center gap-1.5 shadow-xl">
+                <span>👑</span>
+                <span class="font-cinzel">VOLTIX VIP</span>
+              </div>
+            </div>
+
+            <!-- Horizontal Neon Ray at Equator Line -->
+            <div class="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-amber-300 to-transparent shadow-[0_0_15px_#F59E0B]"></div>
+          </div>
+
+          <!-- Avatar Section with Radial Horizon Halo -->
+          <div class="relative z-20 px-4 pb-7 -mt-14 flex flex-col items-center text-center">
+            <!-- Horizon Backlight Halo -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-24 rounded-full bg-amber-400/30 blur-2xl pointer-events-none"></div>
+
+            <div class="relative group mb-3.5">
+              <div class="absolute -inset-2 rounded-full blur-md opacity-85 animate-gold-pulse" style="background: conic-gradient(from 0deg, #D4AF37, #FFF5C0, #F59E0B, #D4AF37);"></div>
+              <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-amber-400 shadow-[0_15px_35px_-6px_rgba(212,175,55,0.7)] bg-[#07070C] flex items-center justify-center">
+                <img src="/voltix-logo.png" alt="VoltiX Medallion" class="w-full h-full object-contain p-2">
+              </div>
+              <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-amber-700 p-0.5 shadow-lg flex items-center justify-center border border-amber-200">
+                <div class="w-full h-full rounded-full bg-black/85 flex items-center justify-center text-amber-300 text-xs">👑</div>
+              </div>
+            </div>
+
+            <h2 class="text-xl sm:text-2xl font-black text-white">مصطفى عبده | VoltiX Founder</h2>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2.5 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-bold">👑 عضوية ملكية موثقة</span>
+              <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-zinc-300 text-[11px] font-mono">@voltix</span>
+            </div>
+            <p class="text-xs text-zinc-400 mt-3 max-w-md leading-relaxed">
+              مؤسس منصة VoltiX LINKS • مهندس تجارب رقمية فاخرة ومصمم واجهات تفاعلية ثلاثية الأبعاد ✨
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Interactive Feedback & Selection Bar -->
+  <footer class="w-full max-w-xl mt-8 p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400">
+    <div class="flex items-center gap-2">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>يمكنك تجربة جميع الأنماط مباشرة الآن واختيار الشكل المفضل لديك</span>
+    </div>
+    <div class="font-mono text-amber-300 font-bold">
+      VoltiX Links Engine v3.0
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(designId) {
+      // Update Buttons
+      const buttons = document.querySelectorAll('#tabsContainer button');
+      buttons.forEach((btn, idx) => {
+        if (`design-${idx + 1}` === designId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Update Views
+      const views = document.querySelectorAll('.design-view');
+      views.forEach((v) => {
+        if (v.id === `view-${designId}`) {
+          v.classList.remove('hidden');
+        } else {
+          v.classList.add('hidden');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
