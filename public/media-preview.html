@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معاينة تصاميم مشغل الموسيقى الفاخر — VoltiX Media Player Showroom</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes vinylSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-vinyl {
+      animation: vinylSpin 3.5s linear infinite;
+    }
+    @keyframes eqBar {
+      0%, 100% { height: 20%; }
+      50% { height: 95%; }
+    }
+    .eq-bar-1 { animation: eqBar 0.65s ease-in-out infinite 0.1s; }
+    .eq-bar-2 { animation: eqBar 0.8s ease-in-out infinite 0.25s; }
+    .eq-bar-3 { animation: eqBar 0.55s ease-in-out infinite 0.05s; }
+    .eq-bar-4 { animation: eqBar 0.75s ease-in-out infinite 0.3s; }
+    .eq-bar-5 { animation: eqBar 0.6s ease-in-out infinite 0.15s; }
+    
+    @keyframes borderBeam {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .animate-border-beam {
+      animation: borderBeam 6s linear infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.6; filter: blur(12px); }
+      50% { opacity: 1; filter: blur(18px); }
+    }
+    .animate-glow-pulse {
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#050508] text-white font-sans antialiased p-4 sm:p-8 min-h-screen flex flex-col items-center justify-center">
+
+  <div class="w-full max-w-4xl mx-auto space-y-8">
+
+    <!-- Header & Interactive Selector -->
+    <div class="text-center space-y-3">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-bold">
+        <span>✨ استوديو المشغلات الصوتية الفاخرة — VoltiX Audio Lab</span>
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
+        اختر تصميم المشغل الصوتي الأنسب لهويتك
+      </h1>
+      <p class="text-sm text-zinc-400 max-w-xl mx-auto">
+        قمنا بتطوير 4 تصاميم عالمية احترافية تحل مشكلة الخطوط والتكدس، مع تأثيرات حركية واقعية وتحكم سلس. جرّب التشغيل وبدّل بين الأنماط:
+      </p>
+
+      <!-- Style Switcher Tabs -->
+      <div class="flex flex-wrap items-center justify-center gap-2 pt-3">
+        <button onclick="switchStyle('island')" id="tab-island" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all bg-amber-400 text-black border-amber-400 shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+          1. الكبسولة المكانية (Dynamic Island)
+        </button>
+        <button onclick="switchStyle('studio')" id="tab-studio" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all bg-black/60 text-zinc-300 border-white/10 hover:border-white/30">
+          2. أسطوانة الاستوديو (Vinyl Pro)
+        </button>
+        <button onclick="switchStyle('crystal')" id="tab-crystal" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all bg-black/60 text-zinc-300 border-white/10 hover:border-white/30">
+          3. الزجاج النيون (Liquid Neon)
+        </button>
+        <button onclick="switchStyle('minimal')" id="tab-minimal" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all bg-black/60 text-zinc-300 border-white/10 hover:border-white/30">
+          4. الملكي المينيمال (Imperial Clean)
+        </button>
+      </div>
+
+      <!-- Platform Preview Toggle (YouTube vs Spotify) -->
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button onclick="setPlatform('youtube')" id="plat-youtube" class="px-3 py-1 rounded-lg text-xs font-bold border transition-all bg-red-600/20 text-red-400 border-red-500/50">
+          معاينة بستايل يوتيوب (YouTube Music)
+        </button>
+        <button onclick="setPlatform('spotify')" id="plat-spotify" class="px-3 py-1 rounded-lg text-xs font-bold border transition-all bg-emerald-500/10 text-zinc-400 border-white/10">
+          معاينة بستايل سبوتيفاي (Spotify Studio)
+        </button>
+      </div>
+    </div>
+
+    <!-- STAGE SHOWCASE CONTAINER -->
+    <div class="relative p-6 sm:p-12 rounded-[36px] bg-[#090A12] border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col items-center justify-center min-h-[320px]">
+      
+      <!-- Ambient Studio Spotlight Background -->
+      <div id="ambient-light" class="absolute -top-24 w-96 h-96 rounded-full blur-[90px] opacity-25 pointer-events-none transition-colors duration-700 bg-red-600"></div>
+
+      <!-- ============================================================== -->
+      <!-- STYLE 1: APPLE DYNAMIC ISLAND & SPATIAL CAPSULE               -->
+      <!-- ============================================================== -->
+      <div id="style-island" class="style-card w-full max-w-xl transition-all duration-500">
+        <div class="relative rounded-full p-[1.5px] overflow-hidden group">
+          <!-- Animated rotating border beam -->
+          <div class="absolute -inset-[150%] animate-border-beam opacity-80" style="background: conic-gradient(from 0deg, transparent 0deg, var(--plat-color, #EF4444) 60deg, #FFFFFF 70deg, var(--plat-color, #EF4444) 80deg, transparent 120deg, transparent 360deg);"></div>
+          
+          <div class="relative rounded-full bg-[#07080E]/95 backdrop-blur-2xl px-4 py-3 sm:px-5 sm:py-3.5 flex items-center justify-between gap-4 border border-white/10 shadow-2xl">
+            <!-- Left: Spinning Vinyl Disc / Platform Crest -->
+            <div class="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 cursor-pointer" onclick="togglePlay()">
+              <!-- Vinyl Record -->
+              <div id="vinyl-1" class="absolute inset-0 rounded-full border border-white/20 shadow-lg flex items-center justify-center animate-spin-vinyl" style="background: radial-gradient(circle at center, #222 15%, #050505 40%, #151515 70%, #000 100%);">
+                <!-- Vinyl Grooves -->
+                <div class="w-7 h-7 rounded-full border border-white/10 flex items-center justify-center">
+                  <div class="w-3.5 h-3.5 rounded-full" style="background-color: var(--plat-color, #EF4444);"></div>
+                </div>
+              </div>
+              <!-- Floating Center Play Icon on Hover -->
+              <div class="relative z-10 w-7 h-7 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center text-white border border-white/25">
+                <svg id="play-icon-1" class="w-3.5 h-3.5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+
+            <!-- Center: Song Info & Live Waveform -->
+            <div class="flex-1 min-w-0 text-start space-y-1">
+              <div class="flex items-center gap-2">
+                <span id="plat-badge-1" class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30">
+                  YOUTUBE MUSIC
+                </span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              </div>
+              <h3 class="text-sm sm:text-base font-black text-white truncate leading-snug">
+                Yahh — تامر عاشور
+              </h3>
+              <!-- Time Scrubber & Live Waveform -->
+              <div class="flex items-center gap-2 pt-0.5" dir="ltr">
+                <span class="text-[11px] font-mono text-zinc-400 font-bold" id="time-curr-1">01:24</span>
+                <div class="flex-1 h-1 bg-white/15 rounded-full overflow-hidden relative cursor-pointer">
+                  <div class="h-full rounded-full transition-all duration-300" style="width: 42%; background-color: var(--plat-color, #EF4444);"></div>
+                </div>
+                <span class="text-[11px] font-mono text-zinc-500 font-bold">03:45</span>
+                <!-- Mini EQ bars -->
+                <div class="flex items-end gap-0.5 h-3.5 pl-1">
+                  <div class="w-0.5 bg-red-400 rounded-full eq-bar-1"></div>
+                  <div class="w-0.5 bg-red-400 rounded-full eq-bar-2"></div>
+                  <div class="w-0.5 bg-red-400 rounded-full eq-bar-3"></div>
+                  <div class="w-0.5 bg-red-400 rounded-full eq-bar-4"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Tactile Master Controls -->
+            <div class="flex items-center gap-2 shrink-0" dir="ltr">
+              <button onclick="togglePlay()" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-transform" style="background: linear-gradient(135deg, var(--plat-color, #EF4444), #7F1D1D); box-shadow: 0 0 20px var(--plat-color, #EF4444);">
+                <svg id="play-btn-1" class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+              <a href="https://youtube.com" target="_blank" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-zinc-300 hover:text-white transition-all">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- STYLE 2: VINYL PRO STUDIO DECK                                 -->
+      <!-- ============================================================== -->
+      <div id="style-studio" class="style-card w-full max-w-xl transition-all duration-500 hidden">
+        <div class="relative rounded-3xl p-5 bg-gradient-to-b from-[#141522] to-[#0A0B12] border border-white/15 shadow-2xl flex flex-col gap-4">
+          <!-- Top Row: Vinyl Disc + Turntable details -->
+          <div class="flex items-center gap-4">
+            <!-- Vinyl Turntable Disc -->
+            <div class="relative w-16 h-16 rounded-full border-2 border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-[0_0_25px_rgba(0,0,0,0.8)]">
+              <div class="w-full h-full rounded-full border border-dashed border-white/20 animate-spin-vinyl flex items-center justify-center">
+                <div class="w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center" style="background-color: var(--plat-color, #EF4444);">
+                  <div class="w-1.5 h-1.5 rounded-full bg-black"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Track Meta -->
+            <div class="flex-1 min-w-0 text-start space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="text-xs font-black tracking-widest uppercase text-zinc-400">HI-RES AUDIO MASTER</span>
+              </div>
+              <h2 class="text-lg font-black text-white truncate">Yahh (ياه)</h2>
+              <p class="text-xs text-zinc-300 font-bold truncate">تامر عاشور — Tamer Ashour</p>
+            </div>
+
+            <!-- Master Play Button -->
+            <button onclick="togglePlay()" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all" style="background: var(--plat-color, #EF4444);">
+              <svg class="w-5 h-5 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+
+          <!-- Bottom Row: Timeline + Frequency Waveform -->
+          <div class="pt-2 border-t border-white/10 flex items-center gap-3" dir="ltr">
+            <span class="text-xs font-mono font-bold text-zinc-400">01:24</span>
+            <div class="flex-1 h-2 bg-black/60 rounded-full border border-white/10 overflow-hidden relative">
+              <div class="h-full rounded-full" style="width: 45%; background: linear-gradient(90deg, #F59E0B, var(--plat-color, #EF4444));"></div>
+            </div>
+            <span class="text-xs font-mono font-bold text-zinc-500">03:45</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- STYLE 3: LIQUID CRYSTAL NEON BAR                               -->
+      <!-- ============================================================== -->
+      <div id="style-crystal" class="style-card w-full max-w-xl transition-all duration-500 hidden">
+        <div class="relative rounded-[28px] p-4 sm:p-5 bg-gradient-to-r from-black/85 via-zinc-950/90 to-black/85 border-2 backdrop-blur-2xl shadow-2xl flex items-center justify-between gap-4" style="border-color: var(--plat-color, #EF4444); box-shadow: 0 0 35px var(--plat-color-glow, rgba(239,68,68,0.35));">
+          
+          <!-- Large Circular Tactile Play Button -->
+          <button onclick="togglePlay()" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shrink-0 shadow-xl transition-transform hover:scale-110 active:scale-95" style="background: radial-gradient(circle at 35% 35%, #FFFFFF, var(--plat-color, #EF4444) 65%); color: #000;">
+            <svg class="w-6 h-6 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+
+          <!-- Middle: High-Contrast Info & Real-Time Wave -->
+          <div class="flex-1 min-w-0 text-start space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black tracking-wider text-white">Yahh — تامر عاشور</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider" style="background-color: var(--plat-color, #EF4444); color: white;">LIVE</span>
+            </div>
+            <!-- Wave Graphic Representation -->
+            <div class="flex items-end gap-1 h-5 pt-1">
+              <div class="flex-1 h-2 bg-white/20 rounded-full"></div>
+              <div class="flex-1 h-4 bg-white/40 rounded-full"></div>
+              <div class="flex-1 h-5 rounded-full" style="background-color: var(--plat-color, #EF4444);"></div>
+              <div class="flex-1 h-3 rounded-full" style="background-color: var(--plat-color, #EF4444);"></div>
+              <div class="flex-1 h-4 rounded-full" style="background-color: var(--plat-color, #EF4444);"></div>
+              <div class="flex-1 h-2 bg-white/20 rounded-full"></div>
+              <div class="flex-1 h-3 bg-white/20 rounded-full"></div>
+              <div class="flex-1 h-5 rounded-full" style="background-color: var(--plat-color, #EF4444);"></div>
+              <div class="flex-1 h-2 bg-white/10 rounded-full"></div>
+            </div>
+          </div>
+
+          <!-- Right: Official Platform Emblem Pill -->
+          <div class="w-11 h-11 rounded-2xl flex items-center justify-center border border-white/20 shrink-0" style="background: linear-gradient(135deg, var(--plat-color, #EF4444), #000);">
+            <svg class="w-6 h-6 fill-white" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- STYLE 4: IMPERIAL CLEAN MINIMAL                                -->
+      <!-- ============================================================== -->
+      <div id="style-minimal" class="style-card w-full max-w-xl transition-all duration-500 hidden">
+        <div class="relative rounded-2xl p-4 bg-black/90 border border-amber-400/35 shadow-2xl flex items-center justify-between gap-4">
+          <!-- Left: Platinum Crown & Logo -->
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-700 flex items-center justify-center text-black font-black shadow-lg">
+              👑
+            </div>
+            <div class="text-start">
+              <div class="text-xs font-black text-amber-300">YOUTUBE OFFICIAL</div>
+              <div class="text-sm font-bold text-white">Yahh • Tamer Ashour</div>
+            </div>
+          </div>
+
+          <!-- Right: Compact Glass Transport -->
+          <div class="flex items-center gap-2" dir="ltr">
+            <button onclick="togglePlay()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-extrabold text-xs flex items-center gap-1.5 border border-white/15 transition-all">
+              <span>01:24 / 03:45</span>
+              <svg class="w-3.5 h-3.5 fill-current ml-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Features & Summary Card -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-start">
+      <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
+        <div class="text-amber-400 font-extrabold text-sm flex items-center gap-1.5">
+          <span>✨ خطوط احترافية واضحة</span>
+        </div>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          تم استبدال الخط القديم المشوه بخطوط هندسية عصرية فائقة الوضوح والجاذبية باللغتين العربية والإنجليزية.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
+        <div class="text-amber-400 font-extrabold text-sm flex items-center gap-1.5">
+          <span>🎵 أسطوانة فينيل تفاعلية</span>
+        </div>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          أسطوانة فينيل كلاسيكية أو شريط كبسولة ذكي يدور ويتفاعل مباشرةً مع تشغيل وإيقاف الصوت بسلاسة.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1.5">
+        <div class="text-amber-400 font-extrabold text-sm flex items-center gap-1.5">
+          <span>🌊 أمواج صوتية وترددات حية</span>
+        </div>
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          مؤشرات Equalizer حية تتحرك مع نغمات الصوت لإضفاء تجربة استماع فاخرة وعالمية لزوار صفحتك.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentStyle = 'island';
+    let currentPlatform = 'youtube';
+    let isPlaying = false;
+
+    function switchStyle(styleId) {
+      currentStyle = styleId;
+      document.querySelectorAll('.style-card').forEach(el => el.classList.add('hidden'));
+      document.getElementById('style-' + styleId).classList.remove('hidden');
+
+      // Update Tab Buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = 'tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all bg-black/60 text-zinc-300 border-white/10 hover:border-white/30';
+      });
+      const activeBtn = document.getElementById('tab-' + styleId);
+      activeBtn.className = 'tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all bg-amber-400 text-black border-amber-400 shadow-[0_0_20px_rgba(212,175,55,0.4)]';
+    }
+
+    function setPlatform(plat) {
+      currentPlatform = plat;
+      const root = document.documentElement;
+      const ambient = document.getElementById('ambient-light');
+
+      if (plat === 'youtube') {
+        root.style.setProperty('--plat-color', '#EF4444');
+        root.style.setProperty('--plat-color-glow', 'rgba(239,68,68,0.4)');
+        ambient.className = 'absolute -top-24 w-96 h-96 rounded-full blur-[90px] opacity-25 pointer-events-none transition-colors duration-700 bg-red-600';
+        document.getElementById('plat-youtube').className = 'px-3 py-1 rounded-lg text-xs font-bold border transition-all bg-red-600/20 text-red-400 border-red-500/50';
+        document.getElementById('plat-spotify').className = 'px-3 py-1 rounded-lg text-xs font-bold border transition-all bg-black/40 text-zinc-400 border-white/10';
+        document.getElementById('plat-badge-1').innerText = 'YOUTUBE MUSIC';
+      } else {
+        root.style.setProperty('--plat-color', '#10B981');
+        root.style.setProperty('--plat-color-glow', 'rgba(16,185,129,0.4)');
+        ambient.className = 'absolute -top-24 w-96 h-96 rounded-full blur-[90px] opacity-25 pointer-events-none transition-colors duration-700 bg-emerald-600';
+        document.getElementById('plat-spotify').className = 'px-3 py-1 rounded-lg text-xs font-bold border transition-all bg-emerald-500/20 text-emerald-400 border-emerald-500/50';
+        document.getElementById('plat-youtube').className = 'px-3 py-1 rounded-lg text-xs font-bold border transition-all bg-black/40 text-zinc-400 border-white/10';
+        document.getElementById('plat-badge-1').innerText = 'SPOTIFY STUDIO';
+      }
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const playIcons = [document.getElementById('play-icon-1'), document.getElementById('play-btn-1')];
+      playIcons.forEach(icon => {
+        if (!icon) return;
+        if (isPlaying) {
+          icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        } else {
+          icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

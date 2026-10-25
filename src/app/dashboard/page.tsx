@@ -92,7 +92,6 @@ import {
 import { QrCodeView } from '@/components/profile/QrCodeStudio';
 import {
   MiniCardArchitectureVisual,
-  InteractiveLiveCardStage,
 } from '@/components/profile/LuxuryCardPreview';
 import {
   LuxuryThemeShowroomCard,
@@ -3811,26 +3810,6 @@ export default function DashboardPage() {
               >
                 <X className="w-5 h-5" />
               </button>
-            </div>
-
-            {/* STICKY LIVE INTERACTIVE 3D LINK CARD PREVIEW STAGE */}
-            <div className="sticky top-0 z-30 pb-4 pt-1 bg-[#08080F]/95 backdrop-blur-2xl">
-              <InteractiveLiveCardStage
-                cardType={formCardType}
-                title={formTitle}
-                description={formDesc}
-                url={formUrl}
-                icon={formIcon}
-                thumbnailUrl={formThumb}
-                badgeText={formBadge}
-                isFeatured={formFeatured}
-                groupName={formGroup}
-                theme={effectiveTheme}
-                isRtl={isRtl}
-                renderDynamicIcon={(name, cls) => (
-                  <DynamicIcon name={name} className={cls || 'w-5 h-5'} />
-                )}
-              />
             </div>
 
             <form onSubmit={handleSaveLinkForm} className="space-y-6">
