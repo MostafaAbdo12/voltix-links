@@ -877,7 +877,7 @@ export function ProfileRenderer({
             className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-md border border-amber-400/35 text-[9px] font-black tracking-[0.18em] uppercase text-amber-200 flex items-center gap-1.5 shadow-lg"
           >
             <Crown className="w-3 h-3 text-amber-400" />
-            <span>VOLTIX VIP</span>
+            <span style={{ fontFamily: `"${theme.fontFamilyEn || 'Cinzel'}", sans-serif` }}>VOLTIX VIP</span>
           </div>
         </div>
 
@@ -993,7 +993,12 @@ export function ProfileRenderer({
                 className="w-2 h-2 rounded-full animate-pulse"
                 style={{ backgroundColor: '#10B981' }}
               />
-              <span className="font-mono">@{profile.username}</span>
+              <span
+                className="font-bold tracking-tight"
+                style={{ fontFamily: `"${theme.fontFamilyEn || 'Sora'}", sans-serif` }}
+              >
+                @{profile.username}
+              </span>
               {copiedHandle ? (
                 <Check className="w-3 h-3 text-emerald-400" />
               ) : (
@@ -1592,7 +1597,7 @@ export function ProfileRenderer({
       style={{
         backgroundColor: theme.bgColor,
         color: theme.textColor,
-        fontFamily: `"${activeFont}", sans-serif`,
+        fontFamily: `"${theme.fontFamilyEn || 'Sora'}", "${theme.fontFamilyAr || 'Alexandria'}", sans-serif`,
       }}
       className={`relative w-full overflow-hidden select-none transition-colors duration-500 ${
         compactPhone ? 'min-h-full pt-10 pb-6 px-3.5' : 'min-h-screen py-10 px-4 sm:px-6'

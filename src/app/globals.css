@@ -51,6 +51,16 @@ select {
   color: #ffffff !important;
 }
 
+/* Crisp & Clear English Typography for LTR Inputs & Handles */
+input[dir='ltr'],
+textarea[dir='ltr'],
+[dir='ltr'] input,
+[dir='ltr'] textarea {
+  font-family: 'Sora', 'Plus Jakarta Sans', 'Outfit', 'Inter', -apple-system, sans-serif !important;
+  letter-spacing: -0.01em !important;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11' !important;
+}
+
 textarea {
   min-height: 85px;
 }

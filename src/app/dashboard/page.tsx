@@ -57,6 +57,8 @@ import {
   mergeEffectsConfig,
   ARABIC_FONTS,
   ENGLISH_FONTS,
+  ArabicFontFamily,
+  EnglishFontFamily,
   LINK_CARD_TYPES,
   PROFILE_LAYOUTS,
   MOOD_PRESETS,
@@ -66,8 +68,6 @@ import {
   AnimatedBgType,
   ButtonAnimationType,
   MoodPresetType,
-  ArabicFontFamily,
-  EnglishFontFamily,
 } from '@/lib/themes';
 import {
   SOCIAL_PLATFORMS,
@@ -2746,6 +2746,58 @@ export default function DashboardPage() {
                       <option value="minimal">Clean Minimal</option>
                     </select>
                   </div>
+
+                  {/* Arabic Font Selector */}
+                  <div>
+                    <label className="block text-xs font-bold text-amber-300 mb-1">
+                      {isRtl ? 'الخط العربي المعتمد' : 'Arabic Font Family'}
+                    </label>
+                    <select
+                      value={effectiveTheme.fontFamilyAr}
+                      onChange={(e) =>
+                        updateCustomThemeField(
+                          'fontFamilyAr',
+                          e.target.value as ArabicFontFamily
+                        )
+                      }
+                      className="w-full rounded-xl bg-black/70 border border-white/20 px-3 py-2 text-xs font-bold text-white focus:border-amber-400 focus:outline-none"
+                    >
+                      {ARABIC_FONTS.map((font) => (
+                        <option key={font.id} value={font.id} className="bg-zinc-900 text-white">
+                          {font.label} ({font.styleTagAr})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* English Font Selector */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-cyan-300">
+                        {isRtl ? 'الخط الإنجليزي الفاخر (English Font)' : 'English Font Family'}
+                      </label>
+                      <span className="text-[10px] text-cyan-400 font-mono font-bold">
+                        {effectiveTheme.fontFamilyEn}
+                      </span>
+                    </div>
+                    <select
+                      value={effectiveTheme.fontFamilyEn}
+                      onChange={(e) =>
+                        updateCustomThemeField(
+                          'fontFamilyEn',
+                          e.target.value as EnglishFontFamily
+                        )
+                      }
+                      className="w-full rounded-xl bg-black/70 border border-cyan-400/40 px-3 py-2 text-xs font-bold text-cyan-200 focus:border-cyan-300 focus:outline-none"
+                      dir="ltr"
+                    >
+                      {ENGLISH_FONTS.map((font) => (
+                        <option key={font.id} value={font.id} className="bg-zinc-900 text-white">
+                          {font.label} — {font.styleTagEn}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -2774,6 +2826,42 @@ export default function DashboardPage() {
                   <span>{isRtl ? 'فتح استوديو الخطوط والثيم' : 'Open Typography & Presets'}</span>
                   <span>{isRtl ? '←' : '→'}</span>
                 </button>
+              </div>
+
+              {/* Quick English Typography Fast Switcher */}
+              <div className="p-5 rounded-3xl vip-black-card border border-cyan-400/30 space-y-3 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Type className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs font-black text-white">
+                      {isRtl ? 'التبديل السريع للخطوط الإنجليزية الفاخرة (English Luxury Fonts)' : 'Quick English Typography Switcher'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold text-cyan-300">
+                    Active: {effectiveTheme.fontFamilyEn}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2" dir="ltr">
+                  {ENGLISH_FONTS.map((font) => {
+                    const isSelected = effectiveTheme.fontFamilyEn === font.id;
+                    return (
+                      <button
+                        key={font.id}
+                        type="button"
+                        onClick={() => updateCustomThemeField('fontFamilyEn', font.id)}
+                        className={`px-3 py-2 rounded-xl border text-center transition-all ${
+                          isSelected
+                            ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200 ring-1 ring-cyan-400/40 shadow-md font-black scale-[1.02]'
+                            : 'bg-black/50 border-white/10 text-zinc-300 hover:border-white/30 hover:text-white font-medium'
+                        }`}
+                        style={{ fontFamily: `"${font.id}", sans-serif` }}
+                      >
+                        <div className="text-xs truncate">{font.label}</div>
+                        <div className="text-[9px] opacity-75 truncate">{font.styleTagEn}</div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
