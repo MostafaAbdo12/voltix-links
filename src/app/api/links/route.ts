@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getAuthUser, sanitizeText, validateSafeUrl } from '@/lib/auth';
 
@@ -62,6 +63,11 @@ export async function POST(req: Request) {
       },
     });
 
+    try {
+      revalidatePath(`/u/${user.username}`);
+      revalidatePath(`/@${user.username}`);
+    } catch {}
+
     return NextResponse.json({ link: created }, { status: 201 });
   } catch (err) {
     console.error('Create link error:', err);
@@ -89,6 +95,10 @@ export async function PUT(req: Request) {
         where: { userId: user.id },
         orderBy: { order: 'asc' },
       });
+      try {
+        revalidatePath(`/u/${user.username}`);
+        revalidatePath(`/@${user.username}`);
+      } catch {}
       return NextResponse.json({ links: updatedLinks });
     }
 
@@ -122,6 +132,10 @@ export async function PUT(req: Request) {
         where: { userId: user.id },
         orderBy: { order: 'asc' },
       });
+      try {
+        revalidatePath(`/u/${user.username}`);
+        revalidatePath(`/@${user.username}`);
+      } catch {}
       return NextResponse.json({ links: updatedLinks });
     }
 

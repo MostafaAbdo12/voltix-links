@@ -19,14 +19,30 @@ export async function GET(req: Request) {
     const [views, clicks, links] = await Promise.all([
       prisma.pageView.findMany({
         where: { userId: user.id, createdAt: { gte: sinceDate } },
+        select: {
+          visitorHash: true,
+          country: true,
+          deviceType: true,
+          source: true,
+          createdAt: true,
+        },
         orderBy: { createdAt: 'asc' },
       }),
       prisma.linkClick.findMany({
         where: { userId: user.id, createdAt: { gte: sinceDate } },
+        select: {
+          createdAt: true,
+        },
         orderBy: { createdAt: 'asc' },
       }),
       prisma.link.findMany({
         where: { userId: user.id },
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          clicksCount: true,
+        },
         orderBy: { clicksCount: 'desc' },
       }),
     ]);

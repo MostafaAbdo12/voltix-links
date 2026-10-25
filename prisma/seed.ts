@@ -47,7 +47,7 @@ async function main() {
           layout: 'centered',
           entranceAnimation: 'cinematic-fade',
           moodPreset: 'luxury',
-          seoTitle: 'مصطفى عبده (@voltix) | VoltiX Official',
+          seoTitle: 'مصطفى عبده | VoltiX Official',
           seoDescription: 'الصفحة الرسمية لمؤسس منصة VoltiX للهويات الرقمية الفاخرة.',
         },
       },

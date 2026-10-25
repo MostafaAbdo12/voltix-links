@@ -138,7 +138,7 @@ model LinkClick {
   createdAt   DateTime @default(now())
 
   @@index([userId, createdAt])
-  @@index([linkId])
+  @@index([linkId, createdAt])
 }
 
 model VerificationToken {
@@ -148,6 +148,9 @@ model VerificationToken {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
 }
 
 model PasswordResetToken {
@@ -157,6 +160,9 @@ model PasswordResetToken {
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
 }
 
 model Report {
@@ -170,6 +176,9 @@ model Report {
   resolvedBy     String   @default("")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model SiteSettings {
@@ -196,5 +205,7 @@ model AuditLog {
   targetId   String   @default("")
   details    String   @default("")
   createdAt  DateTime @default(now())
+
+  @@index([createdAt])
 }
 

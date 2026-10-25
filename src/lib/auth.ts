@@ -136,6 +136,21 @@ export async function getCurrentUser(req?: Request) {
   return user;
 }
 
+export async function requireAdminUser(req?: Request) {
+  const user = await getCurrentUser(req);
+  if (!user) {
+    return { error: 'غير مصرح / Unauthorized', status: 401 as const, admin: null };
+  }
+  if (user.role !== 'ADMIN') {
+    return {
+      error: 'غير مصرح لك بدخول لوحة إدارة المنصة / Forbidden: Administrator access required',
+      status: 403 as const,
+      admin: null,
+    };
+  }
+  return { error: null, status: 200 as const, admin: user };
+}
+
 // ============================================================================
 // SECURITY UTILITIES: Rate Limiting, XSS Sanitization & URL Validation
 // ============================================================================
@@ -144,6 +159,16 @@ const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 
 export function checkRateLimit(key: string, maxRequests = 40, windowMs = 60_000): { allowed: boolean; remaining: number } {
   const now = Date.now();
+
+  // Periodic pruning when bucket exceeds 3,000 entries to prevent memory leaks
+  if (rateLimitBuckets.size > 3000) {
+    rateLimitBuckets.forEach((v, k) => {
+      if (now > v.resetAt) {
+        rateLimitBuckets.delete(k);
+      }
+    });
+  }
+
   const entry = rateLimitBuckets.get(key);
 
   if (!entry || now > entry.resetAt) {
@@ -163,7 +188,12 @@ export function sanitizeText(input: string, maxLength = 500): string {
   if (!input || typeof input !== 'string') return '';
   return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
     .replace(/javascript:/gi, '')
+    .replace(/vbscript:/gi, '')
     .replace(/on\w+\s*=/gi, '')
     .trim()
     .slice(0, maxLength);
@@ -173,7 +203,8 @@ export function validateSafeUrl(rawUrl: string): { valid: boolean; normalized: s
   if (!rawUrl || typeof rawUrl !== 'string') {
     return { valid: false, normalized: '', error: 'URL is required' };
   }
-  const trimmed = rawUrl.trim();
+  // Strip control characters and whitespace
+  const trimmed = rawUrl.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '');
   if (/^(javascript|data|vbscript|file):/i.test(trimmed)) {
     return { valid: false, normalized: '', error: 'Unsafe URL protocol is not allowed' };
   }

@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, checkRateLimit } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const rl = checkRateLimit(`verify:${ip}`, 10, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { token, action } = body;
 
@@ -12,7 +19,15 @@ export async function POST(req: Request) {
       if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      const verifyToken = `verify_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
+
+      const secureRandom = crypto.randomBytes(32).toString('hex');
+      const verifyToken = `vfy_${secureRandom}`;
+
+      await prisma.verificationToken.updateMany({
+        where: { email: user.email, used: false },
+        data: { used: true },
+      });
+
       await prisma.verificationToken.create({
         data: {
           email: user.email,
@@ -20,10 +35,13 @@ export async function POST(req: Request) {
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
         },
       });
+
+      const isDev = process.env.NODE_ENV !== 'production';
+
       return NextResponse.json({
         success: true,
-        verificationToken: !process.env.SMTP_HOST ? verifyToken : undefined,
-        verifyUrl: !process.env.SMTP_HOST ? `/verify-email?token=${verifyToken}` : undefined,
+        verificationToken: isDev && !process.env.SMTP_HOST ? verifyToken : undefined,
+        verifyUrl: isDev && !process.env.SMTP_HOST ? `/verify-email?token=${verifyToken}` : undefined,
       });
     }
 
@@ -59,4 +77,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Verification failed' }, { status: 500 });
   }
 }
-

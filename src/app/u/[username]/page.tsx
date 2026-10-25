@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { cache } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/db';
@@ -6,18 +6,36 @@ import { mergeThemeWithCustom, mergeEffectsConfig, ProfileLayoutType } from '@/l
 import { PublicProfileClient } from '@/components/profile/PublicProfileClient';
 import { ProfileData } from '@/components/profile/ProfileRenderer';
 
-export const dynamic = 'force-dynamic';
+// Incremental Static Regeneration: 60-second edge cache with background revalidation
+export const revalidate = 60;
+
+// Deduplicate database query between generateMetadata and PublicProfilePage in a single request
+const getPublicUserProfile = cache(async (rawUsername: string) => {
+  const cleanUsername = decodeURIComponent(rawUsername).replace(/^@/, '').toLowerCase().trim();
+  if (!cleanUsername) return null;
+
+  return prisma.user.findUnique({
+    where: { username: cleanUsername },
+    include: {
+      profileConfig: true,
+      links: {
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+      },
+      socialLinks: {
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+});
 
 export async function generateMetadata({
   params,
 }: {
   params: { username: string };
 }): Promise<Metadata> {
-  const cleanUsername = decodeURIComponent(params.username).replace(/^@/, '').toLowerCase();
-  const user = await prisma.user.findUnique({
-    where: { username: cleanUsername },
-    include: { profileConfig: true },
-  });
+  const user = await getPublicUserProfile(params.username);
 
   if (!user || user.isSuspended) {
     return {
@@ -52,15 +70,7 @@ export default async function PublicProfilePage({
 }: {
   params: { username: string };
 }) {
-  const cleanUsername = decodeURIComponent(params.username).replace(/^@/, '').toLowerCase();
-  const user = await prisma.user.findUnique({
-    where: { username: cleanUsername },
-    include: {
-      profileConfig: true,
-      links: { orderBy: { order: 'asc' } },
-      socialLinks: { orderBy: { order: 'asc' } },
-    },
-  });
+  const user = await getPublicUserProfile(params.username);
 
   if (!user || user.isSuspended) {
     notFound();
@@ -140,4 +150,3 @@ export default async function PublicProfilePage({
     />
   );
 }
-

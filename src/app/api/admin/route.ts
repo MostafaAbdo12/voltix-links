@@ -1,21 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getCurrentUser, sanitizeText } from '@/lib/auth';
+import { requireAdminUser, sanitizeText } from '@/lib/auth';
+import { invalidateSiteConfigCache } from '@/lib/site-config';
 
 export const dynamic = 'force-dynamic';
-
-async function requireAdminUser(req: Request) {
-  const user = await getCurrentUser(req);
-  if (!user) return { error: 'Unauthorized', status: 401 as const, admin: null };
-  if (user.role !== 'ADMIN') {
-    return {
-      error: 'غير مصرح لك بدخول لوحة إدارة المنصة / Forbidden: Administrator access required',
-      status: 403 as const,
-      admin: null,
-    };
-  }
-  return { error: null, status: 200 as const, admin: user };
-}
 
 export async function GET(req: Request) {
   const check = await requireAdminUser(req);
@@ -258,6 +246,8 @@ export async function POST(req: Request) {
           details: `Updated siteName="${updated.siteName}", defaultTheme="${updated.defaultThemeId}"`,
         },
       });
+
+      invalidateSiteConfigCache();
 
       return NextResponse.json({ success: true, siteSettings: updated });
     }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { checkRateLimit } from '@/lib/auth';
 
 function detectDevice(ua: string): string {
   if (/tablet|ipad/i.test(ua)) return 'tablet';
@@ -22,7 +23,13 @@ function detectSource(ref: string): string {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const rl = checkRateLimit(`view:${ip}`, 60, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ recorded: false, error: 'Rate limit exceeded' }, { status: 429 });
+    }
+
+    const body = await req.json().catch(() => ({}));
     const { userId, username, referrer = '' } = body;
 
     let targetUserId = userId;
@@ -39,7 +46,6 @@ export async function POST(req: Request) {
     }
 
     const ua = req.headers.get('user-agent') || '';
-    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
     const country = req.headers.get('x-vercel-ip-country') || body.country || 'SA';
     const dayKey = new Date().toISOString().slice(0, 10);
     // Anonymized daily hash (no raw IP stored)
@@ -62,4 +68,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ recorded: false }, { status: 500 });
   }
 }
-

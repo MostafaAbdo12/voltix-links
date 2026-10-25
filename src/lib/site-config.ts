@@ -547,3 +547,25 @@ export function serializeExtendedSiteConfig(config: Partial<ExtendedSiteConfig>)
     disabledThemesJson: JSON.stringify(merged),
   };
 }
+
+// In-Memory Fast Cache for Site Configuration (Zero database latency for public visitors)
+let cachedSiteConfig: { data: ExtendedSiteConfig; expiresAt: number } | null = null;
+
+export function getCachedSiteConfig(): ExtendedSiteConfig | null {
+  if (cachedSiteConfig && Date.now() < cachedSiteConfig.expiresAt) {
+    return cachedSiteConfig.data;
+  }
+  return null;
+}
+
+export function setCachedSiteConfig(config: ExtendedSiteConfig, ttlMs = 60_000) {
+  cachedSiteConfig = {
+    data: config,
+    expiresAt: Date.now() + ttlMs,
+  };
+}
+
+export function invalidateSiteConfigCache() {
+  cachedSiteConfig = null;
+}
+

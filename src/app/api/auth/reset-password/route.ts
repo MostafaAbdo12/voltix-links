@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, checkRateLimit } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const rl = checkRateLimit(`reset:${ip}`, 8, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'محاولات كثيرة، يرجى الانتظار دقيقة / Too many reset attempts' },
+        { status: 429 }
+      );
+    }
+
     const { token, newPassword } = await req.json();
     if (!token || !newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
       return NextResponse.json(
@@ -45,4 +54,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 });
   }
 }
-

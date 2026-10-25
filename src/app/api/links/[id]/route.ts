@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { getAuthUser, sanitizeText, validateSafeUrl } from '@/lib/auth';
 
@@ -65,6 +66,11 @@ export async function PATCH(
       data: updateData,
     });
 
+    try {
+      revalidatePath(`/u/${user.username}`);
+      revalidatePath(`/@${user.username}`);
+    } catch {}
+
     return NextResponse.json({ link: updated });
   } catch (err) {
     console.error('Update link error:', err);
@@ -94,6 +100,12 @@ export async function DELETE(
     }
 
     await prisma.link.delete({ where: { id: params.id } });
+
+    try {
+      revalidatePath(`/u/${user.username}`);
+      revalidatePath(`/@${user.username}`);
+    } catch {}
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Delete link error:', err);

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -220,6 +221,15 @@ export async function PUT(req: Request) {
         role: user.role === 'ADMIN' ? 'ADMIN' : 'USER',
       });
     }
+
+    try {
+      revalidatePath(`/u/${user.username}`);
+      revalidatePath(`/@${user.username}`);
+      if (nextUsername !== user.username) {
+        revalidatePath(`/u/${nextUsername}`);
+        revalidatePath(`/@${nextUsername}`);
+      }
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'Profile saved successfully' });
   } catch (err) {
