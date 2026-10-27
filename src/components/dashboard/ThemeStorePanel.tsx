@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Crown, Lock, Check, Clock, X, Loader2, Sparkles, ShoppingBag } from 'lucide-react';
+import { Crown, Lock, Check, Clock, X, Loader2, Sparkles, ShoppingBag, Eye } from 'lucide-react';
 import { getThemeById } from '@/lib/themes';
 import { LuxuryThemeShowroomCard } from '@/components/profile/LuxuryThemeShowroomCard';
 
@@ -135,6 +135,13 @@ export function ThemeStorePanel({ isRtl = true, focusThemeId, onPreviewTheme }: 
                 compact
                 onSelect={() => onPreviewTheme?.(themeId)}
               />
+              <a
+                href={`/preview/${themeId}`}
+                className="w-full py-2 rounded-xl text-xs font-black border border-amber-400/40 text-amber-200 hover:bg-amber-400/10 flex items-center justify-center gap-1.5"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                {isRtl ? 'جرّبه على صفحتي' : 'Try it on my page'}
+              </a>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-black">
                   {price} <span className="text-[11px] text-zinc-400">{isRtl ? 'ج.م' : 'EGP'}</span>

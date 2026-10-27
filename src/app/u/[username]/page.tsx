@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { mergeThemeWithCustom, mergeEffectsConfig, ProfileLayoutType } from '@/lib/themes';
 import { PublicProfileClient } from '@/components/profile/PublicProfileClient';
-import { ProfileData, MediaEmbedConfig } from '@/components/profile/ProfileRenderer';
+import { buildProfileData, PROFILE_VIEW_INCLUDE } from '@/lib/profile-view';
 import { canUseTheme, FALLBACK_FREE_THEME_ID } from '@/lib/theme-store';
 
 // Incremental Static Regeneration: 60-second edge cache with background revalidation
@@ -17,18 +17,7 @@ const getPublicUserProfile = cache(async (rawUsername: string) => {
 
   return prisma.user.findUnique({
     where: { username: cleanUsername },
-    include: {
-      profileConfig: true,
-      links: {
-        where: { isActive: true },
-        orderBy: { order: 'asc' },
-      },
-      socialLinks: {
-        where: { isActive: true },
-        orderBy: { order: 'asc' },
-      },
-      themePurchases: { select: { themeId: true } },
-    },
+    include: PROFILE_VIEW_INCLUDE,
   });
 });
 
@@ -97,72 +86,7 @@ export default async function PublicProfilePage({
   }
 
   const mergedEffects = mergeEffectsConfig(pc?.effectsConfigJson);
-
-  let avatarPos = { zoom: 1, x: 0, y: 0 };
-  let coverPos = { zoom: 1, x: 0, y: 0 };
-  let sectionsOrder = ['header', 'social', 'featured', 'media', 'links'];
-  let mediaEmbed: MediaEmbedConfig = {
-    enabled: false,
-    type: 'spotify' as const,
-    title: '',
-    artist: '',
-    url: '',
-    embedUrl: '',
-    tracks: [],
-  };
-  let qrConfig = {
-    fgColor: mergedTheme.accentColor,
-    bgColor: mergedTheme.bgColor,
-    includeLogo: true,
-  };
-
-  try {
-    if (user.avatarPosition) avatarPos = JSON.parse(user.avatarPosition);
-  } catch {}
-  try {
-    if (user.coverPosition) coverPos = JSON.parse(user.coverPosition);
-  } catch {}
-  try {
-    if (pc?.sectionsOrderJson) sectionsOrder = JSON.parse(pc.sectionsOrderJson);
-  } catch {}
-  try {
-    if (pc?.mediaEmbedJson) mediaEmbed = JSON.parse(pc.mediaEmbedJson);
-  } catch {}
-  try {
-    if (pc?.qrConfigJson) qrConfig = JSON.parse(pc.qrConfigJson);
-  } catch {}
-
-  const profileData: ProfileData = {
-    id: user.id,
-    username: user.username,
-    displayName: user.displayName,
-    bio: user.bio,
-    avatarUrl: user.avatarUrl,
-    avatarPosition: avatarPos,
-    coverUrl: user.coverUrl,
-    coverPosition: coverPos,
-    isVerified: user.isVerified,
-    locale: user.locale === 'en' ? 'en' : 'ar',
-    // Filter scheduled links on the server so future links' URLs never reach the browser
-    links: user.links.filter((l) => {
-      const now = Date.now();
-      if (l.scheduledStart && l.scheduledStart.getTime() > now) return false;
-      if (l.scheduledEnd && l.scheduledEnd.getTime() < now) return false;
-      return true;
-    }).map((l) => ({
-      ...l,
-      scheduledStart: l.scheduledStart ? l.scheduledStart.toISOString() : null,
-      scheduledEnd: l.scheduledEnd ? l.scheduledEnd.toISOString() : null,
-    })),
-    socialLinks: user.socialLinks,
-    sectionsOrder,
-    mediaEmbed,
-    qrConfig,
-    emailCapture: {
-      enabled: pc?.emailCaptureEnabled ?? false,
-      title: pc?.emailCaptureTitle ?? '',
-    },
-  };
+  const profileData = buildProfileData(user, mergedTheme);
 
   return (
     <PublicProfileClient

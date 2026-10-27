@@ -273,6 +273,7 @@ import { DynamicIcon } from '@/components/ui/DynamicIcon';
 import { QrCodeView } from './QrCodeStudio';
 import { SubscribeForm } from './SubscribeForm';
 import { ThemeBackdrop } from './ThemeBackdrop';
+import { CollectionBackdrop } from './CollectionBackdrop';
 
 export interface ProfileLinkItem {
   id: string;
@@ -2470,6 +2471,7 @@ export function ProfileRenderer({
         )}
 
         <ThemeBackdrop theme={theme} reduceMotion={reduceMotion} />
+        <CollectionBackdrop theme={theme} reduceMotion={reduceMotion} />
 
         {(theme.animatedBgType === 'grid' || theme.animatedBgType === 'cyber') && (
           <div

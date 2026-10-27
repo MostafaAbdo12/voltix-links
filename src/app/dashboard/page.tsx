@@ -186,6 +186,16 @@ export default function DashboardPage() {
     setStoreFocusThemeId(id);
     setActiveTab('store');
   };
+
+  // Deep links from the full-screen theme preview: ?buy=<themeId> or ?tab=store
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const buy = params.get('buy');
+    if (buy) openStoreForTheme(buy);
+    else if (params.get('tab') === 'store') setActiveTab('store');
+    if (buy || params.get('tab')) window.history.replaceState(null, '', '/dashboard');
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once on mount
+  }, []);
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
@@ -3146,13 +3156,21 @@ export default function DashboardPage() {
                       ? `👑 بتعاين ثيم مدفوع (${getThemePrice(themeId)} ج.م). اشترِه علشان تقدر تحفظه في صفحتك.`
                       : `👑 You're previewing a paid theme (${getThemePrice(themeId)} EGP). Buy it to save it to your page.`}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => openStoreForTheme(themeId)}
-                    className="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-black hover:bg-amber-300"
-                  >
-                    {isRtl ? 'اشترِ الثيم' : 'Buy theme'}
-                  </button>
+                  <div className="flex gap-2">
+                    <a
+                      href={`/preview/${themeId}`}
+                      className="px-4 py-2 rounded-xl text-xs font-black border border-amber-400/50 text-amber-200 hover:bg-amber-400/10"
+                    >
+                      {isRtl ? 'شوفه على صفحتي بملء الشاشة' : 'Full-screen preview'}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => openStoreForTheme(themeId)}
+                      className="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-black hover:bg-amber-300"
+                    >
+                      {isRtl ? 'اشترِ الثيم' : 'Buy theme'}
+                    </button>
+                  </div>
                 </div>
               )}
 
