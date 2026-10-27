@@ -510,6 +510,7 @@ export function ImageCropUploader({
       {/* URL Input Alternative (Direct Image or Video / YouTube URL) */}
       <input
         type="text"
+        dir="ltr"
         value={value.startsWith('data:') ? '' : value}
         onChange={(e) => onChange(e.target.value, position)}
         placeholder={
