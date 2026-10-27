@@ -4,17 +4,29 @@ import React, { useEffect, useState } from 'react';
 import { Crown, Lock, Check, Clock, X, Loader2, Sparkles, ShoppingBag, Eye } from 'lucide-react';
 import { getThemeById } from '@/lib/themes';
 import { TemplateThumb } from '@/components/profile/TemplateThumb';
-import type { PageTemplateId } from '@/lib/themes';
+import type { ThemeConfig } from '@/lib/themes';
 
-const TEMPLATE_LABELS: Record<PageTemplateId, [string, string]> = {
-  maison: ['تصميم مجلة فاخرة', 'Luxury editorial'],
-  'black-card': ['بطاقة VIP معدنية', 'Metal VIP card'],
-  bento: ['مربعات زي آيفون', 'Bento widgets'],
-  ios: ['شكل تطبيق آيفون', 'iOS app style'],
-  poster: ['بوستر جريء', 'Bold poster'],
-  sticker: ['ستيكرز مرحة', 'Playful stickers'],
-  hud: ['واجهة لعبة', 'Game HUD'],
-};
+/** Short description of a theme's look for store cards. */
+function styleLabel(theme: ThemeConfig, isRtl: boolean) {
+  const st = theme.studio;
+  if (!st) return '';
+  const buttons: Record<string, [string, string]> = {
+    pill: ['أزرار كبسولة', 'Pill buttons'],
+    rounded: ['أزرار ناعمة', 'Soft buttons'],
+    square: ['أزرار حادة', 'Sharp buttons'],
+    outline: ['أزرار محددة', 'Outline buttons'],
+    hard: ['ظل جريء', 'Bold shadow'],
+    glass: ['زجاج شفاف', 'Frosted glass'],
+    line: ['خطوط تحريرية', 'Editorial lines'],
+  };
+  const layouts: Record<string, [string, string]> = {
+    classic: ['كلاسيك', 'Classic'],
+    hero: ['بغلاف', 'Cover'],
+    tiles: ['مربعات صور', 'Image tiles'],
+  };
+  const i = isRtl ? 0 : 1;
+  return `${layouts[st.layout][i]} · ${buttons[st.button][i]}`;
+}
 
 interface StoreData {
   premiumThemes: { themeId: string; price: number; isNew: boolean }[];
@@ -163,7 +175,7 @@ export function ThemeStorePanel({ isRtl = true, focusThemeId, onPreviewTheme }: 
                 <span className="block px-3.5 py-2.5 bg-black/60">
                   <span className="block font-black text-sm">{isRtl ? theme.nameAr : theme.nameEn}</span>
                   <span className="block text-[11px] text-zinc-400">
-                    {theme.template ? TEMPLATE_LABELS[theme.template][isRtl ? 0 : 1] : ''}
+                    {styleLabel(theme, isRtl)}
                   </span>
                 </span>
               </button>
