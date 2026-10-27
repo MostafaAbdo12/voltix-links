@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth';
-import fs from 'fs';
-import path from 'path';
+import { saveUpload } from '@/lib/storage';
 import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
+const BLOCKED_MIME_TYPES = new Set(['image/svg+xml', 'text/html', 'application/xhtml+xml', 'application/xml', 'text/xml']);
+
 const ALLOWED_EXTENSIONS = new Set([
   // Images
-  'jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp', 'ico', 'tiff', 'tif', 'heic', 'heif', 'apng', 'jfif',
+  // SVG is intentionally excluded: it can embed scripts (stored XSS)
+  'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'bmp', 'ico', 'tiff', 'tif', 'heic', 'heif', 'apng', 'jfif',
   // Videos
   'mp4', 'webm', 'mov', 'mkv', 'ogg', 'm4v', 'avi'
 ]);
@@ -47,21 +49,16 @@ export async function POST(req: Request) {
       );
     }
 
+    if (BLOCKED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({ error: 'صيغة الملف غير مسموحة / File type not allowed' }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
     const safeHash = crypto.randomBytes(6).toString('hex');
     const safeFilename = `voltix-${Date.now()}-${safeHash}.${rawExt}`;
-    const filePath = path.join(uploadsDir, safeFilename);
-
-    fs.writeFileSync(filePath, buffer);
-
-    const publicUrl = `/uploads/${safeFilename}`;
+    const publicUrl = await saveUpload(safeFilename, buffer, file.type || 'application/octet-stream');
     const isVideo = file.type.startsWith('video/') || ['mp4', 'webm', 'mov', 'mkv', 'ogg', 'm4v'].includes(rawExt);
 
     return NextResponse.json({

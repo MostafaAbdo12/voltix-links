@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import {
   hashPassword,
   setSessionCookie,
-  checkRateLimit,
+  checkRateLimit, getClientIp,
   sanitizeText,
 } from '@/lib/auth';
 
@@ -27,7 +27,7 @@ const registerSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`register:${ip}`, 15, 60_000);
     if (!rl.allowed) {
       return NextResponse.json(

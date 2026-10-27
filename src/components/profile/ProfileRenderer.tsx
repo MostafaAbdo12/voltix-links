@@ -1094,7 +1094,7 @@ export function ProfileRenderer({
 
               {effectiveCardType === 'minimal' && (
                 <span className="px-1.5 py-0.5 rounded bg-amber-400/15 border border-amber-400/40 text-amber-300 font-mono font-black text-[9px]">
-                  {String(idx + 1).padStart(2, '0')} //
+                  {String(idx + 1).padStart(2, '0')}{' //'}
                 </span>
               )}
 

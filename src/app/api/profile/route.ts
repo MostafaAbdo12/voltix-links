@@ -118,7 +118,6 @@ export async function PUT(req: Request) {
     }
 
     // Prepare batched operations for ultra-fast single transaction execution
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const txOps: any[] = [];
 
     if (Object.keys(userUpdateData).length > 0) {

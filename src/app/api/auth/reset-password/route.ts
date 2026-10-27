@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { hashPassword, checkRateLimit } from '@/lib/auth';
+import { hashPassword, checkRateLimit, getClientIp } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`reset:${ip}`, 8, 60_000);
     if (!rl.allowed) {
       return NextResponse.json(

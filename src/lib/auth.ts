@@ -3,11 +3,27 @@ import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { prisma } from './db';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'aura-links-ultra-premium-jwt-secret-key-change-in-production-2026'
-);
+const DEV_FALLBACK_SECRET = 'voltix-dev-only-jwt-secret-not-for-production';
+
+function resolveJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (secret && secret.length >= 32) return secret;
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE !== 'phase-production-build') {
+    throw new Error('JWT_SECRET must be set (at least 32 characters) in production');
+  }
+  return secret || DEV_FALLBACK_SECRET;
+}
+
+const JWT_SECRET = new TextEncoder().encode(resolveJwtSecret());
+
+/** Returns the real client IP (first entry of x-forwarded-for). */
+export function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  return forwarded?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'local';
+}
 
 export const SESSION_COOKIE_NAME = 'aura_session';
+export const GOOGLE_STATE_COOKIE = 'voltix_oauth_state';
 
 export interface SessionPayload {
   userId: string;

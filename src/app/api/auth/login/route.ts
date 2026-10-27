@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import {
   verifyPassword,
   setSessionCookie,
-  checkRateLimit,
+  checkRateLimit, getClientIp,
 } from '@/lib/auth';
 
 const loginSchema = z.object({
@@ -14,7 +14,7 @@ const loginSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`login:${ip}`, 20, 60_000);
     if (!rl.allowed) {
       return NextResponse.json(
@@ -33,6 +33,15 @@ export async function POST(req: Request) {
     }
 
     const identifier = parsed.data.identifier.toLowerCase().trim();
+
+    // Per-account limit so distributed attempts against one account are throttled too
+    const accountRl = checkRateLimit(`login-account:${identifier}`, 10, 15 * 60_000);
+    if (!accountRl.allowed) {
+      return NextResponse.json(
+        { error: 'محاولات كثيرة على هذا الحساب، حاول بعد 15 دقيقة / Too many attempts for this account, try again in 15 minutes' },
+        { status: 429 }
+      );
+    }
     const user = await prisma.user.findFirst({
       where: {
         OR: [{ email: identifier }, { username: identifier }],

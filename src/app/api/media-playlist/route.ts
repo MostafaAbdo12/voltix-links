@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAuthUser, checkRateLimit } from '@/lib/auth';
+import { getAuthUser, checkRateLimit, getClientIp } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized / غير مصرح' }, { status: 401 });
     }
 
-    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`media-pl:${user.id || ip}`, 30, 60_000);
     if (!rl.allowed) {
       return NextResponse.json(

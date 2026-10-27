@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/db';
-import { getCurrentUser, checkRateLimit } from '@/lib/auth';
+import { getCurrentUser, checkRateLimit, getClientIp } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`verify:${ip}`, 10, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

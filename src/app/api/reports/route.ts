@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { sanitizeText, checkRateLimit } from '@/lib/auth';
+import { sanitizeText, checkRateLimit, getClientIp } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'local';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`report:${ip}`, 10, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ error: 'Too many reports' }, { status: 429 });

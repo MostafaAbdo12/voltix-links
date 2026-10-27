@@ -278,6 +278,7 @@ export default function AdminSiteControlCenterPage() {
 
   useEffect(() => {
     fetchAllControlData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, []);
 
   useEffect(() => {
