@@ -28,6 +28,21 @@ const TEXTURES: Record<string, string> = {
     'radial-gradient(1px 1px at 20% 30%, #fff9, transparent), radial-gradient(1px 1px at 70% 15%, #fff7, transparent), radial-gradient(1.5px 1.5px at 85% 60%, #fffa, transparent), radial-gradient(1px 1px at 35% 75%, #fff8, transparent), radial-gradient(1px 1px at 55% 45%, #fff6, transparent), radial-gradient(1.5px 1.5px at 10% 85%, #fff9, transparent)',
 };
 
+// Calm, Apple/Linktree-style motion. Everything stops for reduce-motion (OS setting or theme effect).
+const MOTION_CSS = `
+@keyframes st-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes st-pop { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: none; } }
+@keyframes st-shine { 0%, 65% { transform: translateX(-130%) skewX(-20deg); } 100% { transform: translateX(260%) skewX(-20deg); } }
+@keyframes st-breathe { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.18) translate(-4%, 3%); } }
+.st-rise { animation: st-rise 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.st-pop { animation: st-pop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.st-shine { animation: st-shine 4.8s ease-in-out infinite; }
+.st-breathe { animation: st-breathe 22s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) {
+  .st-rise, .st-pop, .st-shine, .st-breathe { animation: none !important; }
+}
+`;
+
 function background(s: StudioStyle, hasPhoto: boolean): React.CSSProperties {
   const base: React.CSSProperties = { backgroundColor: s.bg };
   switch (s.background) {
@@ -84,8 +99,13 @@ function buttonStyle(s: StudioStyle): { className: string; style: React.CSSPrope
   }
 }
 
-export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLinkClick }: TemplateProps) {
+export function StudioTemplate({ profile, theme, effects, isPreview, compactPhone, onLinkClick }: TemplateProps) {
   const s = theme.studio!;
+  const motion = !effects.reduceMotion;
+  // Staggered entrance: identity first, then featured tiles, then each link in turn
+  const enter = (kind: 'rise' | 'pop', delayMs: number) =>
+    motion ? { className: `st-${kind}`, style: { animationDelay: `${Math.min(delayMs, 1400)}ms` } } : { className: '', style: {} };
+  const breathing = motion && (s.background === 'gradient' || s.background === 'mesh');
   const { featured, regular, socials, isRtl } = useTemplateData(profile);
   const click = useLinkClick(profile, isPreview, onLinkClick);
   const btn = buttonStyle(s);
@@ -105,11 +125,14 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
     else groups.push({ name, items: [link] });
   }
 
-  const linkRow = (link: ProfileLinkItem) => (
+  let linkIndex = 0;
+  const linkRow = (link: ProfileLinkItem) => {
+    const e = enter('rise', 340 + linkIndex++ * 70);
+    return (
+    <div key={link.id} className={e.className} style={e.style}>
     <a
-      key={link.id}
       {...linkProps(link, click(link))}
-      className={`group relative flex items-center gap-3 w-full transition-transform duration-200 hover:-translate-y-0.5 ${isLine ? 'py-4 px-1' : 'min-h-[60px] px-2.5 py-2.5'} ${btn.className}`}
+      className={`group relative flex items-center gap-3 w-full overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 ${isLine ? 'py-4 px-1' : 'min-h-[60px] px-2.5 py-2.5'} ${btn.className}`}
       style={btn.style}
     >
       <span
@@ -130,13 +153,17 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
         <ArrowUpRight className="w-4 h-4 rtl:-scale-x-100" />
       </span>
     </a>
-  );
+    </div>
+    );
+  };
 
-  const tileCard = (link: ProfileLinkItem, wide: boolean) => (
+  const tileCard = (link: ProfileLinkItem, wide: boolean, i: number) => {
+    const e = enter('pop', 260 + i * 90);
+    return (
+    <div key={link.id} className={`${wide ? 'col-span-2' : ''} ${e.className}`} style={e.style}>
     <a
-      key={link.id}
       {...linkProps(link, click(link))}
-      className={`group relative overflow-hidden ${wide ? 'col-span-2 aspect-[16/9]' : 'aspect-square'} ${s.button === 'square' ? 'rounded-[6px]' : 'rounded-3xl'} transition-transform hover:-translate-y-0.5`}
+      className={`group relative block overflow-hidden ${wide ? 'aspect-[16/9]' : 'aspect-square'} ${s.button === 'square' ? 'rounded-[6px]' : 'rounded-3xl'} transition-transform hover:-translate-y-0.5 active:scale-[0.97]`}
       style={{ background: `linear-gradient(135deg, ${s.accent}, ${s.bg2 || s.bg})`, border: s.button === 'hard' ? `2px solid ${s.btnBorder}` : undefined, boxShadow: s.button === 'hard' ? `4px 4px 0 ${s.btnBorder}` : undefined }}
     >
       {link.thumbnailUrl && (
@@ -154,8 +181,17 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
         <span className="block text-base font-bold leading-snug">{link.title}</span>
         {wide && link.description && <span className="block text-xs mt-1 opacity-80 truncate">{link.description}</span>}
       </span>
+      {/* Periodic light sweep draws the eye to featured content */}
+      {motion && (
+        <span
+          className="st-shine pointer-events-none absolute inset-y-0 left-0 w-1/3"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)', animationDelay: `${1.2 + i * 0.6}s` }}
+        />
+      )}
     </a>
-  );
+    </div>
+    );
+  };
 
   const isHero = s.layout === 'hero';
 
@@ -163,8 +199,10 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
       className={`relative w-full overflow-hidden ${compactPhone ? 'min-h-full' : 'min-h-screen'}`}
-      style={{ ...background(s, !!photo), color: s.text, fontFamily: `"${theme.fontFamilyEn}", "${theme.fontFamilyAr}", sans-serif` }}
+      style={{ ...(breathing ? { backgroundColor: s.bg } : background(s, !!photo)), color: s.text, fontFamily: `"${theme.fontFamilyEn}", "${theme.fontFamilyAr}", sans-serif` }}
     >
+      <style>{MOTION_CSS}</style>
+      {breathing && <div aria-hidden className="st-breathe absolute -inset-[15%]" style={background(s, false)} />}
       {photo && (
         <div className="absolute inset-0 overflow-hidden" aria-hidden>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -187,6 +225,7 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
       <div className={`relative max-w-[560px] mx-auto px-5 ${isHero ? '-mt-14' : compactPhone ? 'pt-10' : 'pt-16'} pb-4`}>
         {/* Identity */}
         <div className="flex flex-col items-center text-center">
+          <div className={enter('pop', 0).className} style={enter('pop', 0).style}>
           <Avatar
             profile={profile}
             size={compactPhone ? 88 : 104}
@@ -195,26 +234,27 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
             fallbackBg={s.accent}
             fallbackColor={s.accentText || '#fff'}
           />
-          <h1 className={`mt-4 ${s.titleSize === 'xl' ? 'text-4xl' : 'text-2xl'} font-bold tracking-tight flex items-center gap-1.5`} style={{ letterSpacing: s.titleTracking }}>
+          </div>
+          <h1 style={{ letterSpacing: s.titleTracking, ...enter('rise', 90).style }} className={`${enter('rise', 90).className} mt-4 ${s.titleSize === 'xl' ? 'text-4xl' : 'text-2xl'} font-bold tracking-tight flex items-center gap-1.5`}>
             {s.titleCase === 'upper' ? profile.displayName.toUpperCase() : profile.displayName}
             <VerifiedMark show={profile.isVerified} color={s.accent} size={20} />
           </h1>
           {s.showHandle !== false && (
-            <p className="mt-1 text-sm opacity-60" dir="ltr">
+            <p className={`mt-1 text-sm opacity-60 ${enter('rise', 140).className}`} style={enter('rise', 140).style} dir="ltr">
               @{profile.username}
             </p>
           )}
-          {profile.bio && <p className="mt-3 text-[15px] leading-7 max-w-sm opacity-85">{profile.bio}</p>}
+          {profile.bio && <p className={`mt-3 text-[15px] leading-7 max-w-sm opacity-85 ${enter('rise', 190).className}`} style={enter('rise', 190).style}>{profile.bio}</p>}
 
           {socials.length > 0 && (
-            <div className="mt-5 flex flex-wrap justify-center gap-4">
+            <div className={`mt-5 flex flex-wrap justify-center gap-4 ${enter('rise', 240).className}`} style={enter('rise', 240).style}>
               {socials.map((sl) => (
                 <a
                   key={sl.id}
                   href={isPreview ? undefined : sl.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="opacity-80 hover:opacity-100 hover:scale-110 transition-all"
+                  className="opacity-80 hover:opacity-100 hover:scale-110 active:scale-90 transition-all"
                   style={{ color: s.text }}
                 >
                   <SocialIcon social={sl} className="w-[22px] h-[22px]" />
@@ -227,7 +267,7 @@ export function StudioTemplate({ profile, theme, isPreview, compactPhone, onLink
         {/* Featured */}
         {tiles.length > 0 && (
           <div className={`mt-8 grid grid-cols-2 gap-3`}>
-            {tiles.map((link, i) => tileCard(link, tiles.length === 1 || (tiles.length === 3 && i === 0)))}
+            {tiles.map((link, i) => tileCard(link, tiles.length === 1 || (tiles.length === 3 && i === 0), i))}
           </div>
         )}
 
