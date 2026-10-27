@@ -4,6 +4,8 @@ import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import type { StudioStyle } from '@/lib/themes';
 import type { ProfileLinkItem } from '../ProfileRenderer';
+import { MapCard } from '../MapCard';
+import { getLinkMap } from '@/lib/maps';
 import {
   TemplateProps, TemplateFooter, Avatar, VerifiedMark, SocialIcon, LinkIcon, CoverMedia,
   useTemplateData, useLinkClick, linkProps,
@@ -128,6 +130,32 @@ export function StudioTemplate({ profile, theme, effects, isPreview, compactPhon
   let linkIndex = 0;
   const linkRow = (link: ProfileLinkItem) => {
     const e = enter('rise', 340 + linkIndex++ * 70);
+    const mapSettings = getLinkMap(link.customStyleJson);
+    if (mapSettings?.display === 'card') {
+      const onDark = theme.isLight !== true;
+      return (
+        <div key={link.id} className={e.className} style={e.style}>
+          <MapCard
+            title={link.title}
+            description={link.description}
+            query={mapSettings.query}
+            url={link.url}
+            isRtl={isRtl}
+            isPreview={isPreview}
+            radius={s.button === 'square' || isLine ? '6px' : '24px'}
+            colors={{
+              bg: onDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.75)',
+              text: s.text,
+              subtext: theme.secondaryTextColor,
+              border: s.btnBorder || (onDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'),
+              accent: s.accent,
+              accentText: s.accentText || '#fff',
+            }}
+            onOpen={() => click(link)({ preventDefault: () => {} } as React.MouseEvent<HTMLAnchorElement>)}
+          />
+        </div>
+      );
+    }
     return (
     <div key={link.id} className={e.className} style={e.style}>
     <a

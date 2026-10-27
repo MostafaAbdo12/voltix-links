@@ -275,6 +275,8 @@ import { SubscribeForm } from './SubscribeForm';
 import { ThemeBackdrop } from './ThemeBackdrop';
 import { CollectionBackdrop } from './CollectionBackdrop';
 import { PremiumTemplate } from './templates';
+import { MapCard } from './MapCard';
+import { getLinkMap } from '@/lib/maps';
 
 export interface ProfileLinkItem {
   id: string;
@@ -786,6 +788,41 @@ function ClassicProfileRenderer({
   // LUXURY LINK CARD RENDERER (SUPPORTS AUTO-DETECTED OFFICIAL SOCIAL ICONS)
   // ==========================================================================
   const renderSingleLinkCard = (link: ProfileLinkItem, idx: number, isBentoLayout = false) => {
+    const mapSettings = getLinkMap(link.customStyleJson);
+    if (mapSettings?.display === 'card') {
+      return (
+        <div key={link.id} className={isBentoLayout ? 'col-span-2' : ''}>
+          <MapCard
+            title={link.title}
+            description={link.description}
+            query={mapSettings.query}
+            url={link.url}
+            isRtl={isRtl}
+            isPreview={isPreview}
+            radius={`${theme.borderRadius}px`}
+            colors={{
+              bg: theme.cardBg,
+              text: theme.textColor,
+              subtext: theme.secondaryTextColor,
+              border: theme.cardBorder,
+              accent: theme.accentColor,
+              accentText: theme.bgColor,
+            }}
+            onOpen={() => {
+              if (onLinkClick) onLinkClick(link);
+              else if (!isPreview && link.id) {
+                fetch('/api/analytics/click', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ linkId: link.id, userId: profile.id }),
+                  keepalive: true,
+                }).catch(() => {});
+              }
+            }}
+          />
+        </div>
+      );
+    }
     const effectiveCardType: LinkCardType =
       (theme.defaultCardType as LinkCardType) || (link.cardType as LinkCardType) || 'glass';
     const coords = cardCoords[link.id] || { x: 160, y: 35, rx: 0, ry: 0 };

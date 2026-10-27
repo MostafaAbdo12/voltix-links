@@ -37,6 +37,7 @@ import { GET as statsGET } from '@/app/api/analytics/stats/route';
 import { GET as adminGET, POST as adminPOST } from '@/app/api/admin/route';
 import { POST as storePOST } from '@/app/api/store/route';
 import { canUseTheme, buildEntitlements } from '@/lib/theme-store';
+import { isGoogleMapsUrl, extractMapQuery, getLinkMap } from '@/lib/maps';
 import { POST as paymentsPOST } from '@/app/api/admin/payments/route';
 
 describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
@@ -486,6 +487,17 @@ describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
 
     // ...but a theme bought outright survives Premium expiring
     expect(canUseTheme('pharaoh-sun-gold', { premiumUntil: past, ownedThemeIds: ['pharaoh-sun-gold'] })).toBe(true);
+  });
+
+  it('Google Maps links are recognised and read into a place', () => {
+    expect(isGoogleMapsUrl('https://maps.app.goo.gl/AbCdEf123')).toBe(true);
+    expect(isGoogleMapsUrl('https://www.google.com/maps/place/Cairo+Tower/@30.0459,31.2243,17z')).toBe(true);
+    expect(isGoogleMapsUrl('https://example.com/maps/place/x')).toBe(false);
+    expect(extractMapQuery('https://www.google.com/maps/place/Cairo+Tower/@30.0459,31.2243,17z')).toBe('Cairo Tower');
+    expect(extractMapQuery('https://maps.google.com/?q=Pyramids+of+Giza')).toBe('Pyramids of Giza');
+    expect(extractMapQuery('https://www.google.com/maps/@30.0444,31.2357,15z')).toBe('30.0444,31.2357');
+    expect(getLinkMap('{"map":{"query":"Cairo Tower","display":"card"}}')).toEqual({ query: 'Cairo Tower', display: 'card' });
+    expect(getLinkMap('{"bg":"#000"}')).toBeNull();
   });
 
   it('Scenario 14, 15 & 16: Bilingual i18n, 24 Fonts, 12 Card Types, 7 Layouts, 14 Socials & Effects Studio', () => {

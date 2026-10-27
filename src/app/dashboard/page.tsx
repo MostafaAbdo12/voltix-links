@@ -112,6 +112,7 @@ import {
 } from '@/components/dashboard/ImageCropUploader';
 import { AnalyticsPanel } from '@/components/dashboard/AnalyticsPanel';
 import { GrowthPanel } from '@/components/dashboard/GrowthPanel';
+import { isGoogleMapsUrl, extractMapQuery, getLinkMap } from '@/lib/maps';
 import { ThemeStorePanel } from '@/components/dashboard/ThemeStorePanel';
 import { getCatalogThemes, getThemeTier, getThemePrice } from '@/lib/theme-store';
 
@@ -347,6 +348,40 @@ export default function DashboardPage() {
   const [formEnd, setFormEnd] = useState('');
   const [formCustomBg, setFormCustomBg] = useState('');
   const [formCustomGlow, setFormCustomGlow] = useState('');
+  // Google Maps links: the place to show and whether it renders as a map card or a button
+  const [formMapQuery, setFormMapQuery] = useState('');
+  const [formMapDisplay, setFormMapDisplay] = useState<'card' | 'button'>('card');
+  const [formMapStatus, setFormMapStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const formIsMap = isGoogleMapsUrl(formUrl);
+
+  // Read the place out of a pasted maps link (short links are expanded on the server)
+  useEffect(() => {
+    if (!linkFormOpen || !formIsMap) return;
+    const direct = extractMapQuery(formUrl);
+    if (direct) {
+      setFormMapQuery((q) => q || direct);
+      setFormMapStatus('idle');
+      return;
+    }
+    setFormMapStatus('loading');
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/maps/resolve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: formUrl }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.query) {
+          setFormMapQuery((q) => q || data.query);
+          setFormMapStatus('idle');
+        } else setFormMapStatus('error');
+      } catch {
+        setFormMapStatus('error');
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formUrl, formIsMap, linkFormOpen]);
 
   // Password Change & Verification State
   const [currentPassword, setCurrentPassword] = useState('');
@@ -919,7 +954,19 @@ export default function DashboardPage() {
     setFormEnd('');
     setFormCustomBg('');
     setFormCustomGlow('');
+    setFormMapQuery('');
+    setFormMapDisplay('card');
+    setFormMapStatus('idle');
     setLinkFormOpen(true);
+  };
+
+  // Shortcut for shops, clinics and venues: a link prefilled as a location
+  const openAddLocationModal = () => {
+    openAddLinkModal();
+    setFormTitle(isRtl ? 'موقعنا على الخريطة' : 'Find us on the map');
+    setFormUrl('');
+    setFormIcon('MapPin');
+    setFormDesc('');
   };
 
   const openAddChannelPresetModal = (preset: ChannelQuickPreset) => {
@@ -937,6 +984,9 @@ export default function DashboardPage() {
     setFormEnd('');
     setFormCustomBg('');
     setFormCustomGlow('');
+    setFormMapQuery('');
+    setFormMapDisplay('card');
+    setFormMapStatus('idle');
     setLinkFormOpen(true);
   };
 
@@ -964,20 +1014,27 @@ export default function DashboardPage() {
     }
     setFormCustomBg(cBg);
     setFormCustomGlow(cGlow);
+    const savedMap = getLinkMap(link.customStyleJson);
+    setFormMapQuery(savedMap?.query || '');
+    setFormMapDisplay(savedMap?.display || 'card');
+    setFormMapStatus('idle');
     setLinkFormOpen(true);
   };
 
   const handleSaveLinkForm = async (e: React.FormEvent) => {
     e.preventDefault();
-    const customStyleObj: Record<string, string> = {};
+    const customStyleObj: Record<string, unknown> = {};
     if (formCustomBg) customStyleObj.bg = formCustomBg;
     if (formCustomGlow) customStyleObj.glow = formCustomGlow;
+    const mapQuery = formIsMap ? formMapQuery.trim() || extractMapQuery(formUrl) || '' : '';
+    if (mapQuery) customStyleObj.map = { query: mapQuery.slice(0, 300), display: formMapDisplay };
 
     const payload = {
       title: formTitle,
       url: formUrl,
       description: formDesc,
-      icon: formIcon,
+      // Map links always get the pin icon unless the owner chose a custom one
+      icon: formIsMap && ['Globe', 'Sparkles', 'Link'].includes(formIcon) ? 'MapPin' : formIcon,
       thumbnailUrl: formThumb,
       groupName: formGroup,
       cardType: formCardType,
@@ -2272,14 +2329,24 @@ export default function DashboardPage() {
                       : 'Add links & official channels (WhatsApp, Telegram, Discord, Facebook) and reorder with drag-and-drop'}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={openAddLinkModal}
-                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>{t.addLink}</span>
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={openAddLocationModal}
+                    className="px-4 py-2.5 rounded-xl border border-emerald-400/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 font-extrabold text-xs flex items-center gap-2"
+                  >
+                    <span>📍</span>
+                    <span>{isRtl ? 'إضافة موقع' : 'Add location'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openAddLinkModal}
+                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>{t.addLink}</span>
+                  </button>
+                </div>
               </div>
 
               {/* OFFICIAL CHANNELS & COMMUNITIES QUICK-LAUNCHER (WHATSAPP, TELEGRAM, DISCORD, FACEBOOK) */}
@@ -4576,6 +4643,10 @@ export default function DashboardPage() {
                       onChange={(e) => {
                         const val = e.target.value;
                         setFormUrl(val);
+                        if (isGoogleMapsUrl(val)) {
+                          setFormIcon('MapPin');
+                          setFormMapQuery('');
+                        }
                         const detected = detectSocialPlatformFromUrl(val);
                         if (detected) {
                           setFormIcon(detected.id);
@@ -4602,8 +4673,64 @@ export default function DashboardPage() {
                       dir="ltr"
                     />
                   </div>
+                  {formIcon === 'MapPin' && !formIsMap && (
+                    <p className="mt-2 text-[11px] text-zinc-400">
+                      {isRtl
+                        ? 'افتح المكان في تطبيق خرايط جوجل ← مشاركة ← نسخ الرابط، والصقه هنا.'
+                        : 'Open the place in Google Maps → Share → Copy link, then paste it here.'}
+                    </p>
+                  )}
                 </div>
               </div>
+
+              {formIsMap && (
+                <div className="p-4 rounded-2xl border border-emerald-400/35 bg-emerald-500/10 space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-extrabold text-emerald-200">
+                    <span>📍</span>
+                    {isRtl ? 'رابط خرايط جوجل — هيظهر كموقع' : 'Google Maps link — shown as a location'}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-zinc-200 mb-1.5">
+                      {isRtl ? 'اسم المكان أو العنوان (اللي هيظهر على الخريطة)' : 'Place name or address (shown on the map)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={formMapQuery}
+                      onChange={(e) => setFormMapQuery(e.target.value)}
+                      placeholder={
+                        formMapStatus === 'loading'
+                          ? isRtl ? 'جاري قراءة الموقع من الرابط…' : 'Reading the place from the link…'
+                          : isRtl ? 'مثال: برج القاهرة، الزمالك' : 'e.g. Cairo Tower, Zamalek'
+                      }
+                      className="w-full rounded-2xl bg-black/65 border border-white/15 focus:border-emerald-400 px-4 py-2.5 text-sm text-white focus:outline-none"
+                    />
+                    {formMapStatus === 'error' && !formMapQuery && (
+                      <p className="mt-1.5 text-[11px] text-amber-300">
+                        {isRtl
+                          ? 'ماقدرناش نقرا المكان من الرابط تلقائيًا، اكتب اسم المكان أو العنوان بإيدك.'
+                          : "We couldn't read the place automatically, type the place name or address."}
+                      </p>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      ['card', 'خريطة جوه الصفحة', 'Map card'],
+                      ['button', 'زرار عادي 📍', 'Pin button'],
+                    ] as const).map(([value, ar, en]) => (
+                      <button
+                        type="button"
+                        key={value}
+                        onClick={() => setFormMapDisplay(value)}
+                        className={`py-2.5 rounded-xl text-xs font-extrabold border ${
+                          formMapDisplay === value ? 'bg-emerald-400 text-black border-emerald-400' : 'border-white/15 text-zinc-300'
+                        }`}
+                      >
+                        {isRtl ? ar : en}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
