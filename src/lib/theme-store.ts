@@ -88,6 +88,23 @@ export function getCatalogThemes(): ThemeConfig[] {
 export interface ThemeEntitlements {
   premiumUntil: Date | string | null;
   ownedThemeIds: string[];
+  isOwner?: boolean;
+}
+
+// Admins own the platform, so every paid theme is always unlocked for them
+const OWNER_ACCESS_UNTIL = new Date('9999-12-31T00:00:00Z');
+
+export function buildEntitlements(user: {
+  role: string;
+  premiumUntil: Date | null;
+  themePurchases: { themeId: string }[];
+}): ThemeEntitlements {
+  const isOwner = user.role === 'ADMIN';
+  return {
+    premiumUntil: isOwner ? OWNER_ACCESS_UNTIL : user.premiumUntil,
+    ownedThemeIds: user.themePurchases.map((p) => p.themeId),
+    isOwner,
+  };
 }
 
 export function hasActivePremium(ent: Pick<ThemeEntitlements, 'premiumUntil'>, now = new Date()): boolean {

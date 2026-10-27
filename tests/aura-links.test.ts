@@ -36,7 +36,7 @@ import { POST as clickPOST } from '@/app/api/analytics/click/route';
 import { GET as statsGET } from '@/app/api/analytics/stats/route';
 import { GET as adminGET, POST as adminPOST } from '@/app/api/admin/route';
 import { POST as storePOST } from '@/app/api/store/route';
-import { canUseTheme } from '@/lib/theme-store';
+import { canUseTheme, buildEntitlements } from '@/lib/theme-store';
 import { POST as paymentsPOST } from '@/app/api/admin/payments/route';
 
 describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
@@ -477,6 +477,13 @@ describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
     const past = new Date(Date.now() - 86_400_000);
     expect(canUseTheme('sakura-dusk', { premiumUntil: future, ownedThemeIds: [] })).toBe(true);
     expect(canUseTheme('sakura-dusk', { premiumUntil: past, ownedThemeIds: [] })).toBe(false);
+    // The platform owner (admin) has every paid theme without buying; regular users do not
+    const owner = buildEntitlements({ role: 'ADMIN', premiumUntil: null, themePurchases: [] });
+    expect(canUseTheme('pharaoh-sun-gold', owner)).toBe(true);
+    expect(canUseTheme('quantum-singularity', owner)).toBe(true);
+    const regular = buildEntitlements({ role: 'USER', premiumUntil: null, themePurchases: [] });
+    expect(canUseTheme('pharaoh-sun-gold', regular)).toBe(false);
+
     // ...but a theme bought outright survives Premium expiring
     expect(canUseTheme('pharaoh-sun-gold', { premiumUntil: past, ownedThemeIds: ['pharaoh-sun-gold'] })).toBe(true);
   });

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 import { mergeThemeWithCustom, mergeEffectsConfig, ProfileLayoutType } from '@/lib/themes';
 import { PublicProfileClient } from '@/components/profile/PublicProfileClient';
 import { buildProfileData, PROFILE_VIEW_INCLUDE } from '@/lib/profile-view';
-import { canUseTheme, FALLBACK_FREE_THEME_ID } from '@/lib/theme-store';
+import { canUseTheme, FALLBACK_FREE_THEME_ID, buildEntitlements } from '@/lib/theme-store';
 
 // Incremental Static Regeneration: 60-second edge cache with background revalidation
 export const revalidate = 60;
@@ -75,7 +75,7 @@ export default async function PublicProfilePage({
   const savedThemeId = pc?.themeId || FALLBACK_FREE_THEME_ID;
   const themeAllowed = canUseTheme(
     savedThemeId,
-    { premiumUntil: user.premiumUntil, ownedThemeIds: user.themePurchases.map((p) => p.themeId) },
+    buildEntitlements(user),
     savedThemeId
   );
   const mergedTheme = themeAllowed

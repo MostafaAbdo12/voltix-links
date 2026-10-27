@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { prisma } from '@/lib/db';
 import { getSessionFromRequest } from '@/lib/auth';
 import { getThemeById, mergeEffectsConfig } from '@/lib/themes';
-import { getThemeTier, getThemePrice, canUseTheme, PREMIUM_THEME_PRICES, NEW_THEME_IDS } from '@/lib/theme-store';
+import { getThemeTier, getThemePrice, canUseTheme, PREMIUM_THEME_PRICES, NEW_THEME_IDS, buildEntitlements } from '@/lib/theme-store';
 import { buildProfileData, PROFILE_VIEW_INCLUDE } from '@/lib/profile-view';
 import { ThemePreviewClient } from '@/components/profile/ThemePreviewClient';
 
@@ -29,7 +29,7 @@ export default async function ThemePreviewPage({ params }: { params: { themeId: 
   const theme = getThemeById(themeId);
   const owned = canUseTheme(
     themeId,
-    { premiumUntil: user.premiumUntil, ownedThemeIds: user.themePurchases.map((p) => p.themeId) },
+    buildEntitlements(user),
     user.profileConfig?.themeId
   );
 

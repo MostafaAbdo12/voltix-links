@@ -41,6 +41,7 @@ export async function GET(req: Request) {
     ownedThemeIds: entitlements.ownedThemeIds,
     premiumUntil: entitlements.premiumUntil,
     premiumActive: hasActivePremium(entitlements),
+    isOwner: Boolean(entitlements.isOwner),
     requests,
     paymentInstructions: settings?.paymentInstructions || '',
   });

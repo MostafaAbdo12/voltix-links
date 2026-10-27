@@ -22,6 +22,7 @@ interface StoreData {
   ownedThemeIds: string[];
   premiumUntil: string | null;
   premiumActive: boolean;
+  isOwner?: boolean;
   requests: { id: string; kind: string; themeId: string | null; amount: number; status: string; createdAt: string }[];
   paymentInstructions: string;
 }
@@ -75,6 +76,15 @@ export function ThemeStorePanel({ isRtl = true, focusThemeId, onPreviewTheme }: 
         </p>
       </div>
 
+      {data.isOwner && (
+        <div className="p-4 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 text-sm font-bold text-emerald-200 flex items-center gap-2">
+          <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+          {isRtl
+            ? 'إنت مالك المنصة، فكل الثيمات المدفوعة مفتوحة لك مجانًا. ده نفس اللي المستخدمين بيشوفوه في المتجر.'
+            : 'You own the platform, so every paid theme is unlocked for free. This is the store your users see.'}
+        </div>
+      )}
+
       {/* Premium plans */}
       <div className="grid sm:grid-cols-2 gap-4">
         {data.plans.map((plan) => {
@@ -107,8 +117,12 @@ export function ThemeStorePanel({ isRtl = true, focusThemeId, onPreviewTheme }: 
               {data.premiumActive ? (
                 <p className="text-xs font-bold text-emerald-300 flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" />
-                  {isRtl ? 'مفعّل حتى ' : 'Active until '}
-                  {new Date(data.premiumUntil!).toLocaleDateString(isRtl ? 'ar-EG' : 'en')}
+                  {data.isOwner
+                    ? isRtl ? 'مفتوح لك كمالك' : 'Unlocked for the owner'
+                    : <>
+                        {isRtl ? 'مفعّل حتى ' : 'Active until '}
+                        {new Date(data.premiumUntil!).toLocaleDateString(isRtl ? 'ar-EG' : 'en')}
+                      </>}
                 </p>
               ) : (
                 <button
