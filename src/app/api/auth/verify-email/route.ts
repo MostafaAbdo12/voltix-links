@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 import { getCurrentUser, checkRateLimit, getClientIp } from '@/lib/auth';
+import { isMailerConfigured, sendVerificationEmail } from '@/lib/mailer';
 
 export async function POST(req: Request) {
   try {
@@ -37,11 +38,24 @@ export async function POST(req: Request) {
       });
 
       const isDev = process.env.NODE_ENV !== 'production';
+      const mailer = isMailerConfigured();
+
+      if (mailer) {
+        try {
+          await sendVerificationEmail(user.email, verifyToken);
+        } catch (mailErr) {
+          console.error('Verification email failed:', mailErr);
+          return NextResponse.json(
+            { error: 'تعذر إرسال الإيميل، حاول مرة أخرى بعد قليل / Could not send the email, please try again shortly' },
+            { status: 502 }
+          );
+        }
+      }
 
       return NextResponse.json({
         success: true,
-        verificationToken: isDev && !process.env.SMTP_HOST ? verifyToken : undefined,
-        verifyUrl: isDev && !process.env.SMTP_HOST ? `/verify-email?token=${verifyToken}` : undefined,
+        verificationToken: isDev && !mailer ? verifyToken : undefined,
+        verifyUrl: isDev && !mailer ? `/verify-email?token=${verifyToken}` : undefined,
       });
     }
 

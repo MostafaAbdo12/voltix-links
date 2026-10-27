@@ -4125,10 +4125,14 @@ export default function DashboardPage() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'request' }),
                       });
-                      const data = await res.json();
+                      const data = await res.json().catch(() => ({}));
+                      if (!res.ok) {
+                        showNotification(`⚠️ ${data.error || 'Error'}`);
+                        return;
+                      }
                       if (data.verifyUrl) setVerifyPreviewLink(data.verifyUrl);
                       showNotification(
-                        isRtl ? 'تم إنشاء رابط تأكيد البريد الإلكتروني' : 'Verification link generated'
+                        isRtl ? 'بعتنالك رابط التأكيد على إيميلك' : 'We sent a confirmation link to your email'
                       );
                     }}
                     className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-bold"
