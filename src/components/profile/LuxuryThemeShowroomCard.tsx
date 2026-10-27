@@ -682,16 +682,14 @@ export function HorizontalThemeShowroomCarousel({
           TOP NAVIGATION & HEADER (40 THEMES SHOWROOM)
       ==================================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400/25 via-black to-purple-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0 shadow-lg shadow-amber-500/10">
             <Palette className="w-5 h-5 text-amber-400" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm sm:text-base font-black text-white whitespace-nowrap">
-                {isRtl
-                  ? 'معرض الثيمات المعمارية الفاخرة (40 ثيماً ملكياً وخارج الصندوق)'
-                  : 'Sovereign 40 Architectural Themes Showroom'}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm sm:text-base font-black text-white">
+                {isRtl ? 'معرض الثيمات الفاخرة' : 'Luxury Themes Showroom'}
               </h3>
               <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400/20 to-purple-500/20 border border-amber-400/40 text-[10px] font-black text-amber-300 whitespace-nowrap">
                 {visibleThemes.length} / {themes.length} {isRtl ? 'ثيم' : 'Themes'}

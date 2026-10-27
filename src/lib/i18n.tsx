@@ -12,7 +12,7 @@ export const translations = {
     heroTitle1: 'ليس مجرد موقع روابط...',
     heroTitle2: 'هذه هويتك الرقمية المتكاملة',
     heroSubtitle:
-      'صمّم صفحتك الشخصية عبر VoltiX بتقنيات الزجاج السائل، إضاءة الشفق القطبي المتحركة، 20 ثيمًا سينمائيًا، وتفاعلات ثلاثية الأبعاد تخطف الأنظار من اللحظة الأولى.',
+      'صمّم صفحتك الشخصية عبر VoltiX بتقنيات الزجاج السائل، إضاءة الشفق القطبي المتحركة، أكثر من 25 ثيمًا سينمائيًا، وتفاعلات ثلاثية الأبعاد تخطف الأنظار من اللحظة الأولى.',
     startFree: 'ابدأ مجانًا الآن',
     exploreThemes: 'استكشف الثيمات الحية',
     login: 'تسجيل الدخول',
@@ -23,8 +23,8 @@ export const translations = {
     livePhoneTitle: 'جرب تغيير الثيم مباشرة على الهاتف التفاعلي',
     featuresTitle: 'هندسة بصرية وتقنية بلا حدود',
     featuresSubtitle: 'كل تفصيل صُمم ليمنح علامتك الشخصية حضورًا ملكيًا يليق بمحتواك',
-    themesShowcaseTitle: 'مكتبة الثيمات السينمائية (20 ثيمًا فريدًا)',
-    themesShowcaseSub: 'اختر من بين 20 عالمًا بصريًا متكاملًا أو ابتكر ثيمك الخاص عبر محرك Theme DNA',
+    themesShowcaseTitle: 'مكتبة الثيمات السينمائية',
+    themesShowcaseSub: 'اختر من بين أكثر من 25 عالمًا بصريًا متكاملًا أو ابتكر ثيمك الخاص عبر محرك Theme DNA',
     howItWorksTitle: 'ثلاث خطوات نحو حضور رقمي استثنائي',
     showcaseUsersTitle: 'مبدعون اختاروا VoltiX',
     faqTitle: 'الأسئلة الشائعة',
@@ -62,7 +62,7 @@ export const translations = {
     heroTitle1: 'Not Just a Link Page...',
     heroTitle2: 'A Complete Digital Identity',
     heroSubtitle:
-      'Craft an unforgettable personal hub on VoltiX powered by Liquid Glass UI, animated Aurora shaders, 20 cinematic themes, and 3D micro-interactions that captivate from the first second.',
+      'Craft an unforgettable personal hub on VoltiX powered by Liquid Glass UI, animated Aurora shaders, 25+ cinematic themes, and 3D micro-interactions that captivate from the first second.',
     startFree: 'Create Your VoltiX Free',
     exploreThemes: 'Explore Live Themes',
     login: 'Sign In',

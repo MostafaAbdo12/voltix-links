@@ -22,6 +22,9 @@ import {
   Megaphone,
   Mail,
   Phone,
+  Menu,
+  X,
+  LogIn,
 } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n';
 import {
@@ -53,6 +56,7 @@ export default function LandingPage() {
 
   const [siteConfig, setSiteConfig] = useState<ExtendedSiteConfig>(DEFAULT_SITE_CONFIG);
   const [selectedThemeId, setSelectedThemeId] = useState<string>('obsidian-luxury');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [selectedLayout, setSelectedLayout] = useState<ProfileLayoutType>('centered');
   const [themeCategoryFilter, setThemeCategoryFilter] = useState<string>('ALL');
   const [inspectedThemeModal, setInspectedThemeModal] = useState<ThemeConfig | null>(null);
@@ -144,6 +148,37 @@ export default function LandingPage() {
     })),
   };
 
+  // Section links shared by the desktop nav and the mobile menu
+  const navItems: { href: string; labelAr: string; labelEn: string; dot?: string }[] = [
+    {
+      href: '#socials',
+      labelAr: 'قنواتنا ومنصاتنا',
+      labelEn: 'Official Channels',
+      dot: 'bg-emerald-400 shadow-[0_0_8px_#34d399]',
+    },
+    {
+      href: '#themes',
+      labelAr: `مكتبة الثيمات (${enabledThemes.length})`,
+      labelEn: `${enabledThemes.length} Themes`,
+      dot: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
+    },
+    {
+      href: '#features',
+      labelAr: 'الهندسة البصرية',
+      labelEn: 'Architecture',
+    },
+    {
+      href: '#creators',
+      labelAr: 'نخبة المبدعين',
+      labelEn: 'VIP Creators',
+    },
+    {
+      href: '#faq',
+      labelAr: 'الأسئلة الشائعة',
+      labelEn: 'FAQ',
+    },
+  ];
+
   return (
     <div className="relative min-h-screen bg-[#040407] text-white overflow-x-clip">
       {/* ====================================================================
@@ -211,15 +246,15 @@ export default function LandingPage() {
           ULTRA-LUXURY ROYAL OBSIDIAN & 24K GOLD SPATIAL COMMAND NAVBAR
       ==================================================================== */}
       <div className="sticky top-4 z-40 px-3 sm:px-6 mt-3">
-        <header className="relative max-w-[1440px] mx-auto rounded-full bg-[#06060C]/90 backdrop-blur-2xl border border-amber-400/35 px-3.5 sm:px-6 h-[68px] sm:h-[76px] flex items-center justify-between gap-3 shadow-[0_24px_70px_-12px_rgba(0,0,0,0.95),0_0_40px_-15px_rgba(212,175,55,0.32)]">
+        <header className="relative max-w-[1440px] mx-auto rounded-full bg-[#06060C]/90 backdrop-blur-2xl border border-amber-400/35 px-3 sm:px-6 h-[64px] sm:h-[76px] flex items-center justify-between gap-2 sm:gap-3 shadow-[0_24px_70px_-12px_rgba(0,0,0,0.95),0_0_40px_-15px_rgba(212,175,55,0.32)]">
           {/* Top & Bottom Specular Gold Light Reflections */}
           <span className="pointer-events-none absolute inset-x-16 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/85 to-transparent" />
           <span className="pointer-events-none absolute inset-x-28 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/35 to-transparent" />
 
           {/* Brand Emblem & Royal Crest */}
           <div className="flex items-center gap-3.5 shrink-0">
-            <Link href="/" className="flex items-center gap-3 group shrink-0">
-              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 via-black to-black border border-amber-400/55 p-1 flex items-center justify-center shadow-[0_0_25px_rgba(212,175,55,0.35)] group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 via-black to-black border border-amber-400/55 p-1 flex items-center justify-center shadow-[0_0_25px_rgba(212,175,55,0.35)] group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
                 <img
                   src={siteConfig.logoUrl || '/voltix-logo.png'}
                   alt={`${siteConfig.siteName} Official Logo`}
@@ -237,7 +272,7 @@ export default function LandingPage() {
                     </span>
                   )}
                 </div>
-                <span className="text-[9px] text-zinc-400 tracking-[0.16em] uppercase block mt-1 leading-none whitespace-nowrap">
+                <span className="hidden sm:block text-[9px] text-zinc-400 tracking-[0.16em] uppercase mt-1 leading-none whitespace-nowrap">
                   {siteConfig.logoSubtext || 'SPATIAL IDENTITY OS'}
                 </span>
               </div>
@@ -248,35 +283,7 @@ export default function LandingPage() {
 
           {/* Center Recessed Glass Navigation Track */}
           <nav className="hidden lg:flex items-center p-1.5 rounded-full bg-black/75 border border-white/10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.85)] gap-0.5 xl:gap-1 shrink-0">
-            {[
-              {
-                href: '#socials',
-                labelAr: 'قنواتنا ومنصاتنا',
-                labelEn: 'Official Channels',
-                dot: 'bg-emerald-400 shadow-[0_0_8px_#34d399]',
-              },
-              {
-                href: '#themes',
-                labelAr: `مكتبة الثيمات (${enabledThemes.length})`,
-                labelEn: `${enabledThemes.length} Themes`,
-                dot: 'bg-amber-400 shadow-[0_0_8px_#fbbf24]',
-              },
-              {
-                href: '#features',
-                labelAr: 'الهندسة البصرية',
-                labelEn: 'Architecture',
-              },
-              {
-                href: '#creators',
-                labelAr: 'نخبة المبدعين',
-                labelEn: 'VIP Creators',
-              },
-              {
-                href: '#faq',
-                labelAr: 'الأسئلة الشائعة',
-                labelEn: 'FAQ',
-              },
-            ].map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
@@ -290,12 +297,12 @@ export default function LandingPage() {
             ))}
           </nav>
 
-          {/* Right/Left Action Command Dock (Strictly Single-Line Pills) */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Action dock: on phones the language toggle moves into the menu and login becomes an icon */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               onClick={toggleLocale}
-              className="h-10 px-3 rounded-full bg-white/[0.04] hover:bg-white/12 border border-white/15 text-xs font-extrabold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0"
+              className="hidden sm:flex h-10 px-3 rounded-full bg-white/[0.04] hover:bg-white/12 border border-white/15 text-xs font-extrabold items-center gap-1.5 transition-all whitespace-nowrap shrink-0"
             >
               <Globe className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span className="whitespace-nowrap">{locale === 'ar' ? 'EN' : 'العربية'}</span>
@@ -303,21 +310,62 @@ export default function LandingPage() {
 
             <Link
               href="/login"
-              className="h-10 px-4 rounded-full bg-white/[0.05] hover:bg-white/12 border border-white/15 hover:border-amber-400/40 text-xs font-extrabold text-zinc-100 flex items-center justify-center transition-all whitespace-nowrap shrink-0"
+              aria-label={t.login}
+              className="h-10 w-10 sm:w-auto sm:px-4 rounded-full bg-white/[0.05] hover:bg-white/12 border border-white/15 hover:border-amber-400/40 text-xs font-extrabold text-zinc-100 flex items-center justify-center transition-all whitespace-nowrap shrink-0"
             >
-              <span className="whitespace-nowrap">{t.login}</span>
+              <LogIn className="w-4 h-4 sm:hidden rtl:-scale-x-100" />
+              <span className="hidden sm:inline whitespace-nowrap">{t.login}</span>
             </Link>
 
             {siteConfig.allowRegistrations && (
               <Link
                 href="/register"
-                className="h-10 px-5 rounded-full bg-gradient-to-r from-[#FDE08D] via-[#D4AF37] to-[#AA771C] text-black font-black text-xs shadow-[0_10px_28px_-6px_rgba(212,175,55,0.6),inset_0_1px_1px_rgba(255,255,255,0.75)] hover:scale-[1.03] hover:brightness-110 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                className="h-10 px-3.5 sm:px-5 rounded-full bg-gradient-to-r from-[#FDE08D] via-[#D4AF37] to-[#AA771C] text-black font-black text-xs shadow-[0_10px_28px_-6px_rgba(212,175,55,0.6),inset_0_1px_1px_rgba(255,255,255,0.75)] hover:scale-[1.03] hover:brightness-110 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <Sparkles className="hidden sm:block w-3.5 h-3.5 shrink-0" />
                 <span className="whitespace-nowrap">{t.signup}</span>
               </Link>
             )}
+
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen((o) => !o)}
+              aria-label={isRtl ? 'القائمة' : 'Menu'}
+              aria-expanded={mobileNavOpen}
+              className="lg:hidden h-10 w-10 rounded-full bg-white/[0.05] border border-white/15 flex items-center justify-center shrink-0"
+            >
+              {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
           </div>
+
+          {/* Mobile / tablet menu */}
+          {mobileNavOpen && (
+            <div className="lg:hidden absolute top-full inset-x-0 mt-2 p-2 rounded-3xl bg-[#08080F] border border-amber-400/30 shadow-[0_30px_70px_-10px_rgba(0,0,0,0.95)]">
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className="flex items-center gap-2.5 px-4 py-3.5 rounded-2xl text-sm font-extrabold text-zinc-100 hover:bg-amber-500/10"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.dot || 'bg-zinc-500'}`} />
+                  {isRtl ? item.labelAr : item.labelEn}
+                </a>
+              ))}
+              <div className="h-px my-1.5 mx-3 bg-white/10" />
+              <button
+                type="button"
+                onClick={() => {
+                  toggleLocale();
+                  setMobileNavOpen(false);
+                }}
+                className="w-full flex items-center gap-2.5 px-4 py-3.5 rounded-2xl text-sm font-extrabold text-zinc-100 hover:bg-amber-500/10"
+              >
+                <Globe className="w-4 h-4 text-amber-400" />
+                {locale === 'ar' ? 'English' : 'العربية'}
+              </button>
+            </div>
+          )}
         </header>
       </div>
 
@@ -362,7 +410,7 @@ export default function LandingPage() {
             >
               {isRtl ? (
                 <>
-                  منصة <span className="font-black text-amber-300 font-mono tracking-wide px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30">VoltiX</span> تجمع حساباتك، قنواتك الرسمية (واتساب، تيليغرام، ديسكورد، فيسبوك)، وأعمالك في تحفة بصرية تفاعلية مع <span className="text-white font-bold">20 ثيمًا سينمائيًا</span> وتقنيات <span className="text-white font-bold">الزجاج السائل ثلاثي الأبعاد</span>.
+                  منصة <span className="font-black text-amber-300 font-mono tracking-wide px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30">VoltiX</span> تجمع حساباتك، قنواتك الرسمية (واتساب، تيليغرام، ديسكورد، فيسبوك)، وأعمالك في تحفة بصرية تفاعلية مع <span className="text-white font-bold">{enabledThemes.length} ثيمًا سينمائيًا</span> وتقنيات <span className="text-white font-bold">الزجاج السائل ثلاثي الأبعاد</span>.
                 </>
               ) : (
                 siteConfig.heroSubtitleEn
@@ -735,8 +783,8 @@ export default function LandingPage() {
             </h2>
             <p className="text-zinc-300/85 text-sm sm:text-base leading-[1.85] max-w-2xl mx-auto">
               {isRtl
-                ? 'استكشف 20 عالمًا بصريًا بمعاينة حية مصغرة داخل كل بطاقة، وانقر على أي ثيم لتجربته فورًا على الهاتف التفاعلي الحي بجانبك دون مغادرة مكانك!'
-                : 'Explore 20 bespoke visual worlds with live miniature viewports inside every card, and click any theme to test it immediately on the interactive showroom phone beside you!'}
+                ? `استكشف ${enabledThemes.length} عالمًا بصريًا بمعاينة حية مصغرة داخل كل بطاقة، وانقر على أي ثيم لتجربته فورًا على الهاتف التفاعلي الحي بجانبك دون مغادرة مكانك!`
+                : `Explore ${enabledThemes.length} bespoke visual worlds with live miniature viewports inside every card, and click any theme to test it immediately on the interactive showroom phone beside you!`}
             </p>
           </div>
 
@@ -1081,11 +1129,11 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-extrabold">
-                <span dir="ltr" className="text-zinc-300 font-mono">
+              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between gap-3 text-xs font-extrabold">
+                <span dir="ltr" className="text-zinc-300 font-mono truncate min-w-0">
                   {liveDomainPrefix}voltix
                 </span>
-                <span className="text-amber-300">
+                <span className="text-amber-300 whitespace-nowrap shrink-0">
                   {isRtl ? 'فتح الهوية الحية ←' : 'Open Live Hub →'}
                 </span>
               </div>
@@ -1111,11 +1159,11 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-extrabold">
-                <span dir="ltr" className="text-zinc-300 font-mono">
+              <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between gap-3 text-xs font-extrabold">
+                <span dir="ltr" className="text-zinc-300 font-mono truncate min-w-0">
                   {liveDomainPrefix}yourname
                 </span>
-                <span className="text-rose-300">
+                <span className="text-rose-300 whitespace-nowrap shrink-0">
                   {isRtl ? 'تسجيل حساب جديد ←' : 'Claim Now →'}
                 </span>
               </div>
