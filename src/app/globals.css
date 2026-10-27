@@ -59,7 +59,7 @@ input[dir='ltr'],
 textarea[dir='ltr'],
 [dir='ltr'] input,
 [dir='ltr'] textarea {
-  font-family: 'Sora', 'Plus Jakarta Sans', 'Outfit', 'Inter', -apple-system, sans-serif !important;
+  font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif !important;
   letter-spacing: -0.01em !important;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11' !important;
 }
@@ -106,7 +106,7 @@ label {
 
 /* English LTR Optical Metrics */
 [dir='ltr'] {
-  font-family: 'Sora', 'Outfit', 'Manrope', 'Inter', sans-serif;
+  font-family: 'Inter', 'Alexandria', sans-serif;
   line-height: 1.65;
 }
 

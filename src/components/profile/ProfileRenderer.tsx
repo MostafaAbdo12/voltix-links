@@ -1455,7 +1455,7 @@ export function ProfileRenderer({
               />
               <span
                 className="font-bold tracking-tight"
-                style={{ fontFamily: `"${theme.fontFamilyEn || 'Sora'}", sans-serif` }}
+                style={{ fontFamily: `"${theme.fontFamilyEn || 'Inter'}", sans-serif` }}
               >
                 @{profile.username}
               </span>
@@ -2433,7 +2433,7 @@ export function ProfileRenderer({
       style={{
         backgroundColor: theme.bgColor,
         color: theme.textColor,
-        fontFamily: `"${theme.fontFamilyEn || 'Sora'}", "${theme.fontFamilyAr || 'Alexandria'}", sans-serif`,
+        fontFamily: `"${theme.fontFamilyEn || 'Inter'}", "${theme.fontFamilyAr || 'Alexandria'}", sans-serif`,
       }}
       className={`relative w-full overflow-hidden select-none transition-colors duration-500 ${
         compactPhone ? 'min-h-full pt-10 pb-6 px-3.5' : 'min-h-screen py-10 px-4 sm:px-6'
