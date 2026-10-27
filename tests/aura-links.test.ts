@@ -409,11 +409,11 @@ describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
     }
   });
 
-  it('Scenario 14, 15 & 16: Bilingual i18n, 10 Fonts, 12 Card Types, 7 Layouts, 14 Socials & Effects Studio', () => {
+  it('Scenario 14, 15 & 16: Bilingual i18n, 24 Fonts, 12 Card Types, 7 Layouts, 14 Socials & Effects Studio', () => {
     expect(translations.ar.brand).toBe('VoltiX');
     expect(translations.en.brand).toBe('VoltiX');
-    expect(ARABIC_FONTS.length).toBe(5);
-    expect(ENGLISH_FONTS.length).toBe(5);
+    expect(ARABIC_FONTS.length).toBe(12);
+    expect(ENGLISH_FONTS.length).toBe(12);
     expect(LINK_CARD_TYPES.length).toBe(12);
     expect(PROFILE_LAYOUTS.length).toBe(7);
     expect(SOCIAL_PLATFORMS.length).toBe(14);
