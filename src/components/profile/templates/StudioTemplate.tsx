@@ -40,8 +40,21 @@ const MOTION_CSS = `
 .st-pop { animation: st-pop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .st-shine { animation: st-shine 4.8s ease-in-out infinite; }
 .st-breathe { animation: st-breathe 22s ease-in-out infinite alternate; }
+@property --st-angle { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes st-orbit { to { --st-angle: 360deg; } }
+.st-beam { position: relative; isolation: isolate; }
+.st-beam::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none; z-index: 2;
+  background: conic-gradient(from var(--st-angle), transparent 0deg, transparent 60deg, var(--st-beam) 100deg, #ffffff 120deg, var(--st-beam) 135deg, transparent 170deg, transparent 240deg, var(--st-beam) 280deg, #ffffff 300deg, var(--st-beam) 315deg, transparent 350deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: st-orbit 4.5s linear infinite;
+  animation-delay: var(--st-beam-delay, 0s);
+  filter: drop-shadow(0 0 6px var(--st-beam)) drop-shadow(0 0 2px #ffffff);
+}
 @media (prefers-reduced-motion: reduce) {
-  .st-rise, .st-pop, .st-shine, .st-breathe { animation: none !important; }
+  .st-rise, .st-pop, .st-shine, .st-breathe, .st-beam::before { animation: none !important; }
+  .st-beam::before { display: none; }
 }
 `;
 
@@ -108,6 +121,19 @@ export function StudioTemplate({ profile, theme, effects, isPreview, compactPhon
   const enter = (kind: 'rise' | 'pop', delayMs: number) =>
     motion ? { className: `st-${kind}`, style: { animationDelay: `${Math.min(delayMs, 1400)}ms` } } : { className: '', style: {} };
   const breathing = motion && (s.background === 'gradient' || s.background === 'mesh');
+  // Orbiting edge light on every card (not on the underline-only "line" style, which has no box)
+  let beamIndex = 0;
+  const beam = (): { className: string; style: React.CSSProperties } =>
+    motion && s.button !== 'line'
+      ? {
+          className: 'st-beam',
+          style: {
+            ['--st-beam' as string]: s.accent,
+            // Offset each card so the lights don't all move in lockstep
+            ['--st-beam-delay' as string]: `${-(beamIndex++ * 0.7)}s`,
+          },
+        }
+      : { className: '', style: {} };
   const { featured, regular, socials, isRtl } = useTemplateData(profile);
   const click = useLinkClick(profile, isPreview, onLinkClick);
   const btn = buttonStyle(s);
@@ -133,8 +159,10 @@ export function StudioTemplate({ profile, theme, effects, isPreview, compactPhon
     const mapSettings = getLinkMap(link.customStyleJson);
     if (mapSettings?.display === 'card') {
       const onDark = theme.isLight !== true;
+      const b = beam();
       return (
         <div key={link.id} className={e.className} style={e.style}>
+          <div className={b.className} style={{ ...b.style, borderRadius: s.button === 'square' || isLine ? '6px' : '24px' }}>
           <MapCard
             title={link.title}
             description={link.description}
@@ -153,15 +181,17 @@ export function StudioTemplate({ profile, theme, effects, isPreview, compactPhon
             }}
             onOpen={() => click(link)({ preventDefault: () => {} } as React.MouseEvent<HTMLAnchorElement>)}
           />
+          </div>
         </div>
       );
     }
+    const b = beam();
     return (
     <div key={link.id} className={e.className} style={e.style}>
     <a
       {...linkProps(link, click(link))}
-      className={`group relative flex items-center gap-3 w-full overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 ${isLine ? 'py-4 px-1' : 'min-h-[60px] px-2.5 py-2.5'} ${btn.className}`}
-      style={btn.style}
+      className={`${b.className} group relative flex items-center gap-3 w-full overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 ${isLine ? 'py-4 px-1' : 'min-h-[60px] px-2.5 py-2.5'} ${btn.className}`}
+      style={{ ...btn.style, ...b.style }}
     >
       <span
         className={`w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden ${s.button === 'square' || isLine ? 'rounded-[4px]' : 'rounded-xl'}`}
@@ -187,12 +217,13 @@ export function StudioTemplate({ profile, theme, effects, isPreview, compactPhon
 
   const tileCard = (link: ProfileLinkItem, wide: boolean, i: number) => {
     const e = enter('pop', 260 + i * 90);
+    const b = beam();
     return (
     <div key={link.id} className={`${wide ? 'col-span-2' : ''} ${e.className}`} style={e.style}>
     <a
       {...linkProps(link, click(link))}
-      className={`group relative block overflow-hidden ${wide ? 'aspect-[16/9]' : 'aspect-square'} ${s.button === 'square' ? 'rounded-[6px]' : 'rounded-3xl'} transition-transform hover:-translate-y-0.5 active:scale-[0.97]`}
-      style={{ background: `linear-gradient(135deg, ${s.accent}, ${s.bg2 || s.bg})`, border: s.button === 'hard' ? `2px solid ${s.btnBorder}` : undefined, boxShadow: s.button === 'hard' ? `4px 4px 0 ${s.btnBorder}` : undefined }}
+      className={`${b.className} group relative block overflow-hidden ${wide ? 'aspect-[16/9]' : 'aspect-square'} ${s.button === 'square' ? 'rounded-[6px]' : 'rounded-3xl'} transition-transform hover:-translate-y-0.5 active:scale-[0.97]`}
+      style={{ ...b.style, background: `linear-gradient(135deg, ${s.accent}, ${s.bg2 || s.bg})`, border: s.button === 'hard' ? `2px solid ${s.btnBorder}` : undefined, boxShadow: s.button === 'hard' ? `4px 4px 0 ${s.btnBorder}` : undefined }}
     >
       {link.thumbnailUrl && (
         // eslint-disable-next-line @next/next/no-img-element
