@@ -107,6 +107,9 @@ export type EnglishFontFamily =
   | 'Montserrat'
   | 'Poppins';
 
+/** Whole-page premium templates; themes without one use the classic renderer. */
+export type PageTemplateId = 'maison' | 'black-card' | 'bento' | 'ios' | 'poster' | 'sticker' | 'hud';
+
 export interface ThemeConfig {
   id: string;
   nameEn: string;
@@ -141,6 +144,7 @@ export interface ThemeConfig {
   profileLayout: ProfileLayoutType;
   socialIconsStyle: 'glass' | 'minimal' | 'neon' | 'solid' | 'outline' | 'floating';
   particleDensity: number; // 0 to 100
+  template?: PageTemplateId;
 }
 
 export interface EffectsConfig {
@@ -630,6 +634,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'centered',
     socialIconsStyle: 'glass',
     particleDensity: 0,
+    template: 'maison',
   },
   {
     id: 'liquid-chrome',
@@ -656,14 +661,15 @@ export const AURA_THEMES: ThemeConfig[] = [
     cardBorder: 'rgba(255, 138, 61, 0.4)',
     cardTransparency: 70,
     defaultCardType: 'glass',
-    fontFamilyAr: 'Rubik',
-    fontFamilyEn: 'Syne',
+    fontFamilyAr: 'Changa',
+    fontFamilyEn: 'Poppins',
     fontSize: 'md',
     fontWeight: '700',
     letterSpacing: 0.01,
     profileLayout: 'creator-showcase',
     socialIconsStyle: 'floating',
     particleDensity: 0,
+    template: 'sticker',
   },
   {
     id: 'aurora-dream',
@@ -970,6 +976,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'bento',
     socialIconsStyle: 'floating',
     particleDensity: 0,
+    template: 'bento',
   },
   {
     id: 'holographic-vision',
@@ -1004,6 +1011,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'centered',
     socialIconsStyle: 'glass',
     particleDensity: 0,
+    template: 'ios',
   },
   {
     id: 'frosted-glass',
@@ -1141,6 +1149,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'gaming',
     socialIconsStyle: 'neon',
     particleDensity: 0,
+    template: 'hud',
   },
   {
     id: 'dark-carbon',
@@ -1280,6 +1289,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'centered',
     socialIconsStyle: 'outline',
     particleDensity: 0,
+    template: 'black-card',
   },
   {
     id: 'rolls-starlight',
@@ -1314,6 +1324,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'centered',
     socialIconsStyle: 'glass',
     particleDensity: 0,
+    template: 'bento',
   },
   {
     id: 'cartier-crimson',
@@ -1348,6 +1359,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'creator-showcase',
     socialIconsStyle: 'solid',
     particleDensity: 0,
+    template: 'maison',
   },
   {
     id: 'monaco-yacht',
@@ -1382,6 +1394,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'business',
     socialIconsStyle: 'glass',
     particleDensity: 0,
+    template: 'ios',
   },
   {
     id: 'black-diamond',
@@ -1416,6 +1429,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'split',
     socialIconsStyle: 'outline',
     particleDensity: 0,
+    template: 'black-card',
   },
   {
     id: 'alula-mirage',
@@ -1484,6 +1498,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'minimal-portfolio',
     socialIconsStyle: 'outline',
     particleDensity: 0,
+    template: 'hud',
   },
   {
     id: 'venetian-marble',
@@ -1518,6 +1533,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'business',
     socialIconsStyle: 'minimal',
     particleDensity: 0,
+    template: 'maison',
   },
   {
     id: 'velvet-amethyst',
@@ -1626,6 +1642,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'gaming',
     socialIconsStyle: 'neon',
     particleDensity: 0,
+    template: 'hud',
   },
   {
     id: 'cyber-origami',
@@ -1856,7 +1873,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     cardBorder: 'rgba(244, 162, 97, 0.4)',
     cardTransparency: 70,
     defaultCardType: 'spotlight',
-    fontFamilyAr: 'Changa',
+    fontFamilyAr: 'Lalezar',
     fontFamilyEn: 'Outfit',
     fontSize: 'md',
     fontWeight: '700',
@@ -1864,6 +1881,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'creator-showcase',
     socialIconsStyle: 'floating',
     particleDensity: 0,
+    template: 'poster',
   },
   {
     id: 'nordic-fjord-crystal',
@@ -1924,7 +1942,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     cardBorder: 'rgba(232, 194, 122, 0.3)',
     cardTransparency: 70,
     defaultCardType: 'minimal',
-    fontFamilyAr: 'Noto Kufi Arabic',
+    fontFamilyAr: 'Lalezar',
     fontFamilyEn: 'Syne',
     fontSize: 'md',
     fontWeight: '700',
@@ -1932,6 +1950,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'minimal-portfolio',
     socialIconsStyle: 'minimal',
     particleDensity: 0,
+    template: 'poster',
   },
   {
     id: 'pharaoh-sun-gold',
@@ -1966,6 +1985,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'centered',
     socialIconsStyle: 'outline',
     particleDensity: 25,
+    template: 'black-card',
   },
   {
     id: 'sakura-dusk',
@@ -1992,14 +2012,15 @@ export const AURA_THEMES: ThemeConfig[] = [
     cardBorder: 'rgba(255, 183, 213, 0.35)',
     cardTransparency: 62,
     defaultCardType: 'glass',
-    fontFamilyAr: 'Amiri',
-    fontFamilyEn: 'Playfair Display',
+    fontFamilyAr: 'Changa',
+    fontFamilyEn: 'Poppins',
     fontSize: 'md',
     fontWeight: '600',
     letterSpacing: 0.01,
     profileLayout: 'creator-showcase',
     socialIconsStyle: 'floating',
     particleDensity: 30,
+    template: 'sticker',
   },
   {
     id: 'bioluminescent-abyss',
@@ -2026,14 +2047,15 @@ export const AURA_THEMES: ThemeConfig[] = [
     cardBorder: 'rgba(46, 242, 208, 0.32)',
     cardTransparency: 60,
     defaultCardType: 'glass',
-    fontFamilyAr: 'Readex Pro',
-    fontFamilyEn: 'Manrope',
+    fontFamilyAr: 'Changa',
+    fontFamilyEn: 'Poppins',
     fontSize: 'md',
     fontWeight: '600',
     letterSpacing: 0,
     profileLayout: 'centered',
     socialIconsStyle: 'glass',
     particleDensity: 40,
+    template: 'sticker',
   },
   {
     id: 'noir-cinema',
@@ -2060,7 +2082,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     cardBorder: 'rgba(245, 245, 245, 0.22)',
     cardTransparency: 88,
     defaultCardType: 'minimal',
-    fontFamilyAr: 'Noto Kufi Arabic',
+    fontFamilyAr: 'Lalezar',
     fontFamilyEn: 'Playfair Display',
     fontSize: 'md',
     fontWeight: '700',
@@ -2068,6 +2090,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'minimal-portfolio',
     socialIconsStyle: 'minimal',
     particleDensity: 0,
+    template: 'poster',
   },
   {
     id: 'warp-drive',
@@ -2102,6 +2125,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'gaming',
     socialIconsStyle: 'neon',
     particleDensity: 0,
+    template: 'ios',
   },
   {
     id: 'zen-ceramic',
@@ -2136,6 +2160,7 @@ export const AURA_THEMES: ThemeConfig[] = [
     profileLayout: 'bento',
     socialIconsStyle: 'outline',
     particleDensity: 0,
+    template: 'bento',
   },
 ];
 

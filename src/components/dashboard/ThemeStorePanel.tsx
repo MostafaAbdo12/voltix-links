@@ -3,7 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import { Crown, Lock, Check, Clock, X, Loader2, Sparkles, ShoppingBag, Eye } from 'lucide-react';
 import { getThemeById } from '@/lib/themes';
-import { LuxuryThemeShowroomCard } from '@/components/profile/LuxuryThemeShowroomCard';
+import { TemplateThumb } from '@/components/profile/TemplateThumb';
+import type { PageTemplateId } from '@/lib/themes';
+
+const TEMPLATE_LABELS: Record<PageTemplateId, [string, string]> = {
+  maison: ['تصميم مجلة فاخرة', 'Luxury editorial'],
+  'black-card': ['بطاقة VIP معدنية', 'Metal VIP card'],
+  bento: ['مربعات زي آيفون', 'Bento widgets'],
+  ios: ['شكل تطبيق آيفون', 'iOS app style'],
+  poster: ['بوستر جريء', 'Bold poster'],
+  sticker: ['ستيكرز مرحة', 'Playful stickers'],
+  hud: ['واجهة لعبة', 'Game HUD'],
+};
 
 interface StoreData {
   premiumThemes: { themeId: string; price: number; isNew: boolean }[];
@@ -127,14 +138,21 @@ export function ThemeStorePanel({ isRtl = true, focusThemeId, onPreviewTheme }: 
                   {isRtl ? 'جديد' : 'New'}
                 </span>
               )}
-              <LuxuryThemeShowroomCard
-                theme={theme}
-                index={i}
-                isSelected={focusThemeId === themeId}
-                isRtl={isRtl}
-                compact
-                onSelect={() => onPreviewTheme?.(themeId)}
-              />
+              <button
+                type="button"
+                onClick={() => onPreviewTheme?.(themeId)}
+                className={`block w-full text-start rounded-3xl overflow-hidden border transition-all hover:-translate-y-1 ${
+                  focusThemeId === themeId ? 'border-amber-400 ring-2 ring-amber-400/40' : 'border-white/10 hover:border-amber-400/50'
+                }`}
+              >
+                <TemplateThumb theme={theme} height={280} />
+                <span className="block px-3.5 py-2.5 bg-black/60">
+                  <span className="block font-black text-sm">{isRtl ? theme.nameAr : theme.nameEn}</span>
+                  <span className="block text-[11px] text-zinc-400">
+                    {theme.template ? TEMPLATE_LABELS[theme.template][isRtl ? 0 : 1] : ''}
+                  </span>
+                </span>
+              </button>
               <a
                 href={`/preview/${themeId}`}
                 className="w-full py-2 rounded-xl text-xs font-black border border-amber-400/40 text-amber-200 hover:bg-amber-400/10 flex items-center justify-center gap-1.5"

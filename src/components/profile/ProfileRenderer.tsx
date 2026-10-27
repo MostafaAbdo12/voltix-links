@@ -274,6 +274,7 @@ import { QrCodeView } from './QrCodeStudio';
 import { SubscribeForm } from './SubscribeForm';
 import { ThemeBackdrop } from './ThemeBackdrop';
 import { CollectionBackdrop } from './CollectionBackdrop';
+import { PremiumTemplate } from './templates';
 
 export interface ProfileLinkItem {
   id: string;
@@ -445,7 +446,26 @@ export function RoyalVerifiedEmblem({
   );
 }
 
-export function ProfileRenderer({
+/** Premium themes with a page template render their own layout; everything else uses the classic renderer. */
+export function ProfileRenderer(props: ProfileRendererProps) {
+  const { theme } = props;
+  if (theme.template) {
+    return (
+      <PremiumTemplate
+        template={theme.template}
+        profile={props.profile}
+        theme={theme}
+        effects={props.effects ?? DEFAULT_EFFECTS_CONFIG}
+        isPreview={props.isPreview ?? false}
+        compactPhone={props.compactPhone ?? false}
+        onLinkClick={props.onLinkClick}
+      />
+    );
+  }
+  return <ClassicProfileRenderer {...props} />;
+}
+
+function ClassicProfileRenderer({
   profile,
   theme,
   effects = DEFAULT_EFFECTS_CONFIG,
