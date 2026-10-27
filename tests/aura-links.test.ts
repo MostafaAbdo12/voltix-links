@@ -35,6 +35,8 @@ import { POST as viewPOST } from '@/app/api/analytics/view/route';
 import { POST as clickPOST } from '@/app/api/analytics/click/route';
 import { GET as statsGET } from '@/app/api/analytics/stats/route';
 import { GET as adminGET, POST as adminPOST } from '@/app/api/admin/route';
+import { POST as storePOST } from '@/app/api/store/route';
+import { POST as paymentsPOST } from '@/app/api/admin/payments/route';
 
 describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
   const testRunId = Date.now().toString(36);
@@ -297,6 +299,46 @@ describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
         },
       }),
     });
+    // royal-gold is a paid theme: saving it without buying is refused
+    const lockedRes = await profilePUT(updateThemeReq.clone());
+    expect(lockedRes.status).toBe(402);
+    expect((await lockedRes.json()).code).toBe('THEME_LOCKED');
+
+    // Buy it: the user submits a payment request, then an admin approves it
+    const buyRes = await storePOST(
+      new Request('http://localhost:3000/api/store', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userAToken}` },
+        body: JSON.stringify({ kind: 'THEME', themeId: 'royal-gold', method: 'vodafone_cash', reference: '01000000000' }),
+      })
+    );
+    expect(buyRes.status).toBe(201);
+    const { request: paymentRequest } = await buyRes.json();
+
+    // A regular user cannot approve their own payment
+    const selfApprove = await paymentsPOST(
+      new Request('http://localhost:3000/api/admin/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${userAToken}` },
+        body: JSON.stringify({ id: paymentRequest.id, action: 'approve' }),
+      })
+    );
+    expect(selfApprove.status).toBe(403);
+
+    if (adminToken) {
+      const approveRes = await paymentsPOST(
+        new Request('http://localhost:3000/api/admin/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` },
+          body: JSON.stringify({ id: paymentRequest.id, action: 'approve' }),
+        })
+      );
+      expect(approveRes.status).toBe(200);
+    } else {
+      // No admin account in this database: grant the purchase directly
+      await prisma.themePurchase.create({ data: { userId: userAId, themeId: 'royal-gold' } });
+    }
+
     const updateRes = await profilePUT(updateThemeReq);
     expect(updateRes.status).toBe(200);
 

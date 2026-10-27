@@ -36,6 +36,8 @@ interface LuxuryThemeShowroomCardProps {
   isDisabledTheme?: boolean;
   onToggleDisable?: (themeId: string) => void;
   onSetDefault?: (themeId: string) => void;
+  /** Optional corner badge, e.g. a price/lock for paid themes */
+  badge?: React.ReactNode;
 }
 
 /**
@@ -54,6 +56,7 @@ export function LuxuryThemeShowroomCard({
   isDisabledTheme = false,
   onToggleDisable,
   onSetDefault,
+  badge,
 }: LuxuryThemeShowroomCardProps) {
   const isLight = Boolean(th.isLight);
   const primaryText = isLight ? '#0F172A' : '#FFFFFF';
@@ -81,6 +84,7 @@ export function LuxuryThemeShowroomCard({
         fontFamily: themeFontStack,
       }}
     >
+      {badge && <div className="absolute top-3 end-3 z-30 pointer-events-none">{badge}</div>}
       {/* Ambient Theme Glow Orb */}
       <span
         className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl opacity-45 group-hover:opacity-80 transition-opacity"
@@ -510,6 +514,7 @@ interface HorizontalThemeShowroomCarouselProps {
   disabledThemeIds?: string[];
   onToggleDisable?: (themeId: string) => void;
   onSetDefault?: (themeId: string) => void;
+  themeBadges?: Record<string, React.ReactNode>;
 }
 
 /**
@@ -528,6 +533,7 @@ export function HorizontalThemeShowroomCarousel({
   disabledThemeIds = [],
   onToggleDisable,
   onSetDefault,
+  themeBadges,
 }: HorizontalThemeShowroomCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -1030,6 +1036,7 @@ export function HorizontalThemeShowroomCarousel({
                   isDisabledTheme={disabledThemeIds.includes(th.id)}
                   onToggleDisable={onToggleDisable}
                   onSetDefault={onSetDefault}
+                  badge={themeBadges?.[th.id]}
                 />
               </div>
             );

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { mergeThemeWithCustom, mergeEffectsConfig, ProfileLayoutType } from '@/lib/themes';
 import { PublicProfileClient } from '@/components/profile/PublicProfileClient';
 import { ProfileData, MediaEmbedConfig } from '@/components/profile/ProfileRenderer';
+import { canUseTheme, FALLBACK_FREE_THEME_ID } from '@/lib/theme-store';
 
 // Incremental Static Regeneration: 60-second edge cache with background revalidation
 export const revalidate = 60;
@@ -26,6 +27,7 @@ const getPublicUserProfile = cache(async (rawUsername: string) => {
         where: { isActive: true },
         orderBy: { order: 'asc' },
       },
+      themePurchases: { select: { themeId: true } },
     },
   });
 });
@@ -80,10 +82,16 @@ export default async function PublicProfilePage({
   }
 
   const pc = user.profileConfig;
-  const mergedTheme = mergeThemeWithCustom(
-    pc?.themeId || 'obsidian-luxury',
-    pc?.customThemeJson
+  // A premium theme whose access lapsed (e.g. expired Premium) falls back to a free theme
+  const savedThemeId = pc?.themeId || FALLBACK_FREE_THEME_ID;
+  const themeAllowed = canUseTheme(
+    savedThemeId,
+    { premiumUntil: user.premiumUntil, ownedThemeIds: user.themePurchases.map((p) => p.themeId) },
+    savedThemeId
   );
+  const mergedTheme = themeAllowed
+    ? mergeThemeWithCustom(savedThemeId, pc?.customThemeJson)
+    : mergeThemeWithCustom(FALLBACK_FREE_THEME_ID);
   if (pc?.layout) {
     mergedTheme.profileLayout = pc.layout as ProfileLayoutType;
   }

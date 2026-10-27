@@ -272,6 +272,7 @@ import {
 import { DynamicIcon } from '@/components/ui/DynamicIcon';
 import { QrCodeView } from './QrCodeStudio';
 import { SubscribeForm } from './SubscribeForm';
+import { ThemeBackdrop } from './ThemeBackdrop';
 
 export interface ProfileLinkItem {
   id: string;
@@ -1227,6 +1228,9 @@ export function ProfileRenderer({
   // MONUMENTAL ROYAL SPATIAL IDENTITY HEADER CARD
   // ==========================================================================
   const renderHeaderSection = () => {
+    // The hero card is always dark, so light themes need light text here to stay readable
+    const heroTextColor = theme.isLight ? '#F8FAFC' : theme.textColor;
+    const heroSecondaryTextColor = theme.isLight ? '#CBD5E1' : theme.secondaryTextColor;
     const isGaming = theme.profileLayout === 'gaming';
     const isMinimal = theme.profileLayout === 'minimal-portfolio';
     const isBusiness = theme.profileLayout === 'business';
@@ -1429,7 +1433,7 @@ export function ProfileRenderer({
               isRtl ? 'leading-[1.42]' : 'leading-[1.22] tracking-tight'
             } px-2`}
             style={{
-              color: theme.textColor,
+              color: heroTextColor,
               fontWeight: theme.fontWeight,
               letterSpacing: isRtl ? '0em' : `${theme.letterSpacing}em`,
             }}
@@ -1445,7 +1449,7 @@ export function ProfileRenderer({
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold leading-none border transition-all hover:scale-105 bg-black/45"
               style={{
                 borderColor: `${theme.accentColor}45`,
-                color: theme.textColor,
+                color: heroTextColor,
               }}
               dir="ltr"
             >
@@ -1493,7 +1497,7 @@ export function ProfileRenderer({
                   ? 'text-[11.5px] leading-[1.72] px-1'
                   : 'text-sm sm:text-[15px] leading-[1.82] px-3'
               }`}
-              style={{ color: theme.secondaryTextColor }}
+              style={{ color: heroSecondaryTextColor }}
             >
               {profile.bio}
             </p>
@@ -2464,6 +2468,8 @@ export function ProfileRenderer({
             style={{ backgroundImage: `url(${theme.bgImage})` }}
           />
         )}
+
+        <ThemeBackdrop theme={theme} reduceMotion={reduceMotion} />
 
         {(theme.animatedBgType === 'grid' || theme.animatedBgType === 'cyber') && (
           <div

@@ -25,6 +25,7 @@ model User {
   emailVerified  DateTime?
   locale         String         @default("ar") // "ar" | "en"
   customDomain   String?        @unique // e.g. "links.example.com", attached to the Vercel project
+  premiumUntil   DateTime?      // Premium plan unlocks every paid theme until this date
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -36,6 +37,37 @@ model User {
   linkClicks     LinkClick[]
   reports        Report[]       @relation("ReportedUser")
   subscribers    Subscriber[]
+  themePurchases ThemePurchase[]
+  paymentRequests PaymentRequest[]
+}
+
+model ThemePurchase {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  themeId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, themeId])
+}
+
+model PaymentRequest {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       String   // THEME | PREMIUM_MONTHLY | PREMIUM_YEARLY
+  themeId    String?
+  amount     Int      // EGP, snapshot of the price when requested
+  method     String   // vodafone_cash | instapay | other
+  reference  String   // sender number / transaction id the user paid with
+  note       String   @default("")
+  status     String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewedBy String   @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
 }
 
 model ProfileConfig {
@@ -210,6 +242,7 @@ model SiteSettings {
   globalSeoTitle       String   @default("AURA LINKS — Ultra-Premium Animated Link-in-Bio Platform")
   globalSeoDescription String   @default("Create an unforgettable luxury link-in-bio page with 20+ cinematic themes, liquid glass UI, interactive 3D effects, and real-time analytics.")
   disabledThemesJson   String   @default("[]")
+  paymentInstructions  String   @default("")
   updatedAt            DateTime @updatedAt
 }
 

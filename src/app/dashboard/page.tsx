@@ -112,6 +112,11 @@ import {
 } from '@/components/dashboard/ImageCropUploader';
 import { AnalyticsPanel } from '@/components/dashboard/AnalyticsPanel';
 import { GrowthPanel } from '@/components/dashboard/GrowthPanel';
+import { ThemeStorePanel } from '@/components/dashboard/ThemeStorePanel';
+import { getCatalogThemes, getThemeTier, getThemePrice } from '@/lib/theme-store';
+
+// Free + paid themes only; retired themes stay hidden from pickers
+const CATALOG_THEMES = getCatalogThemes();
 
 type DashboardTab =
   | 'overview'
@@ -121,6 +126,7 @@ type DashboardTab =
   | 'effects'
   | 'analytics'
   | 'growth'
+  | 'store'
   | 'qr-seo'
   | 'settings';
 
@@ -158,6 +164,28 @@ export default function DashboardPage() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string>('');
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+  const [storeFocusThemeId, setStoreFocusThemeId] = useState<string | null>(null);
+  const [unlockedThemeIds, setUnlockedThemeIds] = useState<Set<string>>(new Set());
+  const [premiumActive, setPremiumActive] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/store')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) return;
+        setUnlockedThemeIds(new Set(d.ownedThemeIds));
+        setPremiumActive(d.premiumActive);
+      })
+      .catch(() => {});
+  }, [activeTab]);
+
+  const isThemeLocked = (id: string) =>
+    getThemeTier(id) === 'premium' && !premiumActive && !unlockedThemeIds.has(id);
+
+  const openStoreForTheme = (id: string | null) => {
+    setStoreFocusThemeId(id);
+    setActiveTab('store');
+  };
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
@@ -574,6 +602,7 @@ export default function DashboardPage() {
       const data = await res.json();
       if (!res.ok) {
         showNotification(`⚠️ ${data.error || 'Failed to save'}`);
+        if (data.code === 'THEME_LOCKED') openStoreForTheme(data.themeId);
       } else {
         // Sync local reference markers so subsequent saves remain instant
         initialAvatarRef.current = avatarUrl;
@@ -1253,7 +1282,7 @@ export default function DashboardPage() {
       subAr: '30 ثيمًا فخمًا و7 تخطيطات',
       subEn: '30 Signature Themes',
       icon: Palette,
-      badge: AURA_THEMES.length,
+      badge: CATALOG_THEMES.length,
     },
     {
       id: 'typography',
@@ -1287,6 +1316,14 @@ export default function DashboardPage() {
       subAr: 'جمع الإيميلات وربط دومين خاص',
       subEn: 'Email capture & custom domain',
       icon: Mail,
+    },
+    {
+      id: 'store',
+      labelAr: 'متجر الثيمات',
+      labelEn: 'Theme Store',
+      subAr: 'ثيمات مدفوعة وباقة بريميوم',
+      subEn: 'Premium themes & plans',
+      icon: Crown,
     },
     {
       id: 'qr-seo',
@@ -3102,10 +3139,41 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* 20 Signature Themes Library with Horizontal Left/Right Scroll Showroom Deck */}
+              {isThemeLocked(themeId) && (
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl border border-amber-400/40 bg-amber-500/10">
+                  <span className="text-sm font-bold text-amber-200">
+                    {isRtl
+                      ? `👑 بتعاين ثيم مدفوع (${getThemePrice(themeId)} ج.م). اشترِه علشان تقدر تحفظه في صفحتك.`
+                      : `👑 You're previewing a paid theme (${getThemePrice(themeId)} EGP). Buy it to save it to your page.`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => openStoreForTheme(themeId)}
+                    className="px-4 py-2 rounded-xl text-xs font-black bg-amber-400 text-black hover:bg-amber-300"
+                  >
+                    {isRtl ? 'اشترِ الثيم' : 'Buy theme'}
+                  </button>
+                </div>
+              )}
+
+              {/* Theme library (free + paid) with Horizontal Left/Right Scroll Showroom Deck */}
               <HorizontalThemeShowroomCarousel
-                themes={AURA_THEMES}
-                allThemesForIndex={AURA_THEMES}
+                themes={CATALOG_THEMES}
+                allThemesForIndex={CATALOG_THEMES}
+                themeBadges={Object.fromEntries(
+                  CATALOG_THEMES.filter((th) => getThemeTier(th.id) === 'premium').map((th) => [
+                    th.id,
+                    isThemeLocked(th.id) ? (
+                      <span className="px-2 py-1 rounded-full bg-black/75 border border-amber-400/60 text-amber-300 text-[10px] font-black">
+                        🔒 {getThemePrice(th.id)} {isRtl ? 'ج.م' : 'EGP'}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full bg-emerald-500/80 text-white text-[10px] font-black">
+                        👑 {isRtl ? 'متاح لك' : 'Unlocked'}
+                      </span>
+                    ),
+                  ])
+                )}
                 selectedThemeId={themeId}
                 isRtl={isRtl}
                 defaultRows={2}
@@ -3729,6 +3797,16 @@ export default function DashboardPage() {
           ================================================================ */}
           {activeTab === 'analytics' && <AnalyticsPanel isRtl={isRtl} />}
           {activeTab === 'growth' && <GrowthPanel isRtl={isRtl} />}
+          {activeTab === 'store' && (
+            <ThemeStorePanel
+              isRtl={isRtl}
+              focusThemeId={storeFocusThemeId}
+              onPreviewTheme={(id) => {
+                setThemeId(id);
+                setStoreFocusThemeId(id);
+              }}
+            />
+          )}
 
           {/* ================================================================
               TAB 6: QR CODE STUDIO & SEO MANAGER
@@ -4208,7 +4286,7 @@ export default function DashboardPage() {
                     }}
                     className="rounded-xl bg-black/75 border border-amber-400/35 px-2.5 py-1.5 text-[11px] font-bold text-amber-300 max-w-[160px] truncate focus:outline-none focus:border-amber-400"
                   >
-                    {AURA_THEMES.map((th) => (
+                    {CATALOG_THEMES.map((th) => (
                       <option key={th.id} value={th.id} className="bg-zinc-900 text-white">
                         {isRtl ? th.nameAr : th.nameEn}
                       </option>

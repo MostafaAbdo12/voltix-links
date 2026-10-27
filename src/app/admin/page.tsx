@@ -77,6 +77,7 @@ import {
 import { UniversalImageUploader } from '@/components/dashboard/ImageCropUploader';
 import { HorizontalThemeShowroomCarousel } from '@/components/profile/LuxuryThemeShowroomCard';
 import { ProfileRenderer, ProfileData } from '@/components/profile/ProfileRenderer';
+import { PaymentsAdminPanel } from '@/components/admin/PaymentsAdminPanel';
 
 interface AdminUserRow {
   id: string;
@@ -127,6 +128,7 @@ type ControlTabId =
   | 'phone_faq'
   | 'themes'
   | 'users'
+  | 'payments'
   | 'reports';
 
 export default function AdminSiteControlCenterPage() {
@@ -697,6 +699,15 @@ export default function AdminSiteControlCenterPage() {
       subtitleEn: 'Moderation & System Logs',
       icon: ShieldCheck,
       badge: openReportsCount,
+    },
+    {
+      id: 'payments',
+      labelAr: 'المدفوعات والتفعيل',
+      labelEn: 'Payments & Activation',
+      subtitleAr: 'مراجعة التحويلات وتفعيل الثيمات',
+      subtitleEn: 'Review transfers & unlock themes',
+      icon: Palette,
+      badge: 0,
     },
   ];
 
@@ -3897,6 +3908,8 @@ export default function AdminSiteControlCenterPage() {
         {/* ====================================================================
             TAB 7: SECURITY SHIELD, REPORTS & ADMINISTRATOR AUDIT TRAIL
         ==================================================================== */}
+        {activeTab === 'payments' && <PaymentsAdminPanel />}
+
         {activeTab === 'reports' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Abuse & Content Reports */}

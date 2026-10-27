@@ -12,6 +12,8 @@ import {
   setSessionCookie,
   validateSafeUrl,
 } from '@/lib/auth';
+import { canUseTheme, getThemeTier, getThemePrice } from '@/lib/theme-store';
+import { getThemeEntitlements } from '@/lib/entitlements';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser(req);
@@ -134,7 +136,25 @@ export async function PUT(req: Request) {
       const pc = body.profileConfig;
       const configUpdate: Record<string, unknown> = {};
 
-      if (typeof pc.themeId === 'string') configUpdate.themeId = pc.themeId;
+      if (typeof pc.themeId === 'string') {
+        const current = await prisma.profileConfig.findUnique({ where: { userId: user.id }, select: { themeId: true } });
+        const entitlements = await getThemeEntitlements(user.id);
+        if (!canUseTheme(pc.themeId, entitlements, current?.themeId)) {
+          const retired = getThemeTier(pc.themeId) === 'retired';
+          return NextResponse.json(
+            {
+              error: retired
+                ? 'هذا الثيم لم يعد متاحًا / This theme is no longer available'
+                : 'هذا الثيم مدفوع، اشترِه أو اشترك في بريميوم لاستخدامه / This is a premium theme, buy it or go Premium to use it',
+              code: retired ? 'THEME_RETIRED' : 'THEME_LOCKED',
+              themeId: pc.themeId,
+              price: getThemePrice(pc.themeId),
+            },
+            { status: 402 }
+          );
+        }
+        configUpdate.themeId = pc.themeId;
+      }
       if (typeof pc.layout === 'string') configUpdate.layout = pc.layout;
       if (typeof pc.entranceAnimation === 'string') configUpdate.entranceAnimation = pc.entranceAnimation;
       if (typeof pc.moodPreset === 'string') configUpdate.moodPreset = pc.moodPreset;

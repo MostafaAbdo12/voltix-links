@@ -31,6 +31,7 @@ import {
   PROFILE_LAYOUTS,
   ProfileLayoutType,
 } from '@/lib/themes';
+import { getCatalogThemes } from '@/lib/theme-store';
 import {
   SOCIAL_PLATFORMS,
   OfficialSocialBadge,
@@ -81,7 +82,8 @@ export default function LandingPage() {
       .catch(() => {});
   }, []);
 
-  const enabledThemes = AURA_THEMES.filter(
+  // Showcase the live catalog (free + paid); retired themes are not advertised
+  const enabledThemes = getCatalogThemes().filter(
     (th) => !siteConfig.disabledThemes.includes(th.id)
   );
   const activeTheme = {
