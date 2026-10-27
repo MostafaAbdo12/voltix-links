@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { extractPaletteFromImage } from '@/lib/color-extractor';
+import { uploadMediaFile } from '@/lib/upload-client';
 
 export const ALL_IMAGE_FORMATS_ACCEPT =
   'image/*,.png,.jpg,.jpeg,.webp,.gif,.svg,.avif,.ico,.bmp,.tiff,.tif,.heic,.heif,.apng,.jfif';
@@ -127,6 +128,19 @@ export function processUniversalImageFile(
   reader.readAsDataURL(file);
 }
 
+/** Uploads an already-optimized data URL to storage; keeps the data URL if storage is unavailable. */
+async function persistDataUrl(dataUrl: string, fileName: string): Promise<string> {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const ext = blob.type.split('/')[1]?.replace('+xml', '') || 'png';
+    const base = fileName.replace(/.[^.]+$/, '') || 'image';
+    const url = await uploadMediaFile(new File([blob], `${base}.${ext}`, { type: blob.type }));
+    return url || dataUrl;
+  } catch {
+    return dataUrl;
+  }
+}
+
 interface UniversalImageUploaderProps {
   label: string;
   value: string;
@@ -163,8 +177,8 @@ export function UniversalImageUploader({
     processUniversalImageFile(
       file,
       900,
-      (dataUrl, formatLabel) => {
-        onChange(dataUrl);
+      async (dataUrl, formatLabel) => {
+        onChange(await persistDataUrl(dataUrl, file.name));
         setUploadedFormat(formatLabel);
         setUploadedFileName(file.name);
       },
@@ -367,42 +381,23 @@ export function ImageCropUploader({
 
     setUploading(true);
 
-    // Try server-side upload API first for fast, lightweight streaming files
+    // Upload to storage first (Vercel Blob in production, local disk in development)
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: fd,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.url) {
-          onChange(data.url, { zoom: 1, x: 0, y: 0 });
-          setUploading(false);
-          e.target.value = '';
-          return;
-        }
+      const url = await uploadMediaFile(file);
+      if (url) {
+        onChange(url, { zoom: 1, x: 0, y: 0 });
+        setUploading(false);
+        e.target.value = '';
+        return;
       }
     } catch {
       // Fallback to in-browser FileReader if upload API is unreachable
     }
 
     if (isVideoFile) {
-      // Fallback: Read video file via browser FileReader
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = String(ev.target?.result || '');
-        if (dataUrl) {
-          onChange(dataUrl, { zoom: 1, x: 0, y: 0 });
-        }
-        setUploading(false);
-      };
-      reader.onerror = () => {
-        alert(isRtl ? 'تعذر قراءة ملف الفيديو' : 'Failed to read video file');
-        setUploading(false);
-      };
-      reader.readAsDataURL(file);
+      // Never inline videos into the database as data URLs; they can be tens of MB
+      alert(isRtl ? 'تعذر رفع الفيديو، حاول مرة أخرى' : 'Video upload failed, please try again');
+      setUploading(false);
     } else {
       // Universal Image processor
       processUniversalImageFile(
