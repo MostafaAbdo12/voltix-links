@@ -99,6 +99,8 @@ export function hasActivePremium(ent: Pick<ThemeEntitlements, 'premiumUntil'>, n
  * already on them (`currentThemeId`), so existing pages never break.
  */
 export function canUseTheme(themeId: string, ent: ThemeEntitlements, currentThemeId?: string | null): boolean {
+  // A bought theme is the buyer's for life, even if it is later retired or repriced
+  if (ent.ownedThemeIds.includes(themeId)) return true;
   const tier = getThemeTier(themeId);
   if (tier === 'free') return true;
   if (tier === 'retired') return themeId === currentThemeId;

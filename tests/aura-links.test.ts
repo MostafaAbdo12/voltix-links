@@ -36,6 +36,7 @@ import { POST as clickPOST } from '@/app/api/analytics/click/route';
 import { GET as statsGET } from '@/app/api/analytics/stats/route';
 import { GET as adminGET, POST as adminPOST } from '@/app/api/admin/route';
 import { POST as storePOST } from '@/app/api/store/route';
+import { canUseTheme } from '@/lib/theme-store';
 import { POST as paymentsPOST } from '@/app/api/admin/payments/route';
 
 describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
@@ -459,6 +460,25 @@ describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
       const adminData = await realAdminRes.json();
       expect(adminData.metrics.totalUsers).toBeGreaterThanOrEqual(3);
     }
+  });
+
+  it('Theme access: free for all, bought themes are for life, Premium expires', () => {
+    const nobody = { premiumUntil: null, ownedThemeIds: [] };
+    expect(canUseTheme('obsidian-luxury', nobody)).toBe(true);
+    expect(canUseTheme('pharaoh-sun-gold', nobody)).toBe(false);
+
+    // Bought: usable forever, even for a retired theme and when switching away from it
+    const buyer = { premiumUntil: null, ownedThemeIds: ['pharaoh-sun-gold', 'electric-storm'] };
+    expect(canUseTheme('pharaoh-sun-gold', buyer)).toBe(true);
+    expect(canUseTheme('electric-storm', buyer, 'obsidian-luxury')).toBe(true);
+
+    // Premium unlocks every paid theme only while active
+    const future = new Date(Date.now() + 86_400_000);
+    const past = new Date(Date.now() - 86_400_000);
+    expect(canUseTheme('sakura-dusk', { premiumUntil: future, ownedThemeIds: [] })).toBe(true);
+    expect(canUseTheme('sakura-dusk', { premiumUntil: past, ownedThemeIds: [] })).toBe(false);
+    // ...but a theme bought outright survives Premium expiring
+    expect(canUseTheme('pharaoh-sun-gold', { premiumUntil: past, ownedThemeIds: ['pharaoh-sun-gold'] })).toBe(true);
   });
 
   it('Scenario 14, 15 & 16: Bilingual i18n, 24 Fonts, 12 Card Types, 7 Layouts, 14 Socials & Effects Studio', () => {
