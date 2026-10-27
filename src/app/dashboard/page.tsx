@@ -2166,7 +2166,7 @@ export default function DashboardPage() {
                       <Plus className="w-4 h-4 stroke-[3]" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-white truncate group-hover:text-amber-300">
+                      <div className="text-xs font-extrabold text-white leading-snug line-clamp-2 group-hover:text-amber-300">
                         {isRtl ? 'إضافة رابط' : 'Add Link'}
                       </div>
                       <div className="text-[10px] text-zinc-400 truncate">
@@ -2184,7 +2184,7 @@ export default function DashboardPage() {
                       <Sparkles className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-white truncate group-hover:text-amber-300">
+                      <div className="text-xs font-extrabold text-white leading-snug line-clamp-2 group-hover:text-amber-300">
                         {isRtl ? 'الثيمات الملكية' : '40 Themes'}
                       </div>
                       <div className="text-[10px] text-zinc-400 truncate">
@@ -2202,7 +2202,7 @@ export default function DashboardPage() {
                       <Wand2 className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-white truncate group-hover:text-purple-300">
+                      <div className="text-xs font-extrabold text-white leading-snug line-clamp-2 group-hover:text-purple-300">
                         {isRtl ? 'استوديو التأثيرات' : 'Effects Studio'}
                       </div>
                       <div className="text-[10px] text-zinc-400 truncate">
@@ -2220,7 +2220,7 @@ export default function DashboardPage() {
                       <Settings className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-white truncate group-hover:text-cyan-300">
+                      <div className="text-xs font-extrabold text-white leading-snug line-clamp-2 group-hover:text-cyan-300">
                         {isRtl ? 'إعدادات الحساب' : 'Account Settings'}
                       </div>
                       <div className="text-[10px] text-zinc-400 truncate">
@@ -4352,9 +4352,10 @@ export default function DashboardPage() {
       {/* ====================================================================
           SOVEREIGN EXECUTIVE 100% PINNED & FIXED STUDIO FOOTER BAR
       ==================================================================== */}
-      <footer className="shrink-0 z-30 px-4 sm:px-8 pb-3.5 pt-1.5 bg-gradient-to-t from-[#030307] via-[#030307]/90 to-transparent">
-        <div className="max-w-[1650px] mx-auto rounded-[24px] bg-[#07070D]/95 border border-amber-400/25 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-400 backdrop-blur-2xl shadow-[0_10px_35px_rgba(0,0,0,0.85)]">
-          <div className="flex items-center gap-2.5">
+      {/* Slim on phones: the status line is hidden there so the content keeps the screen */}
+      <footer className="shrink-0 z-30 px-3 sm:px-8 pb-2 sm:pb-3.5 pt-1 sm:pt-1.5 bg-gradient-to-t from-[#030307] via-[#030307]/90 to-transparent">
+        <div className="max-w-[1650px] mx-auto rounded-2xl sm:rounded-[24px] bg-[#07070D]/95 border border-amber-400/25 px-4 sm:px-6 py-2 sm:py-3.5 flex flex-wrap items-center justify-center sm:justify-between gap-2 sm:gap-4 text-xs text-zinc-400 backdrop-blur-2xl shadow-[0_10px_35px_rgba(0,0,0,0.85)]">
+          <div className="hidden sm:flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-bold text-zinc-200">
               {isRtl

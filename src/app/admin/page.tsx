@@ -4042,9 +4042,10 @@ export default function AdminSiteControlCenterPage() {
       {/* ====================================================================
           SOVEREIGN EXECUTIVE 100% PINNED & FIXED COMMAND FOOTER BAR
       ==================================================================== */}
-      <footer className="shrink-0 z-30 px-4 sm:px-8 pb-3.5 pt-1.5 bg-gradient-to-t from-[#030307] via-[#030307]/90 to-transparent">
-        <div className="max-w-[1650px] mx-auto rounded-[24px] bg-[#07070D]/95 border border-amber-400/25 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-400 backdrop-blur-2xl shadow-[0_10px_35px_rgba(0,0,0,0.85)]">
-          <div className="flex items-center gap-2.5">
+      {/* Slim on phones: the status line is hidden there so the content keeps the screen */}
+      <footer className="shrink-0 z-30 px-3 sm:px-8 pb-2 sm:pb-3.5 pt-1 sm:pt-1.5 bg-gradient-to-t from-[#030307] via-[#030307]/90 to-transparent">
+        <div className="max-w-[1650px] mx-auto rounded-2xl sm:rounded-[24px] bg-[#07070D]/95 border border-amber-400/25 px-4 sm:px-6 py-2 sm:py-3.5 flex flex-wrap items-center justify-center sm:justify-between gap-2 sm:gap-4 text-xs text-zinc-400 backdrop-blur-2xl shadow-[0_10px_35px_rgba(0,0,0,0.85)]">
+          <div className="hidden sm:flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-bold text-zinc-200">
               {isRtl
