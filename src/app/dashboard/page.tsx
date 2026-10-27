@@ -10,6 +10,7 @@ import {
   Palette,
   Wand2,
   BarChart3,
+  Mail,
   QrCode,
   Settings,
   ShieldAlert,
@@ -110,6 +111,7 @@ import {
   UniversalImageUploader,
 } from '@/components/dashboard/ImageCropUploader';
 import { AnalyticsPanel } from '@/components/dashboard/AnalyticsPanel';
+import { GrowthPanel } from '@/components/dashboard/GrowthPanel';
 
 type DashboardTab =
   | 'overview'
@@ -118,6 +120,7 @@ type DashboardTab =
   | 'typography'
   | 'effects'
   | 'analytics'
+  | 'growth'
   | 'qr-seo'
   | 'settings';
 
@@ -136,6 +139,14 @@ interface SnapshotState {
   displayName: string;
   bio: string;
   sectionsOrder: string[];
+}
+
+/** Formats a stored UTC date as the "YYYY-MM-DDTHH:mm" local value a datetime-local input expects. */
+function toLocalDateTimeInput(value: string | Date | null | undefined): string {
+  if (!value) return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
 }
 
 export default function DashboardPage() {
@@ -901,8 +912,8 @@ export default function DashboardPage() {
     setFormCardType((link.cardType as LinkCardType) || 'glass');
     setFormFeatured(Boolean(link.isFeatured));
     setFormBadge(link.badgeText || '');
-    setFormStart(link.scheduledStart ? String(link.scheduledStart).slice(0, 16) : '');
-    setFormEnd(link.scheduledEnd ? String(link.scheduledEnd).slice(0, 16) : '');
+    setFormStart(toLocalDateTimeInput(link.scheduledStart));
+    setFormEnd(toLocalDateTimeInput(link.scheduledEnd));
     let cBg = '';
     let cGlow = '';
     if (link.customStyleJson) {
@@ -1268,6 +1279,14 @@ export default function DashboardPage() {
       subAr: 'حجم الزيارات ومعدلات التفاعل',
       subEn: 'Audience Traffic & CTR',
       icon: BarChart3,
+    },
+    {
+      id: 'growth',
+      labelAr: 'المشتركين والدومين',
+      labelEn: 'Subscribers & Domain',
+      subAr: 'جمع الإيميلات وربط دومين خاص',
+      subEn: 'Email capture & custom domain',
+      icon: Mail,
     },
     {
       id: 'qr-seo',
@@ -3709,6 +3728,7 @@ export default function DashboardPage() {
               TAB 5: REAL-TIME ANALYTICS
           ================================================================ */}
           {activeTab === 'analytics' && <AnalyticsPanel isRtl={isRtl} />}
+          {activeTab === 'growth' && <GrowthPanel isRtl={isRtl} />}
 
           {/* ================================================================
               TAB 6: QR CODE STUDIO & SEO MANAGER

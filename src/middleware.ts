@@ -3,8 +3,33 @@ import type { NextRequest } from 'next/server';
 
 const SESSION_COOKIE_NAME = 'aura_session';
 
+function isPlatformHost(host: string) {
+  let appHost = '';
+  try {
+    appHost = new URL(process.env.NEXT_PUBLIC_APP_URL || '').hostname;
+  } catch {}
+  return (
+    host === appHost ||
+    host === `www.${appHost}` ||
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.vercel.app') ||
+    host.endsWith('.localhost')
+  );
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // 0. Custom domains: a user's own domain serves their profile at the root
+  const host = (request.headers.get('host') || '').split(':')[0].toLowerCase();
+  if (pathname === '/' && host && !isPlatformHost(host)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/d/${host}`;
+    const response = NextResponse.rewrite(url);
+    applySecurityHeaders(response);
+    return response;
+  }
 
   // 1. Rewrite /@username directly to /u/username for spatial luxury URLs
   if (pathname.startsWith('/@') && pathname.length > 2) {

@@ -271,6 +271,7 @@ import {
 } from '@/lib/social-platforms';
 import { DynamicIcon } from '@/components/ui/DynamicIcon';
 import { QrCodeView } from './QrCodeStudio';
+import { SubscribeForm } from './SubscribeForm';
 
 export interface ProfileLinkItem {
   id: string;
@@ -339,6 +340,7 @@ export interface ProfileData {
     bgColor: string;
     includeLogo: boolean;
   };
+  emailCapture?: { enabled: boolean; title: string };
 }
 
 interface ProfileRendererProps {
@@ -2576,6 +2578,16 @@ export function ProfileRenderer({
               sectionRenderers[secKey] ? sectionRenderers[secKey]() : null
             )}
           </div>
+        )}
+
+        {profile.emailCapture?.enabled && profile.id && (
+          <SubscribeForm
+            userId={profile.id}
+            title={profile.emailCapture.title}
+            theme={theme}
+            isRtl={isRtl}
+            isPreview={isPreview}
+          />
         )}
 
         {/* VoltiX Luxury Brand Badge & Report Trigger */}

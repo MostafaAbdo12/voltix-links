@@ -24,6 +24,7 @@ model User {
   isSuspended    Boolean        @default(false)
   emailVerified  DateTime?
   locale         String         @default("ar") // "ar" | "en"
+  customDomain   String?        @unique // e.g. "links.example.com", attached to the Vercel project
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -34,6 +35,7 @@ model User {
   pageViews      PageView[]
   linkClicks     LinkClick[]
   reports        Report[]       @relation("ReportedUser")
+  subscribers    Subscriber[]
 }
 
 model ProfileConfig {
@@ -56,6 +58,9 @@ model ProfileConfig {
   ogImageUrl          String   @default("")
   canonicalUrl        String   @default("")
   robotsIndex         Boolean  @default(true)
+
+  emailCaptureEnabled Boolean  @default(false)
+  emailCaptureTitle   String   @default("")
 
   updatedAt           DateTime @updatedAt
 }
@@ -139,6 +144,18 @@ model LinkClick {
 
   @@index([userId, createdAt])
   @@index([linkId, createdAt])
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  country   String   @default("XX")
+  createdAt DateTime @default(now())
+
+  @@unique([userId, email])
+  @@index([userId, createdAt])
 }
 
 model VerificationToken {

@@ -64,6 +64,19 @@ const DEMO_SANDBOX_DATA: AnalyticsStatsData = {
   ],
 };
 
+/** Turns an ISO country code (from Vercel's geo header) into "🇸🇦 Saudi Arabia". */
+function formatCountry(code: string, isRtl: boolean): string {
+  const cc = code.slice(0, 2).toUpperCase();
+  if (!/^[A-Z]{2}$/.test(cc) || cc === 'XX') return isRtl ? 'غير معروف' : 'Unknown';
+  const flag = String.fromCodePoint(...Array.from(cc).map((ch) => 0x1f1a5 + ch.charCodeAt(0)));
+  try {
+    const name = new Intl.DisplayNames([isRtl ? 'ar' : 'en'], { type: 'region' }).of(cc);
+    return `${flag} ${name || cc}`;
+  } catch {
+    return `${flag} ${cc}`;
+  }
+}
+
 export function AnalyticsPanel({ isRtl = true }: { isRtl?: boolean }) {
   const [days, setDays] = useState<7 | 30 | 90>(30);
   const [stats, setStats] = useState<AnalyticsStatsData | null>(null);
@@ -296,7 +309,7 @@ export function AnalyticsPanel({ isRtl = true }: { isRtl?: boolean }) {
             <div className="space-y-2">
               {(activeData?.countries || []).slice(0, 5).map((c) => (
                 <div key={c.country} className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-300 font-medium">{c.country}</span>
+                  <span className="text-zinc-300 font-medium">{formatCountry(c.country, isRtl)}</span>
                   <span className="font-bold text-cyan-300">{c.count}</span>
                 </div>
               ))}

@@ -135,7 +135,13 @@ export default async function PublicProfilePage({
     coverPosition: coverPos,
     isVerified: user.isVerified,
     locale: user.locale === 'en' ? 'en' : 'ar',
-    links: user.links.map((l) => ({
+    // Filter scheduled links on the server so future links' URLs never reach the browser
+    links: user.links.filter((l) => {
+      const now = Date.now();
+      if (l.scheduledStart && l.scheduledStart.getTime() > now) return false;
+      if (l.scheduledEnd && l.scheduledEnd.getTime() < now) return false;
+      return true;
+    }).map((l) => ({
       ...l,
       scheduledStart: l.scheduledStart ? l.scheduledStart.toISOString() : null,
       scheduledEnd: l.scheduledEnd ? l.scheduledEnd.toISOString() : null,
@@ -144,6 +150,10 @@ export default async function PublicProfilePage({
     sectionsOrder,
     mediaEmbed,
     qrConfig,
+    emailCapture: {
+      enabled: pc?.emailCaptureEnabled ?? false,
+      title: pc?.emailCaptureTitle ?? '',
+    },
   };
 
   return (

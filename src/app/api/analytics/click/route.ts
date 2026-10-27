@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { checkRateLimit } from '@/lib/auth';
+import { checkRateLimit, getClientIp } from '@/lib/auth';
 
 function detectDevice(ua: string): string {
   if (/tablet|ipad/i.test(ua)) return 'tablet';
@@ -21,7 +21,7 @@ function detectSource(ref: string): string {
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    const ip = getClientIp(req);
     const rl = checkRateLimit(`click:${ip}`, 60, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ recorded: false, error: 'Rate limit exceeded' }, { status: 429 });
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     }
 
     const ua = req.headers.get('user-agent') || '';
-    const country = req.headers.get('x-vercel-ip-country') || body.country || 'SA';
+    const country = req.headers.get('x-vercel-ip-country') || 'XX';
     const dayKey = new Date().toISOString().slice(0, 10);
     const visitorHash = Buffer.from(`${ip}:${ua.slice(0, 32)}:${dayKey}`).toString('base64').slice(0, 24);
 
