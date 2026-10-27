@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { prisma } from '@/lib/db';
 import {
   createSessionToken,
@@ -50,6 +50,16 @@ describe('AURA LINKS — Comprehensive 18-Scenario Verification Suite', () => {
   let adminToken = '';
   let createdLink1Id = '';
   let createdLink2Id = '';
+
+  // The suite runs against the real database, so remove every record it created
+  afterAll(async () => {
+    const emails = [userAEmail, userBEmail, `other_${userAEmail}`];
+    await prisma.user.deleteMany({
+      where: { OR: [{ username: { in: [userAUsername, userBUsername] } }, { email: { in: emails } }] },
+    });
+    await prisma.passwordResetToken.deleteMany({ where: { email: { in: emails } } });
+    await prisma.verificationToken.deleteMany({ where: { email: { in: emails } } });
+  });
 
   beforeAll(async () => {
     // Ensure admin user exists for admin authorization tests
